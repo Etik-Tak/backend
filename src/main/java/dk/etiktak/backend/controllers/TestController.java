@@ -1,7 +1,7 @@
 package dk.etiktak.backend.controllers;
 
-import dk.etiktak.backend.model.Client;
-import dk.etiktak.backend.service.ClientService;
+import dk.etiktak.backend.model.user.Client;
+import dk.etiktak.backend.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,11 +11,10 @@ import java.util.List;
 public class TestController {
 
     @Autowired
-    private ClientService clientService;
+    private UserService userService;
 
     @RequestMapping("/test/")
-    @ResponseBody
     List<Client> test() {
-        return clientService.findClients();
+        return userService.findClients();
     }
 }

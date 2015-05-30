@@ -1,12 +1,13 @@
-package dk.etiktak.backend.model;
+package dk.etiktak.backend.model.user;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.util.Date;
 
-@Entity
+@Entity(name = "client")
 public class Client {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -20,10 +21,10 @@ public class Client {
     @Column(name = "verified", nullable = false)
     private Boolean verified;
 
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date creationTime;
 
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date modificationTime;
 
     public Client() {}

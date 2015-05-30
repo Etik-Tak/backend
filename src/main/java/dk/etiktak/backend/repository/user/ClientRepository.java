@@ -1,6 +1,6 @@
-package dk.etiktak.backend.repository;
+package dk.etiktak.backend.repository.user;
 
-import dk.etiktak.backend.model.Client;
+import dk.etiktak.backend.model.user.Client;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
