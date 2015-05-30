@@ -1,18 +1,21 @@
 package dk.etiktak.backend.controllers;
 
+import dk.etiktak.backend.model.Client;
+import dk.etiktak.backend.service.ClientService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class TestController {
 
-    @RequestMapping("/")
-    @ResponseBody
-    TestObject home() {
-        return new TestObject();
-    }
+    @Autowired
+    private ClientService clientService;
 
-    private class TestObject {
-        public String username = "user";
-        public String password = "test";
+    @RequestMapping("/test/")
+    @ResponseBody
+    List<Client> test() {
+        return clientService.findClients();
     }
 }
