@@ -11,7 +11,6 @@ import dk.etiktak.backend.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @Service
@@ -32,7 +31,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public MobileNumber createMobileNumber(String number) {
+    public MobileNumber createMobileNumber(String number) throws Exception {
         MobileNumber mobileNumber = new MobileNumber();
         mobileNumber.setMobileNumberHash(CryptoUtil.hash(number));
         mobileNumberRepository.save(mobileNumber);
@@ -40,7 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Client createClient(String mobileNumber, String password) {
+    public Client createClient(String mobileNumber, String password) throws Exception {
         Client client = new Client();
         client.setUuid(CryptoUtil.uuid());
         client.setMobileNumberHash_passwordHash_hashed(
@@ -48,12 +47,13 @@ public class UserServiceImpl implements UserService {
                         CryptoUtil.hash(mobileNumber) + CryptoUtil.hash(password)
                 )
         );
+        client.setVerified(false);
         clientRepository.save(client);
         return client;
     }
 
     @Override
-    public void sendSmsChallenge(String mobileNumber) throws NoSuchAlgorithmException {
+    public void sendSmsChallenge(String mobileNumber) throws Exception {
         SmsVerification smsVerification = new SmsVerification();
         smsVerification.setMobileNumberHash(CryptoUtil.hash(mobileNumber));
         smsVerification.setSmsChallengeHash(CryptoUtil.hash(CryptoUtil.generateSmsChallenge()));

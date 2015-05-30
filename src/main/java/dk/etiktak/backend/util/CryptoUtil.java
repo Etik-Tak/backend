@@ -2,6 +2,8 @@ package dk.etiktak.backend.util;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -13,7 +15,14 @@ public class CryptoUtil {
         return UUID.randomUUID().toString();
     }
 
-    public static String hash(String plainText) {
+    public static String hash(String text) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashedBytes = digest.digest(text.getBytes("UTF-8"));
+
+        return convertByteArrayToHexString(hashedBytes);
+    }
+
+    public static String encrypt(String plainText) {
         return BCrypt.hashpw(plainText, BCrypt.gensalt());
     }
 
@@ -40,5 +49,14 @@ public class CryptoUtil {
         random.setSeed(random.generateSeed(20));
         random.nextBytes(randomBytes);
         return Base64.getEncoder().encodeToString(randomBytes);
+    }
+
+    public static String convertByteArrayToHexString(byte[] arrayBytes) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arrayBytes.length; i++) {
+            sb.append(Integer.toString((arrayBytes[i] & 0xff) + 0x100, 16)
+                    .substring(1));
+        }
+        return sb.toString();
     }
 }

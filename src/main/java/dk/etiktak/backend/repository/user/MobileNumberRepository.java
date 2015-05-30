@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MobileNumberRepository extends PagingAndSortingRepository<MobileNumber, Long> {
+    MobileNumber findByMobileNumberHash(String mobileNumberHash);
 }

@@ -9,7 +9,7 @@ import java.util.List;
 public interface UserService {
     List<Client> findClients();
 
-    MobileNumber createMobileNumber(String mobileNumber);
-    Client createClient(String mobileNumber, String password);
-    void sendSmsChallenge(String mobileNumber) throws NoSuchAlgorithmException;
+    MobileNumber createMobileNumber(String mobileNumber) throws Exception;
+    Client createClient(String mobileNumber, String password) throws Exception;
+    void sendSmsChallenge(String mobileNumber) throws Exception;
 }
