@@ -16,7 +16,7 @@ public class Client {
     private String uuid;
 
     @Column(name = "mobileNumberHash_passwordHash_hashed", nullable = false, unique = true)
-    private String mobileNumberHash_passwordHash_hashed;
+    private String mobileNumberHashPasswordHashHashed;
 
     @Column(name = "verified", nullable = false)
     private Boolean verified;
@@ -57,12 +57,12 @@ public class Client {
         this.uuid = uuid;
     }
 
-    public String getMobileNumberHash_passwordHash_hashed() {
-        return mobileNumberHash_passwordHash_hashed;
+    public String getMobileNumberHashPasswordHashHashed() {
+        return mobileNumberHashPasswordHashHashed;
     }
 
-    public void setMobileNumberHash_passwordHash_hashed(String mobileNumberHash_passwordHash_hashed) {
-        this.mobileNumberHash_passwordHash_hashed = mobileNumberHash_passwordHash_hashed;
+    public void setMobileNumberHashPasswordHashHashed(String mobileNumberHashPasswordHashHashed) {
+        this.mobileNumberHashPasswordHashHashed = mobileNumberHashPasswordHashHashed;
     }
 
     public Boolean getVerified() {

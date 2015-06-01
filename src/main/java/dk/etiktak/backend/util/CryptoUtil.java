@@ -30,6 +30,12 @@ public class CryptoUtil {
         return BCrypt.checkpw(plainText, hashed);
     }
 
+    public static String getMobileNumberHashedPaswordHashedHashed(String mobileNumber, String password) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        return CryptoUtil.hash(
+                CryptoUtil.hash(mobileNumber) + CryptoUtil.hash(password)
+        );
+    }
+
     public static String generateSmsChallenge() throws NoSuchAlgorithmException {
         final int SMS_CHALLENGE_DIGITS = 5;
 
