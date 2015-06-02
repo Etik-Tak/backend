@@ -7,7 +7,9 @@ Getting Started
 Install postgresql. Then run the following psql:
 
 `create database etiktak;`
+
 `create role etiktak with password 'Test1234';`
+
 `alter role etiktak with login;`
 
 Build and start the bundled Jetty container:
