@@ -18,7 +18,7 @@ public class UserRestController extends BaseRestController {
     @RequestMapping(value = "/client/create/", method = RequestMethod.POST)
     public BaseJsonObject createUser(@RequestParam String mobileNumber,
                                      @RequestParam String password) throws Exception {
-        userService.createUser(mobileNumber, password);
+        userService.createClient(mobileNumber, password);
         return ok();
     }
 

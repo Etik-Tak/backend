@@ -21,10 +21,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.util.NestedServletException;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -87,8 +86,26 @@ public class UserServiceTest extends BaseRestTest {
         //this.account = accountRepository.save(new Account(userName, "password"));
     }
 
+    /**
+     * Test that we can create a client.
+     */
     @Test
     public void createClient() throws Exception {
+        mockMvc.perform(
+                post(serviceEndpoint("client/create/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234"))
+                //.andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)));
+    }
+
+    /**
+     * Test that we cannot create two clients with same mobile number.
+     */
+    @Test(expected=NestedServletException.class)
+    public void cannotCreateClientsWithSameMobileNumber() throws Exception {
         mockMvc.perform(
                 post(serviceEndpoint("client/create/"))
                         .param("mobileNumber", "12345678")
@@ -97,6 +114,13 @@ public class UserServiceTest extends BaseRestTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)));
+
+        mockMvc.perform(
+                post(serviceEndpoint("client/create/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234"))
+                .andDo(print());
+        ;
     }
 
     protected String json(Object o) throws IOException {
