@@ -5,7 +5,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import java.util.Date;
 
-@Entity(name = "client")
+@Entity(name = "clients")
 public class Client {
 
     @Id

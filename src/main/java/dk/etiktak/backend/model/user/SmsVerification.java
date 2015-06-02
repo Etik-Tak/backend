@@ -13,7 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import java.util.Date;
 
-@Entity(name = "sms_verification")
+@Entity(name = "sms_verifications")
 public class SmsVerification {
 
     public enum SmsVerificationStatus { PENDING,  SENT,  FAILED, VERIFIED }
