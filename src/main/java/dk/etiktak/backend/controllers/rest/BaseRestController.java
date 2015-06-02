@@ -5,7 +5,7 @@ import dk.etiktak.backend.controllers.rest.json.BaseJsonObject;
 /**
  * Used as a parent for all controllers.
  */
-public class BaseController {
+public class BaseRestController {
     public BaseJsonObject ok() {
         return new BaseJsonObject();
     }

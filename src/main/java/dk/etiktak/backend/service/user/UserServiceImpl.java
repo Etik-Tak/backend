@@ -31,17 +31,14 @@ public class UserServiceImpl implements UserService {
     private SmsVerificationRepository smsVerificationRepository;
 
     /**
-     * Creates a complete user, i.e. creates the mobile number and client entry.
-     * Throws exception if either mobile number or client already exists.
+     * Creates a user.
      *
-     * @param mobileNumber    Mobile number
+     * @param username        Username
      * @param password        Password
      * @throws Exception
      */
     @Override
-    public void createUser(String mobileNumber, String password) throws Exception {
-        createMobileNumber(mobileNumber);
-        createClient(mobileNumber, password);
+    public void createUser(String username, String password) throws Exception {
     }
 
     /**
@@ -73,6 +70,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Client createClient(String mobileNumber, String password) throws Exception {
+        createMobileNumber(mobileNumber);
+
         Assert.isNull(
                 clientRepository.findByMobileNumberHashPasswordHashHashed(getMobileNumberHashedPaswordHashedHashed(mobileNumber, password)),
                 "Client with mobile number " + mobileNumber + " and password ### already exists");

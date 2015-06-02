@@ -4,7 +4,9 @@ package dk.etiktak.backend.controllers.rest.json;
  * Used as a parent for all json objects.
  */
 public class BaseJsonObject {
-    private String result = "OK";
+    public static final String RESULT_OK = "OK";
+
+    private String result = RESULT_OK;
 
     public BaseJsonObject() {
     }

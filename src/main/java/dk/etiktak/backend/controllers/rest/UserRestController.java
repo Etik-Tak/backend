@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/service/user")
-public class UserController extends BaseController {
+public class UserRestController extends BaseRestController {
 
     @Autowired
     private UserService userService;
 
-    @RequestMapping(value = "/create/", method = RequestMethod.POST)
+    @RequestMapping(value = "/client/create/", method = RequestMethod.POST)
     public BaseJsonObject createUser(@RequestParam String mobileNumber,
                                      @RequestParam String password) throws Exception {
         userService.createUser(mobileNumber, password);
