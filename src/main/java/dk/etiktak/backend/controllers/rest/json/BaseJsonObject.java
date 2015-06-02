@@ -1,4 +1,4 @@
-package dk.etiktak.backend.controllers.json;
+package dk.etiktak.backend.controllers.rest.json;
 
 /**
  * Used as a parent for all json objects.

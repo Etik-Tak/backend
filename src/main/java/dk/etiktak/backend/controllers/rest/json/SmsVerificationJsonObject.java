@@ -1,4 +1,4 @@
-package dk.etiktak.backend.controllers.json;
+package dk.etiktak.backend.controllers.rest.json;
 
 import dk.etiktak.backend.model.user.SmsVerification;
 

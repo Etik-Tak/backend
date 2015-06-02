@@ -1,7 +1,7 @@
-package dk.etiktak.backend.controllers;
+package dk.etiktak.backend.controllers.rest;
 
-import dk.etiktak.backend.controllers.json.BaseJsonObject;
-import dk.etiktak.backend.controllers.json.SmsVerificationJsonObject;
+import dk.etiktak.backend.controllers.rest.json.BaseJsonObject;
+import dk.etiktak.backend.controllers.rest.json.SmsVerificationJsonObject;
 import dk.etiktak.backend.model.user.SmsVerification;
 import dk.etiktak.backend.service.user.UserService;
 

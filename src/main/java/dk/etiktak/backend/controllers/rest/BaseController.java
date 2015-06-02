@@ -1,6 +1,6 @@
-package dk.etiktak.backend.controllers;
+package dk.etiktak.backend.controllers.rest;
 
-import dk.etiktak.backend.controllers.json.BaseJsonObject;
+import dk.etiktak.backend.controllers.rest.json.BaseJsonObject;
 
 /**
  * Used as a parent for all controllers.
