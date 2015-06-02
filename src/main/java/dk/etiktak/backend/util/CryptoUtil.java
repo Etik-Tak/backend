@@ -19,21 +19,15 @@ public class CryptoUtil {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashedBytes = digest.digest(text.getBytes("UTF-8"));
 
-        return convertByteArrayToHexString(hashedBytes);
+        return ArrayUtil.convertByteArrayToHexString(hashedBytes);
     }
 
-    public static String encrypt(String plainText) {
+    public static String encryptPassword(String plainText) {
         return BCrypt.hashpw(plainText, BCrypt.gensalt());
     }
 
-    public static boolean validateHash(String plainText, String hashed) {
+    public static boolean validatePassword(String plainText, String hashed) {
         return BCrypt.checkpw(plainText, hashed);
-    }
-
-    public static String getMobileNumberHashedPaswordHashedHashed(String mobileNumber, String password) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        return CryptoUtil.hash(
-                CryptoUtil.hash(mobileNumber) + CryptoUtil.hash(password)
-        );
     }
 
     public static String generateSmsChallenge() throws NoSuchAlgorithmException {
@@ -55,14 +49,5 @@ public class CryptoUtil {
         random.setSeed(random.generateSeed(20));
         random.nextBytes(randomBytes);
         return Base64.getEncoder().encodeToString(randomBytes);
-    }
-
-    public static String convertByteArrayToHexString(byte[] arrayBytes) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < arrayBytes.length; i++) {
-            sb.append(Integer.toString((arrayBytes[i] & 0xff) + 0x100, 16)
-                    .substring(1));
-        }
-        return sb.toString();
     }
 }

@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+
 @Service
 public class UserServiceImpl implements UserService {
     private Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
@@ -71,12 +74,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public Client createClient(String mobileNumber, String password) throws Exception {
         Assert.isNull(
-                clientRepository.findByMobileNumberHashPasswordHashHashed(CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password)),
+                clientRepository.findByMobileNumberHashPasswordHashHashed(getMobileNumberHashedPaswordHashedHashed(mobileNumber, password)),
                 "Client with mobile number " + mobileNumber + " and password ### already exists");
 
         Client client = new Client();
         client.setUuid(CryptoUtil.uuid());
-        client.setMobileNumberHashPasswordHashHashed(CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
+        client.setMobileNumberHashPasswordHashHashed(getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
         client.setVerified(false);
         clientRepository.save(client);
         return client;
@@ -125,7 +128,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void verifySmsChallenge(String mobileNumber, String password, String smsChallenge, String clientChallenge) throws Exception {
         // Verify mobile number and password
-        Client client = clientRepository.findByMobileNumberHashPasswordHashHashed(CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
+        Client client = clientRepository.findByMobileNumberHashPasswordHashHashed(getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
 
         Assert.notNull(
                 client,
@@ -151,5 +154,11 @@ public class UserServiceImpl implements UserService {
         // Mark client as verified
         client.setVerified(true);
         clientRepository.save(client);
+    }
+
+    private String getMobileNumberHashedPaswordHashedHashed(String mobileNumber, String password) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        return CryptoUtil.hash(
+                CryptoUtil.hash(mobileNumber) + CryptoUtil.hash(password)
+        );
     }
 }
