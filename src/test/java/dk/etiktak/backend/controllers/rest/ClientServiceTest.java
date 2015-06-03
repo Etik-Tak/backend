@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -44,6 +45,7 @@ public class ClientServiceTest extends BaseRestTest {
                 post(serviceEndpoint("create/")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)));
+                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
+                .andExpect(jsonPath("$.clientUuid", notNullValue()));
     }
 }
