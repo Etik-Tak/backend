@@ -177,6 +177,40 @@ public class SmsVerificationServiceTest extends BaseRestTest {
                         .param("clientChallenge", smsVerification.getClientChallenge() + "_wrong"));
     }
 
+    /**
+     * Test that we cannot verify a SMS verification with wrong mobile number.
+     */
+    @Test(expected=NestedServletException.class)
+    public void cannotVerifySmsVerificationWithWrongMobileNumber() throws Exception {
+        SmsVerification smsVerification = sendAndModifySmsVerification();
+
+        // Verify challenge
+        mockMvc.perform(
+                post(serviceEndpoint("verify/"))
+                        .param("mobileNumber", "wrong")
+                        .param("password", "test1234")
+                        .param("smsChallenge", smsChallenge)
+                        .param("clientChallenge", smsVerification.getClientChallenge()));
+    }
+
+    /**
+     * Test that we cannot verify a SMS verification with wrong password.
+     */
+    @Test(expected=NestedServletException.class)
+    public void cannotVerifySmsVerificationWithWrongPassword() throws Exception {
+        SmsVerification smsVerification = sendAndModifySmsVerification();
+
+        // Verify challenge
+        mockMvc.perform(
+                post(serviceEndpoint("verify/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "wrong_password")
+                        .param("smsChallenge", smsChallenge)
+                        .param("clientChallenge", smsVerification.getClientChallenge()));
+    }
+
+
+
     private SmsVerification sendAndModifySmsVerification() throws Exception {
         // Send SMS verification
         mockMvc.perform(
