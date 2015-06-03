@@ -3,9 +3,11 @@ package dk.etiktak.backend.controllers.rest;
 import dk.etiktak.backend.Application;
 import dk.etiktak.backend.controllers.rest.json.BaseJsonObject;
 import dk.etiktak.backend.model.user.Client;
+import dk.etiktak.backend.model.user.SmsVerification;
 import dk.etiktak.backend.repository.user.ClientRepository;
 import dk.etiktak.backend.repository.user.MobileNumberRepository;
 import dk.etiktak.backend.repository.user.SmsVerificationRepository;
+import dk.etiktak.backend.service.client.SmsVerificationService;
 import dk.etiktak.backend.util.CryptoUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +40,7 @@ public class SmsVerificationServiceTest extends BaseRestTest {
 
     private Client client1;
     private Client client2;
+    private String smsChallenge;
 
     public static String serviceEndpoint(String postfix) {
         return serviceEndpoint() + "verification/" + postfix;
@@ -60,6 +63,7 @@ public class SmsVerificationServiceTest extends BaseRestTest {
      */
     @Test
     public void sendSmsVerification() throws Exception {
+        // Send SMS verification
         mockMvc.perform(
                 post(serviceEndpoint("send/"))
                         .param("clientUuid", client1.getUuid())
@@ -74,8 +78,8 @@ public class SmsVerificationServiceTest extends BaseRestTest {
     /**
      * Test that we can send two SMS verifications to same mobile number for same client.
      */
-    @Test(expected=NestedServletException.class)
-    public void cannotSendMultipleSmsVerificationsToSameMobileNumber1() throws Exception {
+    public void sendMultipleSmsVerificationsToSameMobileNumber() throws Exception {
+        // Send first SMS verification
         mockMvc.perform(
                 post(serviceEndpoint("send/"))
                         .param("clientUuid", client1.getUuid())
@@ -86,6 +90,7 @@ public class SmsVerificationServiceTest extends BaseRestTest {
                 .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
                 .andExpect(jsonPath("$.clientChallenge", notNullValue()));
 
+        // Send second SMS verification
         mockMvc.perform(
                 post(serviceEndpoint("send/"))
                         .param("clientUuid", client1.getUuid())
@@ -101,7 +106,8 @@ public class SmsVerificationServiceTest extends BaseRestTest {
      * Test that we cannot send two SMS verifications to same mobile number for different clients.
      */
     @Test(expected=NestedServletException.class)
-    public void cannotSendMultipleSmsVerificationsToSameMobileNumber2() throws Exception {
+    public void cannotSendMultipleSmsVerificationsToSameMobileNumberWithDifferentClients() throws Exception {
+        // Send first SMS verification
         mockMvc.perform(
                 post(serviceEndpoint("send/"))
                         .param("clientUuid", client1.getUuid())
@@ -112,11 +118,80 @@ public class SmsVerificationServiceTest extends BaseRestTest {
                 .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
                 .andExpect(jsonPath("$.clientChallenge", notNullValue()));
 
+        // Send second SMS verification with another client uuid
         mockMvc.perform(
                 post(serviceEndpoint("send/"))
                         .param("clientUuid", client2.getUuid())
                         .param("mobileNumber", "12345678")
                         .param("password", "anotherPassword"));
+    }
+
+    /**
+     * Test that we can verify a SMS verification.
+     */
+    @Test
+    public void verifySmsVerification() throws Exception {
+        SmsVerification smsVerification = sendAndModifySmsVerification();
+
+        // Verify challenge
+        mockMvc.perform(
+                post(serviceEndpoint("verify/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234")
+                        .param("smsChallenge", smsChallenge)
+                        .param("clientChallenge", smsVerification.getClientChallenge()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)));
+    }
+
+    /**
+     * Test that we cannot verify a SMS verification with wrong SMS challenge.
+     */
+    @Test(expected=NestedServletException.class)
+    public void cannotVerifySmsVerificationWithWrongSmsChallenge() throws Exception {
+        SmsVerification smsVerification = sendAndModifySmsVerification();
+
+        // Verify challenge
+        mockMvc.perform(
+                post(serviceEndpoint("verify/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234")
+                        .param("smsChallenge", smsChallenge + "_wrong")
+                        .param("clientChallenge", smsVerification.getClientChallenge()));
+    }
+
+    /**
+     * Test that we cannot verify a SMS verification with wrong client challenge.
+     */
+    @Test(expected=NestedServletException.class)
+    public void cannotVerifySmsVerificationWithWrongClientChallenge() throws Exception {
+        SmsVerification smsVerification = sendAndModifySmsVerification();
+
+        // Verify challenge
+        mockMvc.perform(
+                post(serviceEndpoint("verify/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234")
+                        .param("smsChallenge", smsChallenge)
+                        .param("clientChallenge", smsVerification.getClientChallenge() + "_wrong"));
+    }
+
+    private SmsVerification sendAndModifySmsVerification() throws Exception {
+        // Send SMS verification
+        mockMvc.perform(
+                post(serviceEndpoint("send/"))
+                        .param("clientUuid", client1.getUuid())
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234"));
+
+        // Overwrite generated challenge to get raw, unhashed challenge in hand
+        SmsVerification smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil.hash("12345678"));
+        smsChallenge = CryptoUtil.generateSmsChallenge();
+        smsVerification.setSmsChallengeHash(CryptoUtil.hash(smsChallenge));
+        smsVerificationRepository.save(smsVerification);
+
+        return smsVerification;
     }
 
     private Client createAndSaveClient() {

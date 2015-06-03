@@ -41,11 +41,14 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
         String smsChallenge = CryptoUtil.generateSmsChallenge();
         String clientChallenge = CryptoUtil.uuid();
 
+        // Fetch client from UUID
+        Client client = clientRepository.findByUuid(clientUuid);
+        Assert.notNull(
+                client,
+                "Client with UUID " + clientUuid + " does not exist");
+
         // Fetch existing SMS verification, if any
         SmsVerification smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil.hash(mobileNumber));
-
-        // Fetch existing client, if any
-        Client client = clientRepository.findByMobileNumberHashPasswordHashHashed(CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
 
         // Fetch existing mobile number, if any
         MobileNumber mobile = mobileNumberRepository.findByMobileNumberHash(CryptoUtil.hash(mobileNumber));
@@ -53,27 +56,23 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
         if (mobile != null) {
             // Mobile number already exists
 
-            // Client with given mobile number and password must already exist
-            Assert.notNull(
-                    client,
-                    "Mobile number " + mobileNumber + " already verified, but client with given mobile number and password not found");
-
-            // Mark client as not verified
-            client.setVerified(false);
-            clientRepository.save(client);
-
+            // Check that mobile number and password for client is correct
+            Assert.isTrue(
+                    client.getMobileNumberHashPasswordHashHashed().equals(CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password)),
+                    "Mobile number " + mobileNumber + " already verified with other password than that provided"
+            );
         } else {
             // New mobile number registration
 
             // Client with given mobile number and password cannot already exist
             Assert.isNull(
-                    client,
-                    "Internal error: Client with mobile number " + mobileNumber + " and given password already exists, though mobile number entry did not");
+                    client.getMobileNumberHashPasswordHashHashed(),
+                    "Internal error: Client with UUID " + clientUuid + " already verified, though mobile number entry " + mobileNumber + " did not exist");
 
             // SMS challenge cannot already exist
             Assert.isNull(
                     smsVerification,
-                    "Internal error: SMS challenge already exists for mobile number " + mobileNumber);
+                    "Internal error: SMS challenge already exists for mobile number " + mobileNumber + ", though mobile number entry did not exist");
 
             // Create mobile number entry
             createMobileNumber(mobileNumber);
@@ -82,6 +81,11 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
             smsVerification = new SmsVerification();
             smsVerification.setMobileNumberHash(CryptoUtil.hash(mobileNumber));
         }
+
+        // Mark client as not verified
+        client.setMobileNumberHashPasswordHashHashed(CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
+        client.setVerified(false);
+        clientRepository.save(client);
 
         // Set challenges on verification
         smsVerification.setSmsChallengeHash(CryptoUtil.hash(smsChallenge));
@@ -113,7 +117,8 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
     @Override
     public void verifySmsChallenge(String mobileNumber, String password, String smsChallenge, String clientChallenge) throws Exception {
         // Verify mobile number and password
-        Client client = clientRepository.findByMobileNumberHashPasswordHashHashed(CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
+        Client client = clientRepository.findByMobileNumberHashPasswordHashHashed(
+                CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
 
         Assert.notNull(
                 client,
