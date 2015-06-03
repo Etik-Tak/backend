@@ -15,7 +15,7 @@ public class Client {
     @Column(name = "uuid", nullable = false, unique = true)
     private String uuid;
 
-    @Column(name = "mobileNumberHash_passwordHash_hashed", nullable = false, unique = true)
+    @Column(name = "mobileNumberHash_passwordHash_hashed", nullable = true, unique = true)
     private String mobileNumberHashPasswordHashHashed;
 
     @Column(name = "verified", nullable = false)

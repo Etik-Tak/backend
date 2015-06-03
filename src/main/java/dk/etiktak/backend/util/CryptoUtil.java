@@ -50,4 +50,8 @@ public class CryptoUtil {
         random.nextBytes(randomBytes);
         return Base64.getEncoder().encodeToString(randomBytes);
     }
+
+    public static String getMobileNumberHashedPaswordHashedHashed(String mobileNumber, String password) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        return hash(hash(mobileNumber) + hash(password));
+    }
 }
