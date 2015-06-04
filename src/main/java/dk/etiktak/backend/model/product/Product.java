@@ -1,26 +1,31 @@
 /**
- * Used to keep track of which mobile numbers are in use. Since client entity knows nothing about
- * mobile number (without password) we need this entity. However, there is no direct relation between
- * a client and its mobile number.
- **/
+ * Represents a product.
+ */
 
-package dk.etiktak.backend.model.user;
+package dk.etiktak.backend.model.product;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-@Entity(name = "mobile_numbers")
-public class MobileNumber {
+@Entity(name = "products")
+public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "mobile_number_id")
+    @Column(name = "product_id")
     private Long id;
 
-    @Column(name = "mobileNumberHash", nullable = false, unique = true)
-    private String mobileNumberHash;
+    @Column(name = "uuid", nullable = false, unique = true)
+    private String uuid;
+
+    @NotNull
+    @OneToMany(mappedBy="product", fetch=FetchType.LAZY)
+    private List<ProductScan> productScans = new ArrayList<>();
 
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date creationTime;
@@ -30,7 +35,7 @@ public class MobileNumber {
 
 
 
-    public MobileNumber() {}
+    public Product() {}
 
     @PreUpdate
     public void preUpdate() {
@@ -54,12 +59,12 @@ public class MobileNumber {
         this.id = id;
     }
 
-    public String getMobileNumberHash() {
-        return mobileNumberHash;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setMobileNumberHash(String mobileNumberHash) {
-        this.mobileNumberHash = mobileNumberHash;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Date getCreationTime() {
@@ -76,5 +81,13 @@ public class MobileNumber {
 
     public void setModificationTime(Date modificationTime) {
         this.modificationTime = modificationTime;
+    }
+
+    public List<ProductScan> getProductScans() {
+        return productScans;
+    }
+
+    public void setProductScans(List<ProductScan> productScans) {
+        this.productScans = productScans;
     }
 }

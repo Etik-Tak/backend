@@ -16,6 +16,10 @@ Build and start the bundled Jetty container:
 
 `$ ./gradlew build && java -jar build/libs/etik-tak-0.1.0.jar`
 
+To skip tests:
+
+`$ ./gradlew build -x test && java -jar build/libs/etik-tak-0.1.0.jar`
+
 Tests
 -----
 

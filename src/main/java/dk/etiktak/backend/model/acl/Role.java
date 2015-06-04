@@ -1,26 +1,21 @@
-/**
- * Used to keep track of which mobile numbers are in use. Since client entity knows nothing about
- * mobile number (without password) we need this entity. However, there is no direct relation between
- * a client and its mobile number.
- **/
-
-package dk.etiktak.backend.model.user;
+package dk.etiktak.backend.model.acl;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.util.Date;
 
-@Entity(name = "mobile_numbers")
-public class MobileNumber {
+@Entity(name = "roles")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+public class Role {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "mobile_number_id")
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Column(name = "role_id")
     private Long id;
 
-    @Column(name = "mobileNumberHash", nullable = false, unique = true)
-    private String mobileNumberHash;
+    @Column(name = "name")
+    private String name;
 
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date creationTime;
@@ -30,7 +25,7 @@ public class MobileNumber {
 
 
 
-    public MobileNumber() {}
+    public Role() {}
 
     @PreUpdate
     public void preUpdate() {
@@ -54,12 +49,12 @@ public class MobileNumber {
         this.id = id;
     }
 
-    public String getMobileNumberHash() {
-        return mobileNumberHash;
+    public String getName() {
+        return name;
     }
 
-    public void setMobileNumberHash(String mobileNumberHash) {
-        this.mobileNumberHash = mobileNumberHash;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Date getCreationTime() {

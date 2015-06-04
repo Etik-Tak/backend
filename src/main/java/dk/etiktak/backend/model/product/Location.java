@@ -1,26 +1,21 @@
 /**
- * Used to keep track of which mobile numbers are in use. Since client entity knows nothing about
- * mobile number (without password) we need this entity. However, there is no direct relation between
- * a client and its mobile number.
- **/
+ * Represents a location.
+ */
 
-package dk.etiktak.backend.model.user;
+package dk.etiktak.backend.model.product;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.util.Date;
 
-@Entity(name = "mobile_numbers")
-public class MobileNumber {
+@Entity(name = "location")
+public class Location {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "mobile_number_id")
+    @Column(name = "location_id")
     private Long id;
-
-    @Column(name = "mobileNumberHash", nullable = false, unique = true)
-    private String mobileNumberHash;
 
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date creationTime;
@@ -28,9 +23,18 @@ public class MobileNumber {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date modificationTime;
 
+    @Column(name = "latitude", nullable = false)
+    private Double latitude;
+
+    @Column(name = "longitude", nullable = false)
+    private Double longitude;
+
+    @Column(name = "name", columnDefinition="TEXT")
+    private String name;
 
 
-    public MobileNumber() {}
+
+    public Location() {}
 
     @PreUpdate
     public void preUpdate() {
@@ -54,14 +58,6 @@ public class MobileNumber {
         this.id = id;
     }
 
-    public String getMobileNumberHash() {
-        return mobileNumberHash;
-    }
-
-    public void setMobileNumberHash(String mobileNumberHash) {
-        this.mobileNumberHash = mobileNumberHash;
-    }
-
     public Date getCreationTime() {
         return creationTime;
     }
@@ -76,5 +72,29 @@ public class MobileNumber {
 
     public void setModificationTime(Date modificationTime) {
         this.modificationTime = modificationTime;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

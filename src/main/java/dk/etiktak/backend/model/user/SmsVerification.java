@@ -20,6 +20,7 @@ public class SmsVerification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "sms_verification_id")
     private Long id;
 
     @Column(name = "mobileNumberHash", nullable = false, unique = true)
@@ -43,6 +44,8 @@ public class SmsVerification {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date modificationTime;
 
+
+
     public SmsVerification() {}
 
     @PreUpdate
@@ -56,6 +59,8 @@ public class SmsVerification {
         creationTime = now;
         modificationTime = now;
     }
+
+
 
     public Long getId() {
         return id;
