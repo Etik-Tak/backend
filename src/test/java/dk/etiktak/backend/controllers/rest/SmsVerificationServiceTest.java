@@ -63,6 +63,7 @@ public class SmsVerificationServiceTest extends BaseRestTest {
      */
     @Test
     public void sendSmsVerification() throws Exception {
+
         // Send SMS verification
         mockMvc.perform(
                 post(serviceEndpoint("send/"))
@@ -79,6 +80,7 @@ public class SmsVerificationServiceTest extends BaseRestTest {
      * Test that we can send two SMS verifications to same mobile number for same client.
      */
     public void sendMultipleSmsVerificationsToSameMobileNumber() throws Exception {
+
         // Send first SMS verification
         mockMvc.perform(
                 post(serviceEndpoint("send/"))
@@ -107,6 +109,7 @@ public class SmsVerificationServiceTest extends BaseRestTest {
      */
     @Test(expected=NestedServletException.class)
     public void cannotSendMultipleSmsVerificationsToSameMobileNumberWithDifferentClients() throws Exception {
+
         // Send first SMS verification
         mockMvc.perform(
                 post(serviceEndpoint("send/"))
@@ -142,7 +145,8 @@ public class SmsVerificationServiceTest extends BaseRestTest {
                         .param("clientChallenge", smsVerification.getClientChallenge()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)));
+                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
+                .andExpect(jsonPath("$.clientUuid", is(client1.getUuid())));
     }
 
     /**

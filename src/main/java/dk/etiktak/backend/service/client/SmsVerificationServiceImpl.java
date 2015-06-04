@@ -28,6 +28,28 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
     private SmsVerificationRepository smsVerificationRepository;
 
     /**
+     * Creates and returns a recovery SMS verification entry and sends the challenge part to the given mobile number.
+     *
+     * @param mobileNumber    Mobile number
+     * @param password        Password
+     * @return                Created SMS verification
+     * @throws Exception
+     */
+    @Override
+    public SmsVerification sendRecoverySmsChallenge(String mobileNumber, String password) throws Exception {
+
+        // Fetch client entry
+        Client client = clientRepository.findByMobileNumberHashPasswordHashHashed(
+                CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
+
+        Assert.notNull(
+                client,
+                "Client not found for mobile number " + mobileNumber + " and given password");
+
+        return sendSmsChallenge(client.getUuid(), mobileNumber, password);
+    }
+
+    /**
      * Creates and returns an SMS verification entry and sends the challenge part to the given mobile number.
      *
      * @param clientUuid      Client uuid for which to attach
@@ -111,18 +133,19 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
      * @param password           Password
      * @param smsChallenge       Received SMS challenge
      * @param clientChallenge    Received client challenge
-     *
+     * @return                   Verified client
      * @throws Exception
      */
     @Override
-    public void verifySmsChallenge(String mobileNumber, String password, String smsChallenge, String clientChallenge) throws Exception {
+    public Client verifySmsChallenge(String mobileNumber, String password, String smsChallenge, String clientChallenge) throws Exception {
+
         // Verify mobile number and password
         Client client = clientRepository.findByMobileNumberHashPasswordHashHashed(
                 CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
 
         Assert.notNull(
                 client,
-                "Wrong mobile number or password provided (" + mobileNumber + "/###)");
+                "Client not found for mobile number " + mobileNumber + " and given password");
 
         // Verify SMS challenge
         SmsVerification smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil.hash(mobileNumber));
@@ -144,6 +167,8 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
         // Mark client as verified
         client.setVerified(true);
         clientRepository.save(client);
+
+        return client;
     }
 
     /**

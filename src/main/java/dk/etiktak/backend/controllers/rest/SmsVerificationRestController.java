@@ -1,7 +1,9 @@
 package dk.etiktak.backend.controllers.rest;
 
 import dk.etiktak.backend.controllers.rest.json.BaseJsonObject;
+import dk.etiktak.backend.controllers.rest.json.ClientJsonObject;
 import dk.etiktak.backend.controllers.rest.json.SmsVerificationJsonObject;
+import dk.etiktak.backend.model.user.Client;
 import dk.etiktak.backend.model.user.SmsVerification;
 import dk.etiktak.backend.service.client.SmsVerificationService;
 
@@ -19,7 +21,7 @@ public class SmsVerificationRestController extends BaseRestController {
     private SmsVerificationService smsVerificationService;
 
     @RequestMapping(value = "/send/", method = RequestMethod.POST)
-    public SmsVerificationJsonObject sendUserChallenge(
+    public SmsVerificationJsonObject sendSmsChallenge(
             @RequestParam String clientUuid,
             @RequestParam String mobileNumber,
             @RequestParam String password) throws Exception {
@@ -27,12 +29,20 @@ public class SmsVerificationRestController extends BaseRestController {
         return new SmsVerificationJsonObject(smsVerification);
     }
 
+    @RequestMapping(value = "/send/recovery/", method = RequestMethod.POST)
+    public SmsVerificationJsonObject sendRecoverySmsChallenge(
+            @RequestParam String mobileNumber,
+            @RequestParam String password) throws Exception {
+        SmsVerification smsVerification = smsVerificationService.sendRecoverySmsChallenge(mobileNumber, password);
+        return new SmsVerificationJsonObject(smsVerification);
+    }
+
     @RequestMapping(value = "/verify/", method = RequestMethod.POST)
-    public BaseJsonObject verifyUser(@RequestParam String mobileNumber,
-                                     @RequestParam String password,
-                                     @RequestParam String smsChallenge,
-                                     @RequestParam String clientChallenge) throws Exception {
-        smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge);
-        return ok();
+    public ClientJsonObject verifySmsChallenge(@RequestParam String mobileNumber,
+                                               @RequestParam String password,
+                                               @RequestParam String smsChallenge,
+                                               @RequestParam String clientChallenge) throws Exception {
+        Client client = smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge);
+        return new ClientJsonObject(client);
     }
 }
