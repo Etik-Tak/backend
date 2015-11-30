@@ -29,4 +29,6 @@ import dk.etiktak.backend.model.user.Client;
 
 public interface ClientService {
     Client createClient() throws Exception;
+
+    Client getByUuid(String uuid);
 }

@@ -28,7 +28,7 @@ package dk.etiktak.backend.controllers.rest;
 import dk.etiktak.backend.Application;
 import dk.etiktak.backend.controllers.rest.json.BaseJsonObject;
 import dk.etiktak.backend.model.product.Product;
-import dk.etiktak.backend.repository.ProductRepository;
+import dk.etiktak.backend.repository.product.ProductRepository;
 import dk.etiktak.backend.util.CryptoUtil;
 
 import org.junit.Before;
@@ -116,6 +116,8 @@ public class ProductRetrievalServiceTest extends BaseRestTest {
                 .andExpect(jsonPath("$.barcode", is(product2.getBarcode())))
                 .andExpect(jsonPath("$.barcodeType", is(product2.getBarcodeType().name())));
     }
+
+
 
     private Product createAndSaveProduct(String barcode, Product.BarcodeType barcodeType) {
         Product product = new Product();

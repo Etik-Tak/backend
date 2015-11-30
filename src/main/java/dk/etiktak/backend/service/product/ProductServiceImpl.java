@@ -25,8 +25,14 @@
 
 package dk.etiktak.backend.service.product;
 
+import dk.etiktak.backend.model.product.Location;
 import dk.etiktak.backend.model.product.Product;
-import dk.etiktak.backend.repository.ProductRepository;
+import dk.etiktak.backend.model.product.ProductScan;
+import dk.etiktak.backend.model.user.Client;
+import dk.etiktak.backend.repository.location.LocationRepository;
+import dk.etiktak.backend.repository.product.ProductRepository;
+import dk.etiktak.backend.repository.product.ProductScanRepository;
+import dk.etiktak.backend.repository.user.ClientRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +46,15 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ProductScanRepository productScanRepository;
+
+    @Autowired
+    private ClientRepository clientRepository;
+
+    @Autowired
+    private LocationRepository locationRepository;
+
     @Override
     public Product getProductByUuid(String uuid) {
         return productRepository.findByUuid(uuid);
@@ -48,5 +63,38 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product getProductByBarcode(String barcode) {
         return productRepository.findByBarcode(barcode);
+    }
+
+    @Override
+    public Product scanProduct(String barcode, Client client, Location location) {
+        Product product = getProductByBarcode(barcode);
+        if (product != null) {
+            createProductScan(product, client, location);
+        }
+        return product;
+    }
+
+
+
+    private ProductScan createProductScan(Product product, Client client, Location location) {
+        ProductScan productScan = new ProductScan();
+        productScan.setProduct(product);
+        productScan.setClient(client);
+        if (location != null) {
+            productScan.setLocation(location);
+        }
+
+        client.getProductScans().add(productScan);
+
+        product.getProductScans().add(productScan);
+
+        if (location != null) {
+            locationRepository.save(location);
+        }
+        productScanRepository.save(productScan);
+        productRepository.save(product);
+        clientRepository.save(client);
+
+        return productScan;
     }
 }

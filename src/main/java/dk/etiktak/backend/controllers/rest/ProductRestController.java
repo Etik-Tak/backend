@@ -26,7 +26,10 @@
 package dk.etiktak.backend.controllers.rest;
 
 import dk.etiktak.backend.controllers.rest.json.ProductJsonObject;
+import dk.etiktak.backend.model.product.Location;
 import dk.etiktak.backend.model.product.Product;
+import dk.etiktak.backend.model.user.Client;
+import dk.etiktak.backend.service.client.ClientService;
 import dk.etiktak.backend.service.product.ProductService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +40,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/service/product/retrieve")
+@RequestMapping("/service/product")
 public class ProductRestController extends BaseRestController {
 
     @Autowired
     private ProductService productService;
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @Autowired
+    private ClientService clientService;
+
+    @RequestMapping(value = "/retrieve/", method = RequestMethod.GET)
     public ProductJsonObject getProduct(
             @RequestParam(required = false) String uuid,
             @RequestParam(required = false) String barcode) {
@@ -53,6 +59,24 @@ public class ProductRestController extends BaseRestController {
         }
         if (!StringUtils.isEmpty(barcode)) {
             product = productService.getProductByBarcode(barcode);
+        }
+        return new ProductJsonObject(product);
+    }
+
+    @RequestMapping(value = "/scan/", method = RequestMethod.POST)
+    public ProductJsonObject scanProduct(
+            @RequestParam String barcode,
+            @RequestParam String clientUuid,
+            @RequestParam(required = false) String latitude,
+            @RequestParam(required = false) String longitude) {
+        Product product = productService.getProductByBarcode(barcode);
+        if (product != null) {
+            Client client = clientService.getByUuid(clientUuid);
+            Location location = null;
+            if (!StringUtils.isEmpty(latitude) && !StringUtils.isEmpty(longitude)) {
+                location = new Location(Double.parseDouble(latitude), Double.parseDouble(longitude));
+            }
+            product = productService.scanProduct(barcode, client, location);
         }
         return new ProductJsonObject(product);
     }

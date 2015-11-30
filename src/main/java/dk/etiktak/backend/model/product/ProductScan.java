@@ -56,7 +56,7 @@ public class ProductScan {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date timestamp;
 
-    @OneToOne(cascade=CascadeType.ALL, fetch=FetchType.LAZY)
+    @OneToOne(cascade=CascadeType.ALL)
     private Location location;
 
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
@@ -67,7 +67,9 @@ public class ProductScan {
 
 
 
-    public ProductScan() {}
+    public ProductScan() {
+        timestamp = new Date();
+    }
 
     @PreUpdate
     public void preUpdate() {

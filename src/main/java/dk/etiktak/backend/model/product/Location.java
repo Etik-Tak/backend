@@ -61,6 +61,12 @@ public class Location {
 
     public Location() {}
 
+    public Location(Double latitude, Double longitude) {
+        this();
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
     @PreUpdate
     public void preUpdate() {
         modificationTime = new Date();

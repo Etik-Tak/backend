@@ -64,4 +64,9 @@ public class ClientServiceImpl implements ClientService {
         clientRepository.save(client);
         return client;
     }
+
+    @Override
+    public Client getByUuid(String uuid) {
+        return clientRepository.findByUuid(uuid);
+    }
 }
