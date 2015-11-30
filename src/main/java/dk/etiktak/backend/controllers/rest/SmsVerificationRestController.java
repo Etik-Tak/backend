@@ -48,7 +48,7 @@ public class SmsVerificationRestController extends BaseRestController {
     public SmsVerificationJsonObject sendSmsChallenge(
             @RequestParam String clientUuid,
             @RequestParam String mobileNumber,
-            @RequestParam String password) throws Exception {
+            @RequestParam(required = false, defaultValue = "") String password) throws Exception {
         SmsVerification smsVerification = smsVerificationService.sendSmsChallenge(clientUuid, mobileNumber, password);
         return new SmsVerificationJsonObject(smsVerification);
     }
@@ -56,14 +56,14 @@ public class SmsVerificationRestController extends BaseRestController {
     @RequestMapping(value = "/send/recovery/", method = RequestMethod.POST)
     public SmsVerificationJsonObject sendRecoverySmsChallenge(
             @RequestParam String mobileNumber,
-            @RequestParam String password) throws Exception {
+            @RequestParam(required = false, defaultValue = "") String password) throws Exception {
         SmsVerification smsVerification = smsVerificationService.sendRecoverySmsChallenge(mobileNumber, password);
         return new SmsVerificationJsonObject(smsVerification);
     }
 
     @RequestMapping(value = "/verify/", method = RequestMethod.POST)
     public ClientJsonObject verifySmsChallenge(@RequestParam String mobileNumber,
-                                               @RequestParam String password,
+                                               @RequestParam(required = false, defaultValue = "") String password,
                                                @RequestParam String smsChallenge,
                                                @RequestParam String clientChallenge) throws Exception {
         Client client = smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge);
