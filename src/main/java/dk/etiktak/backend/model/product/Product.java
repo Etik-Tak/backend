@@ -33,29 +33,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Entity(name = "products")
 public class Product {
-
-    public String getBarcode() {
-        return barcode;
-    }
-
-    public void setBarcode(String barcode) {
-        this.barcode = barcode;
-    }
-
-    public BarcodeType getBarcodeType() {
-        return barcodeType;
-    }
-
-    public void setBarcodeType(BarcodeType barcodeType) {
-        this.barcodeType = barcodeType;
-    }
-
     public enum BarcodeType {
         EAN13,
         UPC
@@ -117,6 +99,22 @@ public class Product {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
+
+    public BarcodeType getBarcodeType() {
+        return barcodeType;
+    }
+
+    public void setBarcodeType(BarcodeType barcodeType) {
+        this.barcodeType = barcodeType;
     }
 
     public Date getCreationTime() {
