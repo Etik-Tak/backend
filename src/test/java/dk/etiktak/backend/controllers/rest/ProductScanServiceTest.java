@@ -37,6 +37,7 @@ import dk.etiktak.backend.repository.product.ProductScanRepository;
 import dk.etiktak.backend.repository.user.ClientRepository;
 import dk.etiktak.backend.util.CryptoUtil;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,6 +101,14 @@ public class ProductScanServiceTest extends BaseRestTest {
 
         location1 = createAndSaveLocation();
         location2 = createAndSaveLocation();
+    }
+
+    @After
+    public void tearDown() {
+        productScanRepository.deleteAll();
+        locationRepository.deleteAll();
+        productRepository.deleteAll();
+        clientRepository.deleteAll();
     }
 
     /**

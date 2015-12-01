@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 @Service
 public class SmsVerificationServiceImpl implements SmsVerificationService {
@@ -61,17 +62,22 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
      * @throws Exception
      */
     @Override
-    public SmsVerification sendRecoverySmsChallenge(String mobileNumber, String password) throws Exception {
+    public SmsVerification requestRecoverySmsChallenge(String mobileNumber, String password) throws Exception {
+
+        // Can only recover users with password
+        Assert.isTrue(
+                !StringUtils.isEmpty(password),
+                "Can only recover users with password");
 
         // Fetch client entry
         Client client = clientRepository.findByMobileNumberHashPasswordHashHashed(
-                CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
+                CryptoUtil.hashOfHashes(mobileNumber, password));
 
         Assert.notNull(
                 client,
                 "Client not found for mobile number " + mobileNumber + " and given password");
 
-        return sendSmsChallenge(client.getUuid(), mobileNumber, password);
+        return requestSmsChallenge(client.getUuid(), mobileNumber, password);
     }
 
     /**
@@ -84,9 +90,14 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
      * @throws Exception
      */
     @Override
-    public SmsVerification sendSmsChallenge(String clientUuid, String mobileNumber, String password) throws Exception {
+    public SmsVerification requestSmsChallenge(String clientUuid, String mobileNumber, String password) throws Exception {
         String smsChallenge = CryptoUtil.generateSmsChallenge();
         String clientChallenge = CryptoUtil.uuid();
+
+        // Must provide password
+        Assert.isTrue(
+                !StringUtils.isEmpty(password),
+                "Password must be provided");
 
         // Fetch client from UUID
         Client client = clientRepository.findByUuid(clientUuid);
@@ -105,7 +116,7 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
 
             // Check that mobile number and password for client is correct
             Assert.isTrue(
-                    client.getMobileNumberHashPasswordHashHashed().equals(CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password)),
+                    client.getMobileNumberHashPasswordHashHashed().equals(CryptoUtil.hashOfHashes(mobileNumber, password)),
                     "Mobile number " + mobileNumber + " already verified with other password than that provided"
             );
         } else {
@@ -130,7 +141,7 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
         }
 
         // Mark client as not verified
-        client.setMobileNumberHashPasswordHashHashed(CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
+        client.setMobileNumberHashPasswordHashHashed(CryptoUtil.hashOfHashes(mobileNumber, password));
         client.setVerified(false);
         clientRepository.save(client);
 
@@ -164,9 +175,14 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
     @Override
     public Client verifySmsChallenge(String mobileNumber, String password, String smsChallenge, String clientChallenge) throws Exception {
 
+        // Must provide password
+        Assert.isTrue(
+                !StringUtils.isEmpty(password),
+                "Password must be provided");
+
         // Verify mobile number and password
         Client client = clientRepository.findByMobileNumberHashPasswordHashHashed(
-                CryptoUtil.getMobileNumberHashedPaswordHashedHashed(mobileNumber, password));
+                CryptoUtil.hashOfHashes(mobileNumber, password));
 
         Assert.notNull(
                 client,

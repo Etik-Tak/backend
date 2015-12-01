@@ -31,6 +31,7 @@ import dk.etiktak.backend.model.product.Product;
 import dk.etiktak.backend.repository.product.ProductRepository;
 import dk.etiktak.backend.util.CryptoUtil;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,6 +68,11 @@ public class ProductRetrievalServiceTest extends BaseRestTest {
 
         product1 = createAndSaveProduct("123456789a", Product.BarcodeType.EAN13);
         product2 = createAndSaveProduct("123456789b", Product.BarcodeType.UPC);
+    }
+
+    @After
+    public void tearDown() {
+        productRepository.deleteAll();
     }
 
     /**

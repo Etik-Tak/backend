@@ -32,21 +32,23 @@ import dk.etiktak.backend.model.user.SmsVerification;
 import dk.etiktak.backend.repository.user.ClientRepository;
 import dk.etiktak.backend.repository.user.MobileNumberRepository;
 import dk.etiktak.backend.repository.user.SmsVerificationRepository;
-import dk.etiktak.backend.service.client.SmsVerificationService;
 import dk.etiktak.backend.util.CryptoUtil;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.util.NestedServletException;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -62,6 +64,9 @@ public class SmsVerificationServiceTest extends BaseRestTest {
 
     @Autowired
     private SmsVerificationRepository smsVerificationRepository;
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     private Client client1;
     private Client client2;
@@ -83,15 +88,22 @@ public class SmsVerificationServiceTest extends BaseRestTest {
         client2 = createAndSaveClient();
     }
 
+    @After
+    public void tearDown() {
+        clientRepository.deleteAll();
+        mobileNumberRepository.deleteAll();
+        smsVerificationRepository.deleteAll();
+    }
+
     /**
-     * Test that we can send a SMS verification.
+     * Test that we can request a SMS verification.
      */
     @Test
-    public void sendSmsVerification() throws Exception {
+    public void requestSmsVerification() throws Exception {
 
-        // Send SMS verification
+        // Request SMS verification
         mockMvc.perform(
-                post(serviceEndpoint("send/"))
+                post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.getUuid())
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234"))
@@ -102,16 +114,82 @@ public class SmsVerificationServiceTest extends BaseRestTest {
     }
 
     /**
-     * Test that we can send a SMS verification with empty password.
+     * Test that we cannot request a SMS verification with empty password.
      */
     @Test
-    public void sendSmsVerificationWithEmptyPasssword() throws Exception {
+    public void cannotRequestSmsVerificationWithEmptyPasssword() throws Exception {
 
-        // Send SMS verification with empty password
+        // Request SMS verification with empty password
         mockMvc.perform(
-                post(serviceEndpoint("send/"))
+                post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.getUuid())
                         .param("mobileNumber", "12345678"))
+                .andExpect(status().is(400));
+    }
+
+    /**
+     * Test that we cannot request a SMS verification with empty client uuid.
+     */
+    @Test
+    public void cannotRequestSmsVerificationWithEmptyClientUuid() throws Exception {
+
+        // Request SMS verification with empty client uuid
+        mockMvc.perform(
+                post(serviceEndpoint("request/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234"))
+                .andExpect(status().is(400));
+    }
+
+    /**
+     * Test that we cannot request a SMS verification with empty mobile number.
+     */
+    @Test
+    public void cannotRequestSmsVerificationWithEmptyMobileNumber() throws Exception {
+
+        // Request SMS verification with empty mobile number
+        mockMvc.perform(
+                post(serviceEndpoint("request/"))
+                        .param("clientUuid", client1.getUuid())
+                        .param("password", "test1234"))
+                .andExpect(status().is(400));
+    }
+
+    /**
+     * Test that we cannot request a SMS verification with no parameters.
+     */
+    @Test
+    public void cannotRequestSmsVerificationWithNoParameters() throws Exception {
+
+        // Request SMS verification with no parameters
+        mockMvc.perform(
+                post(serviceEndpoint("request/")))
+                .andExpect(status().is(400));
+    }
+
+    /**
+     * Test that we can request two SMS verifications to same mobile number for same client.
+     */
+    @Test
+    public void requestMultipleSmsVerificationsToSameMobileNumber() throws Exception {
+
+        // Request first SMS verification
+        mockMvc.perform(
+                post(serviceEndpoint("request/"))
+                        .param("clientUuid", client1.getUuid())
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
+                .andExpect(jsonPath("$.clientChallenge", notNullValue()));
+
+        // Request second SMS verification
+        mockMvc.perform(
+                post(serviceEndpoint("request/"))
+                        .param("clientUuid", client1.getUuid())
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
@@ -119,13 +197,14 @@ public class SmsVerificationServiceTest extends BaseRestTest {
     }
 
     /**
-     * Test that we can send two SMS verifications to same mobile number for same client.
+     * Test that we cannot request two SMS verifications to same mobile number for different clients.
      */
-    public void sendMultipleSmsVerificationsToSameMobileNumber() throws Exception {
+    @Test
+    public void cannotRequestMultipleSmsVerificationsToSameMobileNumberWithDifferentClients() throws Exception {
 
-        // Send first SMS verification
+        // Request first SMS verification
         mockMvc.perform(
-                post(serviceEndpoint("send/"))
+                post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.getUuid())
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234"))
@@ -134,38 +213,10 @@ public class SmsVerificationServiceTest extends BaseRestTest {
                 .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
                 .andExpect(jsonPath("$.clientChallenge", notNullValue()));
 
-        // Send second SMS verification
+        // Request second SMS verification with another client uuid
+        exception.expect(NestedServletException.class);
         mockMvc.perform(
-                post(serviceEndpoint("send/"))
-                        .param("clientUuid", client1.getUuid())
-                        .param("mobileNumber", "12345678")
-                        .param("password", "test1234"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientChallenge", notNullValue()));
-    }
-
-    /**
-     * Test that we cannot send two SMS verifications to same mobile number for different clients.
-     */
-    @Test(expected=NestedServletException.class)
-    public void cannotSendMultipleSmsVerificationsToSameMobileNumberWithDifferentClients() throws Exception {
-
-        // Send first SMS verification
-        mockMvc.perform(
-                post(serviceEndpoint("send/"))
-                        .param("clientUuid", client1.getUuid())
-                        .param("mobileNumber", "12345678")
-                        .param("password", "test1234"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientChallenge", notNullValue()));
-
-        // Send second SMS verification with another client uuid
-        mockMvc.perform(
-                post(serviceEndpoint("send/"))
+                post(serviceEndpoint("request/"))
                         .param("clientUuid", client2.getUuid())
                         .param("mobileNumber", "12345678")
                         .param("password", "anotherPassword"));
@@ -176,32 +227,13 @@ public class SmsVerificationServiceTest extends BaseRestTest {
      */
     @Test
     public void verifySmsVerification() throws Exception {
-        SmsVerification smsVerification = sendAndModifySmsVerification();
+        SmsVerification smsVerification = requestAndModifySmsVerification();
 
         // Verify challenge
         mockMvc.perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234")
-                        .param("smsChallenge", smsChallenge)
-                        .param("clientChallenge", smsVerification.getClientChallenge()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientUuid", is(client1.getUuid())));
-    }
-
-    /**
-     * Test that we can verify a SMS verification with empty password.
-     */
-    @Test
-    public void verifySmsVerificationWithEmptyPassword() throws Exception {
-        SmsVerification smsVerification = sendAndModifySmsVerificationWithEmptyPassword();
-
-        // Verify challenge
-        mockMvc.perform(
-                post(serviceEndpoint("verify/"))
-                        .param("mobileNumber", "12345678")
                         .param("smsChallenge", smsChallenge)
                         .param("clientChallenge", smsVerification.getClientChallenge()))
                 .andExpect(status().isOk())
@@ -213,11 +245,12 @@ public class SmsVerificationServiceTest extends BaseRestTest {
     /**
      * Test that we cannot verify a SMS verification with wrong SMS challenge.
      */
-    @Test(expected=NestedServletException.class)
+    @Test
     public void cannotVerifySmsVerificationWithWrongSmsChallenge() throws Exception {
-        SmsVerification smsVerification = sendAndModifySmsVerification();
+        SmsVerification smsVerification = requestAndModifySmsVerification();
 
         // Verify challenge
+        exception.expect(NestedServletException.class);
         mockMvc.perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
@@ -229,11 +262,12 @@ public class SmsVerificationServiceTest extends BaseRestTest {
     /**
      * Test that we cannot verify a SMS verification with wrong client challenge.
      */
-    @Test(expected=NestedServletException.class)
+    @Test
     public void cannotVerifySmsVerificationWithWrongClientChallenge() throws Exception {
-        SmsVerification smsVerification = sendAndModifySmsVerification();
+        SmsVerification smsVerification = requestAndModifySmsVerification();
 
         // Verify challenge
+        exception.expect(NestedServletException.class);
         mockMvc.perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
@@ -245,11 +279,12 @@ public class SmsVerificationServiceTest extends BaseRestTest {
     /**
      * Test that we cannot verify a SMS verification with wrong mobile number.
      */
-    @Test(expected=NestedServletException.class)
+    @Test
     public void cannotVerifySmsVerificationWithWrongMobileNumber() throws Exception {
-        SmsVerification smsVerification = sendAndModifySmsVerification();
+        SmsVerification smsVerification = requestAndModifySmsVerification();
 
         // Verify challenge
+        exception.expect(NestedServletException.class);
         mockMvc.perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "wrong")
@@ -261,11 +296,12 @@ public class SmsVerificationServiceTest extends BaseRestTest {
     /**
      * Test that we cannot verify a SMS verification with wrong password.
      */
-    @Test(expected=NestedServletException.class)
+    @Test
     public void cannotVerifySmsVerificationWithWrongPassword() throws Exception {
-        SmsVerification smsVerification = sendAndModifySmsVerification();
+        SmsVerification smsVerification = requestAndModifySmsVerification();
 
         // Verify challenge
+        exception.expect(NestedServletException.class);
         mockMvc.perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
@@ -274,11 +310,119 @@ public class SmsVerificationServiceTest extends BaseRestTest {
                         .param("clientChallenge", smsVerification.getClientChallenge()));
     }
 
+    /**
+     * Test that we can request a recovery SMS verification.
+     */
+    @Test
+    public void requestRecoverySmsVerification() throws Exception {
+        requestAndVerifySmsVerification();
 
-
-    private SmsVerification sendAndModifySmsVerification() throws Exception {
+        // Request SMS verification
         mockMvc.perform(
-                post(serviceEndpoint("send/"))
+                post(serviceEndpoint("request/recovery/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
+                .andExpect(jsonPath("$.clientChallenge", notNullValue()));
+    }
+
+    /**
+     * Test that we cannot request a recovery SMS verification with empty password.
+     */
+    @Test
+    public void cannotRequestRecoverySmsVerificationWithEmptyPassword() throws Exception {
+        requestAndVerifySmsVerification();
+
+        // Request SMS verification
+        mockMvc.perform(
+                post(serviceEndpoint("request/recovery/"))
+                        .param("mobileNumber", "12345678"))
+                .andExpect(status().is(400));
+    }
+
+    /**
+     * Test that we cannot request a recovery SMS verification with empty mobile number.
+     */
+    @Test
+    public void cannotRequestRecoverySmsVerificationWithEmptyMobileNumber() throws Exception {
+        requestAndVerifySmsVerification();
+
+        // Request SMS verification
+        mockMvc.perform(
+                post(serviceEndpoint("request/recovery/"))
+                        .param("password", "test1234"))
+                .andExpect(status().is(400));
+    }
+
+    /**
+     * Test that we cannot request a recovery SMS verification with no parameters
+     */
+    @Test
+    public void cannotRequestRecoverySmsVerificationWithNoParameters() throws Exception {
+        requestAndVerifySmsVerification();
+
+        // Request SMS verification
+        mockMvc.perform(
+                post(serviceEndpoint("request/recovery/")))
+                .andExpect(status().is(400));
+    }
+
+    /**
+     * Test that we can verify a recovery SMS verification.
+     */
+    @Test
+    public void verifyRecoverySmsVerification() throws Exception {
+        requestAndVerifySmsVerification();
+        SmsVerification smsVerification = requestAndModifyRecoverySmsVerification();
+
+        // Verify challenge
+        mockMvc.perform(
+                post(serviceEndpoint("verify/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234")
+                        .param("smsChallenge", smsChallenge)
+                        .param("clientChallenge", smsVerification.getClientChallenge()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
+                .andExpect(jsonPath("$.clientUuid", is(client1.getUuid())));
+    }
+
+    /**
+     * Test that we cannot verify a recovery SMS verification with empty password.
+     */
+    @Test
+    public void cannotVerifyRecoverySmsVerificationWithEmptyPassword() throws Exception {
+        requestAndVerifySmsVerification();
+        SmsVerification smsVerification = requestAndModifyRecoverySmsVerification();
+
+        // Verify challenge
+        mockMvc.perform(
+                post(serviceEndpoint("verify/"))
+                        .param("mobileNumber", "12345678")
+                        .param("smsChallenge", smsChallenge)
+                        .param("clientChallenge", smsVerification.getClientChallenge()))
+                .andExpect(status().is(400));
+    }
+
+
+
+    private void requestAndVerifySmsVerification() throws Exception {
+        SmsVerification smsVerification = requestAndModifySmsVerification();
+
+        mockMvc.perform(
+                post(serviceEndpoint("verify/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234")
+                        .param("smsChallenge", smsChallenge)
+                        .param("clientChallenge", smsVerification.getClientChallenge()));
+    }
+
+    private SmsVerification requestAndModifySmsVerification() throws Exception {
+        mockMvc.perform(
+                post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.getUuid())
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234"));
@@ -286,16 +430,17 @@ public class SmsVerificationServiceTest extends BaseRestTest {
         return modifySmsVerification();
     }
 
-    private SmsVerification sendAndModifySmsVerificationWithEmptyPassword() throws Exception {
+    private SmsVerification requestAndModifyRecoverySmsVerification() throws Exception {
         mockMvc.perform(
-                post(serviceEndpoint("send/"))
-                        .param("clientUuid", client1.getUuid())
-                        .param("mobileNumber", "12345678"));
+                post(serviceEndpoint("request/recovery/"))
+                        .param("mobileNumber", "12345678")
+                        .param("password", "test1234"));
 
         return modifySmsVerification();
     }
 
     private SmsVerification modifySmsVerification() throws Exception {
+
         // Overwrite generated challenge to get raw, unhashed challenge in hand
         SmsVerification smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil.hash("12345678"));
         smsChallenge = CryptoUtil.generateSmsChallenge();

@@ -44,26 +44,26 @@ public class SmsVerificationRestController extends BaseRestController {
     @Autowired
     private SmsVerificationService smsVerificationService;
 
-    @RequestMapping(value = "/send/", method = RequestMethod.POST)
-    public SmsVerificationJsonObject sendSmsChallenge(
+    @RequestMapping(value = "/request/", method = RequestMethod.POST)
+    public SmsVerificationJsonObject requestSmsChallenge(
             @RequestParam String clientUuid,
             @RequestParam String mobileNumber,
-            @RequestParam(required = false, defaultValue = "") String password) throws Exception {
-        SmsVerification smsVerification = smsVerificationService.sendSmsChallenge(clientUuid, mobileNumber, password);
+            @RequestParam String password) throws Exception {
+        SmsVerification smsVerification = smsVerificationService.requestSmsChallenge(clientUuid, mobileNumber, password);
         return new SmsVerificationJsonObject(smsVerification);
     }
 
-    @RequestMapping(value = "/send/recovery/", method = RequestMethod.POST)
-    public SmsVerificationJsonObject sendRecoverySmsChallenge(
+    @RequestMapping(value = "/request/recovery/", method = RequestMethod.POST)
+    public SmsVerificationJsonObject requestRecoverySmsChallenge(
             @RequestParam String mobileNumber,
-            @RequestParam(required = false, defaultValue = "") String password) throws Exception {
-        SmsVerification smsVerification = smsVerificationService.sendRecoverySmsChallenge(mobileNumber, password);
+            @RequestParam String password) throws Exception {
+        SmsVerification smsVerification = smsVerificationService.requestRecoverySmsChallenge(mobileNumber, password);
         return new SmsVerificationJsonObject(smsVerification);
     }
 
     @RequestMapping(value = "/verify/", method = RequestMethod.POST)
     public ClientJsonObject verifySmsChallenge(@RequestParam String mobileNumber,
-                                               @RequestParam(required = false, defaultValue = "") String password,
+                                               @RequestParam String password,
                                                @RequestParam String smsChallenge,
                                                @RequestParam String clientChallenge) throws Exception {
         Client client = smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge);

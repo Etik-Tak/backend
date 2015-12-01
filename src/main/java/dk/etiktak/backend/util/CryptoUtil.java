@@ -76,7 +76,7 @@ public class CryptoUtil {
         return Base64.getEncoder().encodeToString(randomBytes);
     }
 
-    public static String getMobileNumberHashedPaswordHashedHashed(String mobileNumber, String password) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        return hash(hash(mobileNumber) + hash(password));
+    public static String hashOfHashes(String value1, String value2) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        return hash(hash(value1) + hash(value2));
     }
 }

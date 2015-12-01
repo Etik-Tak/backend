@@ -29,6 +29,7 @@ import dk.etiktak.backend.Application;
 import dk.etiktak.backend.controllers.rest.json.BaseJsonObject;
 import dk.etiktak.backend.repository.user.ClientRepository;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +59,11 @@ public class ClientServiceTest extends BaseRestTest {
     public void setup() throws Exception {
         super.setup();
 
+        clientRepository.deleteAll();
+    }
+
+    @After
+    public void tearDown() {
         clientRepository.deleteAll();
     }
 
