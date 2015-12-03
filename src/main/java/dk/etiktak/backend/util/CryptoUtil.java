@@ -36,10 +36,23 @@ import java.util.UUID;
 
 public class CryptoUtil {
 
+    /**
+     * Generates an UUID.
+     *
+     * @return UUID
+     */
     public static String uuid() {
         return UUID.randomUUID().toString();
     }
 
+    /**
+     * Hashes the given text using SHA-256.
+     *
+     * @param text    Text to hash
+     * @return        String hash of text
+     * @throws NoSuchAlgorithmException
+     * @throws UnsupportedEncodingException
+     */
     public static String hash(String text) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashedBytes = digest.digest(text.getBytes("UTF-8"));
@@ -47,14 +60,33 @@ public class CryptoUtil {
         return ArrayUtil.convertByteArrayToHexString(hashedBytes);
     }
 
+    /**
+     * Encrypts the given text using OpenBSD bcrypt scheme.
+     *
+     * @param plainText    Text to encrypt
+     * @return             Encrypted text
+     */
     public static String encryptPassword(String plainText) {
         return BCrypt.hashpw(plainText, BCrypt.gensalt());
     }
 
+    /**
+     * Validates the given plain text password against the encrypted.
+     *
+     * @param plainText    Plain text password
+     * @param hashed       Encrypted password
+     * @return             True, if successfully validated, else false
+     */
     public static boolean validatePassword(String plainText, String hashed) {
         return BCrypt.checkpw(plainText, hashed);
     }
 
+    /**
+     * Generates and returns a 5 digit long SMS challenge.
+     *
+     * @return SMS challenge
+     * @throws NoSuchAlgorithmException
+     */
     public static String generateSmsChallenge() throws NoSuchAlgorithmException {
         final int SMS_CHALLENGE_DIGITS = 5;
 
@@ -66,6 +98,12 @@ public class CryptoUtil {
         return (random.nextInt(maxValue - minValue) + minValue) + "";
     }
 
+    /**
+     * Generates and returns a random SMS handle.
+     *
+     * @return SMS handle
+     * @throws NoSuchAlgorithmException
+     */
     public static String generateSmsHandle() throws NoSuchAlgorithmException {
         final int SMS_HANDLE_BYTES = 16;
         final byte[] randomBytes = new byte[SMS_HANDLE_BYTES];

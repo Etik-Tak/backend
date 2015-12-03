@@ -64,6 +64,12 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
     @Override
     public SmsVerification requestRecoverySmsChallenge(String mobileNumber, String password) throws Exception {
 
+        // Check for empty fields
+        Assert.isTrue(
+                !StringUtils.isEmpty(mobileNumber),
+                "Mobile number must be provided"
+        );
+
         // Can only recover users with password
         Assert.isTrue(
                 !StringUtils.isEmpty(password),
@@ -94,7 +100,17 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
         String smsChallenge = CryptoUtil.generateSmsChallenge();
         String clientChallenge = CryptoUtil.uuid();
 
-        // Must provide password
+        // Check for empty fields
+        Assert.isTrue(
+                !StringUtils.isEmpty(clientUuid),
+                "Client UUID must be provided"
+        );
+
+        Assert.isTrue(
+                !StringUtils.isEmpty(mobileNumber),
+                "Mobile number must be provided"
+        );
+
         Assert.isTrue(
                 !StringUtils.isEmpty(password),
                 "Password must be provided");
@@ -175,10 +191,25 @@ public class SmsVerificationServiceImpl implements SmsVerificationService {
     @Override
     public Client verifySmsChallenge(String mobileNumber, String password, String smsChallenge, String clientChallenge) throws Exception {
 
-        // Must provide password
+        // Check for empty fields
+        Assert.isTrue(
+                !StringUtils.isEmpty(mobileNumber),
+                "Mobile number must be provided"
+        );
+
         Assert.isTrue(
                 !StringUtils.isEmpty(password),
                 "Password must be provided");
+
+        Assert.isTrue(
+                !StringUtils.isEmpty(smsChallenge),
+                "SMS challenge must be provided"
+        );
+
+        Assert.isTrue(
+                !StringUtils.isEmpty(clientChallenge),
+                "Client challenge must be provided"
+        );
 
         // Verify mobile number and password
         Client client = clientRepository.findByMobileNumberHashPasswordHashHashed(

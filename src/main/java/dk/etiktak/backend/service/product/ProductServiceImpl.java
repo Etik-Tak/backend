@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -72,16 +73,44 @@ public class ProductServiceImpl implements ProductService {
         return productScanRepository.findByUuid(uuid);
     }
 
+    /**
+     * Finds a product from the given barcode and creates and returns a product scan.
+     *
+     * @param barcode     Barcode
+     * @param client      Client
+     * @param location    Optional location
+     * @return            Created product scan entry (which contains the actual product)
+     */
     @Override
     public ProductScan scanProduct(String barcode, Client client, Location location) {
-        ProductScan productScan = null;
+
+        // Check for empty fields
+        Assert.isTrue(
+                !StringUtils.isEmpty(barcode),
+                "Barcode must be provided");
+
+        Assert.notNull(
+                client,
+                "Client must be provided"
+        );
+
+        // Create product scan
         Product product = getProductByBarcode(barcode);
         if (product != null) {
-            productScan = createProductScan(product, client, location);
+            return createProductScan(product, client, location);
+        } else {
+            return null;
         }
-        return productScan;
     }
 
+    /**
+     * Assigns a location to an already created product scan. Fails if location already assigned.
+     *
+     * @param client         Client
+     * @param productScan    Product scan entry
+     * @param location       Location
+     * @return               Updated product scan
+     */
     @Override
     public ProductScan assignLocationToProductScan(Client client, ProductScan productScan, Location location) {
         Assert.isTrue(
@@ -104,6 +133,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    /**
+     * Creates a product scan, glues it together with product and client, and saves it all.
+     *
+     * @param product     Product
+     * @param client      Client
+     * @param location    Optional location
+     * @return            Product scan
+     */
     private ProductScan createProductScan(Product product, Client client, Location location) {
         ProductScan productScan = new ProductScan();
         productScan.setUuid(CryptoUtil.uuid());

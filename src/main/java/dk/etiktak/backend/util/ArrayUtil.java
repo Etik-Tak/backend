@@ -29,6 +29,12 @@ public class ArrayUtil {
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
+    /**
+     * Converts a byte array to a hex string.
+     *
+     * @param bytes    Byte array
+     * @return         Hex representation
+     */
     public static String convertByteArrayToHexString(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for ( int j = 0; j < bytes.length; j++ ) {

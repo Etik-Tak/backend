@@ -29,6 +29,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListUtil {
+    /**
+     * Converts an iterable to a list.
+     *
+     * @param iter    Iterable
+     * @param <E>     Type
+     * @return        List
+     */
     public static <E> List<E> asList(Iterable<E> iter) {
         List<E> list = new ArrayList<E>();
         for (E item : iter) {
