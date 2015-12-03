@@ -44,6 +44,9 @@ public class ProductScan {
     @Column(name = "product_scan_id")
     private Long id;
 
+    @Column(name = "uuid", nullable = false, unique = true)
+    private String uuid;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
     private Client client;
@@ -91,6 +94,14 @@ public class ProductScan {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Date getCreationTime() {

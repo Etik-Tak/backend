@@ -29,14 +29,5 @@
 
 package dk.etiktak.backend.controllers.rest;
 
-import dk.etiktak.backend.controllers.rest.json.BaseJsonObject;
-
 public class BaseRestController {
-    public BaseJsonObject ok() {
-        return new BaseJsonObject();
-    }
-
-    public BaseJsonObject message(String message) {
-        return new BaseJsonObject(message);
-    }
 }

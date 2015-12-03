@@ -25,7 +25,9 @@
 
 package dk.etiktak.backend.controllers.rest;
 
+import dk.etiktak.backend.controllers.rest.json.BaseJsonObject;
 import dk.etiktak.backend.controllers.rest.json.ProductJsonObject;
+import dk.etiktak.backend.controllers.rest.json.ProductScanJsonObject;
 import dk.etiktak.backend.model.product.Location;
 import dk.etiktak.backend.model.product.Product;
 import dk.etiktak.backend.model.user.Client;
@@ -50,7 +52,7 @@ public class ProductRestController extends BaseRestController {
     private ClientService clientService;
 
     @RequestMapping(value = "/retrieve/", method = RequestMethod.GET)
-    public ProductJsonObject getProduct(
+    public BaseJsonObject getProduct(
             @RequestParam(required = false) String uuid,
             @RequestParam(required = false) String barcode) {
         Product product = null;
@@ -60,11 +62,15 @@ public class ProductRestController extends BaseRestController {
         if (!StringUtils.isEmpty(barcode)) {
             product = productService.getProductByBarcode(barcode);
         }
-        return new ProductJsonObject(product);
+        if (product != null) {
+            return new ProductJsonObject(product);
+        } else {
+            return new BaseJsonObject(BaseJsonObject.RESULT_NOT_FOUND);
+        }
     }
 
     @RequestMapping(value = "/scan/", method = RequestMethod.POST)
-    public ProductJsonObject scanProduct(
+    public BaseJsonObject scanProduct(
             @RequestParam String barcode,
             @RequestParam String clientUuid,
             @RequestParam(required = false) String latitude,
@@ -76,8 +82,9 @@ public class ProductRestController extends BaseRestController {
             if (!StringUtils.isEmpty(latitude) && !StringUtils.isEmpty(longitude)) {
                 location = new Location(Double.parseDouble(latitude), Double.parseDouble(longitude));
             }
-            product = productService.scanProduct(barcode, client, location);
+            return new ProductScanJsonObject(productService.scanProduct(barcode, client, location));
+        } else {
+            return new BaseJsonObject(BaseJsonObject.RESULT_NOT_FOUND);
         }
-        return new ProductJsonObject(product);
     }
 }

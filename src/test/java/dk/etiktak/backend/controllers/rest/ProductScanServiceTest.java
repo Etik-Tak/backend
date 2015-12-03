@@ -45,12 +45,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -124,10 +123,11 @@ public class ProductScanServiceTest extends BaseRestTest {
                         .param("longitude", "" + location1.getLongitude()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.uuid", is(product1.getUuid())))
-                .andExpect(jsonPath("$.barcode", is(product1.getBarcode())))
-                .andExpect(jsonPath("$.barcodeType", is(product1.getBarcodeType().name())));
+                .andExpect(jsonPath("$.uuid", notNullValue()))
+                .andExpect(jsonPath("$.product.uuid", is(product1.getUuid())))
+                .andExpect(jsonPath("$.product.name", is(product1.getName())))
+                .andExpect(jsonPath("$.product.barcode", is(product1.getBarcode())))
+                .andExpect(jsonPath("$.product.barcodeType", is(product1.getBarcodeType().name())));
 
         validateProductScan(product1, client1, location1);
     }
@@ -144,9 +144,11 @@ public class ProductScanServiceTest extends BaseRestTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.uuid", is(product1.getUuid())))
-                .andExpect(jsonPath("$.barcode", is(product1.getBarcode())))
-                .andExpect(jsonPath("$.barcodeType", is(product1.getBarcodeType().name())));
+                .andExpect(jsonPath("$.uuid", notNullValue()))
+                .andExpect(jsonPath("$.product.uuid", is(product1.getUuid())))
+                .andExpect(jsonPath("$.product.name", is(product1.getName())))
+                .andExpect(jsonPath("$.product.barcode", is(product1.getBarcode())))
+                .andExpect(jsonPath("$.product.barcodeType", is(product1.getBarcodeType().name())));
 
         validateProductScan(product1, client1);
     }
@@ -183,6 +185,7 @@ public class ProductScanServiceTest extends BaseRestTest {
     private Product createAndSaveProduct(String barcode, Product.BarcodeType barcodeType) {
         Product product = new Product();
         product.setUuid(CryptoUtil.uuid());
+        product.setName(CryptoUtil.uuid());
         product.setBarcode(barcode);
         product.setBarcodeType(barcodeType);
         productRepository.save(product);

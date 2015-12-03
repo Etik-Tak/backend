@@ -34,6 +34,7 @@ import dk.etiktak.backend.repository.product.ProductRepository;
 import dk.etiktak.backend.repository.product.ProductScanRepository;
 import dk.etiktak.backend.repository.user.ClientRepository;
 
+import dk.etiktak.backend.util.CryptoUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,18 +67,20 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product scanProduct(String barcode, Client client, Location location) {
+    public ProductScan scanProduct(String barcode, Client client, Location location) {
+        ProductScan productScan = null;
         Product product = getProductByBarcode(barcode);
         if (product != null) {
-            createProductScan(product, client, location);
+            productScan = createProductScan(product, client, location);
         }
-        return product;
+        return productScan;
     }
 
 
 
     private ProductScan createProductScan(Product product, Client client, Location location) {
         ProductScan productScan = new ProductScan();
+        productScan.setUuid(CryptoUtil.uuid());
         productScan.setProduct(product);
         productScan.setClient(client);
         if (location != null) {

@@ -28,6 +28,7 @@ package dk.etiktak.backend.controllers.rest.json;
 import dk.etiktak.backend.model.product.Product;
 
 public class ProductJsonObject extends BaseJsonObject {
+    private String name;
     private String uuid;
     private String barcode;
     private String barcodeType;
@@ -35,6 +36,7 @@ public class ProductJsonObject extends BaseJsonObject {
     public ProductJsonObject(Product product) {
         if (product != null) {
             this.uuid = product.getUuid();
+            this.name = product.getName();
             this.barcode = product.getBarcode();
             this.barcodeType = product.getBarcodeType().name();
         }
@@ -42,6 +44,10 @@ public class ProductJsonObject extends BaseJsonObject {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getBarcode() {

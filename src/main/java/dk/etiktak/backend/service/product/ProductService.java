@@ -27,11 +27,12 @@ package dk.etiktak.backend.service.product;
 
 import dk.etiktak.backend.model.product.Location;
 import dk.etiktak.backend.model.product.Product;
+import dk.etiktak.backend.model.product.ProductScan;
 import dk.etiktak.backend.model.user.Client;
 
 public interface ProductService {
     Product getProductByUuid(String uuid);
     Product getProductByBarcode(String barcode);
 
-    Product scanProduct(String barcode, Client client, Location location);
+    ProductScan scanProduct(String barcode, Client client, Location location);
 }

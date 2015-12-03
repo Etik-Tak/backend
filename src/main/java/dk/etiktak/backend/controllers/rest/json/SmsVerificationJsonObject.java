@@ -31,7 +31,9 @@ public class SmsVerificationJsonObject extends BaseJsonObject {
     private String clientChallenge;
 
     public SmsVerificationJsonObject(SmsVerification smsVerification) {
-        this.clientChallenge = smsVerification.getClientChallenge();
+        if (smsVerification != null) {
+            this.clientChallenge = smsVerification.getClientChallenge();
+        }
     }
 
     public String getClientChallenge() {

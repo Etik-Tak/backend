@@ -58,6 +58,9 @@ public class Product {
     @Column(name = "barcode_type", nullable = false)
     private BarcodeType barcodeType;
 
+    @Column(name = "name")
+    private String name;
+
     @NotNull
     @OneToMany(mappedBy="product", fetch=FetchType.LAZY)
     private List<ProductScan> productScans = new ArrayList<>();
@@ -100,6 +103,14 @@ public class Product {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getBarcode() {

@@ -25,24 +25,24 @@
 
 package dk.etiktak.backend.controllers.rest.json;
 
-import dk.etiktak.backend.model.user.Client;
+import dk.etiktak.backend.model.product.ProductScan;
 
-public class ClientJsonObject extends BaseJsonObject {
-    private String clientUuid;
-    private Boolean verified;
+public class ProductScanJsonObject extends BaseJsonObject {
+    private String uuid;
+    private ProductJsonObject product;
 
-    public ClientJsonObject(Client client) {
-        if (client != null) {
-            this.clientUuid = client.getUuid();
-            this.verified = client.getVerified();
+    public ProductScanJsonObject(ProductScan productScan) {
+        if (productScan != null) {
+            this.uuid = productScan.getUuid();
+            this.product = new ProductJsonObject(productScan.getProduct());
         }
     }
 
-    public String getClientUuid() {
-        return clientUuid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public Boolean getVerified() {
-        return verified;
+    public ProductJsonObject getProduct() {
+        return product;
     }
 }

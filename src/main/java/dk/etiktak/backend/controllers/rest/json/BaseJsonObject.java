@@ -30,6 +30,7 @@ package dk.etiktak.backend.controllers.rest.json;
  */
 public class BaseJsonObject {
     public static final String RESULT_OK = "OK";
+    public static final String RESULT_NOT_FOUND = "NOT_FOUND";
 
     private String result = RESULT_OK;
 
@@ -38,6 +39,11 @@ public class BaseJsonObject {
 
     public BaseJsonObject(String result) {
         this.result = result;
+    }
+
+    public BaseJsonObject withResult(String result) {
+        this.result = result;
+        return this;
     }
 
     public String getResult() {
