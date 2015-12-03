@@ -37,6 +37,7 @@ import dk.etiktak.backend.repository.product.ProductScanRepository;
 import dk.etiktak.backend.repository.user.ClientRepository;
 import dk.etiktak.backend.util.CryptoUtil;
 
+import dk.etiktak.backend.util.RandomUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -285,8 +286,8 @@ public class ProductScanServiceTest extends BaseRestTest {
 
     private Location createAndSaveLocation() {
         Location location = new Location();
-        location.setLatitude(Math.random());
-        location.setLongitude(Math.random());
+        location.setLatitude(RandomUtil.getValueWithScale(Math.random(), 6));
+        location.setLongitude(RandomUtil.getValueWithScale(Math.random(), 6));
         locationRepository.save(location);
         return location;
     }
