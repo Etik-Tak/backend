@@ -39,13 +39,16 @@ import dk.etiktak.backend.util.CryptoUtil;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.Assert;
+import org.springframework.web.util.NestedServletException;
 
 import java.util.List;
 
@@ -69,6 +72,9 @@ public class ProductScanServiceTest extends BaseRestTest {
 
     @Autowired
     private LocationRepository locationRepository;
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     private Product product1;
     private Product product2;
@@ -153,7 +159,84 @@ public class ProductScanServiceTest extends BaseRestTest {
         validateProductScan(product1, client1);
     }
 
+    /**
+     * Test that we can assign a location to an already existant product scan.
+     */
+    @Test
+    public void assignLocationToProductScan() throws Exception {
+        ProductScan productScan = scanProduct();
 
+        mockMvc.perform(
+                post(serviceEndpoint("assign/location/"))
+                        .param("clientUuid", client1.getUuid())
+                        .param("productScanUuid", productScan.getUuid())
+                        .param("latitude", "" + location1.getLatitude())
+                        .param("longitude", "" + location1.getLongitude()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
+                .andExpect(jsonPath("$.uuid", is(productScan.getUuid())))
+                .andExpect(jsonPath("$.location.latitude", is(location1.getLatitude())))
+                .andExpect(jsonPath("$.location.longitude", is(location1.getLongitude())))
+                .andExpect(jsonPath("$.product.uuid", is(product1.getUuid())))
+                .andExpect(jsonPath("$.product.name", is(product1.getName())))
+                .andExpect(jsonPath("$.product.barcode", is(product1.getBarcode())))
+                .andExpect(jsonPath("$.product.barcodeType", is(product1.getBarcodeType().name())));
+    }
+
+    /**
+     * Test that we cannot assign a location to a product scan that already has a location assigned.
+     */
+    @Test
+    public void cannotAssignLocationToProductScanWithLocationAlreadyAssigned() throws Exception {
+        ProductScan productScan = scanProduct();
+
+        // Assign first location
+        mockMvc.perform(
+                post(serviceEndpoint("assign/location/"))
+                        .param("clientUuid", client1.getUuid())
+                        .param("productScanUuid", productScan.getUuid())
+                        .param("latitude", "" + location1.getLatitude())
+                        .param("longitude", "" + location1.getLongitude()))
+                .andExpect(status().isOk());
+
+        // Do it once again and fail
+        exception.expect(NestedServletException.class);
+        mockMvc.perform(
+                post(serviceEndpoint("assign/location/"))
+                        .param("clientUuid", client1.getUuid())
+                        .param("productScanUuid", productScan.getUuid())
+                        .param("latitude", "" + location1.getLatitude())
+                        .param("longitude", "" + location1.getLongitude()));
+    }
+
+    /**
+     * Test that we cannot assign empty location to already scanned product scan.
+     */
+    @Test
+    public void cannotAssignEmptyLocationToProductScanWithLocationAlreadyAssigned() throws Exception {
+        ProductScan productScan = scanProduct();
+
+        mockMvc.perform(
+                post(serviceEndpoint("assign/location/"))
+                        .param("clientUuid", client1.getUuid())
+                        .param("productScanUuid", productScan.getUuid()))
+                .andExpect(status().is(400));
+    }
+
+
+
+    private ProductScan scanProduct() throws Exception {
+        mockMvc.perform(
+                post(serviceEndpoint(""))
+                        .param("barcode", product1.getBarcode())
+                        .param("clientUuid", client1.getUuid()))
+                .andExpect(jsonPath("$.uuid", notNullValue()))
+                .andExpect(jsonPath("$.location", nullValue()));
+
+        List<ProductScan> productScans = productScanRepository.findByProductUuid(product1.getUuid());
+        return productScans.get(0);
+    }
 
     private void validateProductScan(Product product, Client client) {
         validateProductScan(product, client, null);

@@ -34,5 +34,8 @@ public interface ProductService {
     Product getProductByUuid(String uuid);
     Product getProductByBarcode(String barcode);
 
+    ProductScan getProductScanByUuid(String uuid);
+
     ProductScan scanProduct(String barcode, Client client, Location location);
+    ProductScan assignLocationToProductScan(Client client, ProductScan productScan, Location location);
 }

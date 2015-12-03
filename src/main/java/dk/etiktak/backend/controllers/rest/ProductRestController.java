@@ -30,6 +30,7 @@ import dk.etiktak.backend.controllers.rest.json.ProductJsonObject;
 import dk.etiktak.backend.controllers.rest.json.ProductScanJsonObject;
 import dk.etiktak.backend.model.product.Location;
 import dk.etiktak.backend.model.product.Product;
+import dk.etiktak.backend.model.product.ProductScan;
 import dk.etiktak.backend.model.user.Client;
 import dk.etiktak.backend.service.client.ClientService;
 import dk.etiktak.backend.service.product.ProductService;
@@ -86,5 +87,18 @@ public class ProductRestController extends BaseRestController {
         } else {
             return new BaseJsonObject(BaseJsonObject.RESULT_NOT_FOUND);
         }
+    }
+
+    @RequestMapping(value = "/scan/assign/location/", method = RequestMethod.POST)
+    public BaseJsonObject provideProductScanLocation(
+            @RequestParam String clientUuid,
+            @RequestParam String productScanUuid,
+            @RequestParam String latitude,
+            @RequestParam String longitude) {
+        Client client = clientService.getByUuid(clientUuid);
+        ProductScan productScan = productService.getProductScanByUuid(productScanUuid);
+        Location location = new Location(Double.parseDouble(latitude), Double.parseDouble(longitude));
+
+        return new ProductScanJsonObject(productService.assignLocationToProductScan(client, productScan, location));
     }
 }

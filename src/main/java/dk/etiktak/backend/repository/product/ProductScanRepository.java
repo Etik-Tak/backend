@@ -35,4 +35,5 @@ import java.util.List;
 public interface ProductScanRepository extends PagingAndSortingRepository<ProductScan, Long> {
     List<ProductScan> findByClientUuid(String clientUuid);
     List<ProductScan> findByProductUuid(String clientUuid);
+    ProductScan findByUuid(String uuid);
 }

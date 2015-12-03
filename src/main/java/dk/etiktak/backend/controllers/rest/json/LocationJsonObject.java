@@ -25,32 +25,24 @@
 
 package dk.etiktak.backend.controllers.rest.json;
 
-import dk.etiktak.backend.model.product.ProductScan;
+import dk.etiktak.backend.model.product.Location;
 
-public class ProductScanJsonObject extends BaseJsonObject {
-    private String uuid;
-    private ProductJsonObject product;
-    private LocationJsonObject location;
+public class LocationJsonObject extends BaseJsonObject {
+    private Double latitude;
+    private Double longitude;
 
-    public ProductScanJsonObject(ProductScan productScan) {
-        if (productScan != null) {
-            this.uuid = productScan.getUuid();
-            this.product = new ProductJsonObject(productScan.getProduct());
-            if (productScan.getLocation() != null) {
-                this.location = new LocationJsonObject(productScan.getLocation());
-            }
+    public LocationJsonObject(Location location) {
+        if (location != null) {
+            this.latitude = location.getLatitude();
+            this.longitude = location.getLongitude();
         }
     }
 
-    public String getUuid() {
-        return uuid;
+    public Double getLatitude() {
+        return latitude;
     }
 
-    public ProductJsonObject getProduct() {
-        return product;
-    }
-
-    public LocationJsonObject getLocation() {
-        return location;
+    public Double getLongitude() {
+        return longitude;
     }
 }

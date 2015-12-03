@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -67,6 +68,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductScan getProductScanByUuid(String uuid) {
+        return productScanRepository.findByUuid(uuid);
+    }
+
+    @Override
     public ProductScan scanProduct(String barcode, Client client, Location location) {
         ProductScan productScan = null;
         Product product = getProductByBarcode(barcode);
@@ -76,6 +82,26 @@ public class ProductServiceImpl implements ProductService {
         return productScan;
     }
 
+    @Override
+    public ProductScan assignLocationToProductScan(Client client, ProductScan productScan, Location location) {
+        Assert.isTrue(
+                client.getUuid().equals(productScan.getClient().getUuid()),
+                "Client with UUID: " + client.getUuid() + " not owner of product scan with UUID: " + productScan.getUuid());
+
+        Assert.notNull(
+                location,
+                "Location must not be empty");
+
+        Assert.isNull(
+                productScan.getLocation(),
+                "Location already set on product scan with UUID: " + productScan.getUuid()
+        );
+
+        productScan.setLocation(location);
+        productScanRepository.save(productScan);
+
+        return productScan;
+    }
 
 
     private ProductScan createProductScan(Product product, Client client, Location location) {
