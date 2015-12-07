@@ -4,12 +4,14 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.3.RELEASE")
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.+'
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'spring-boot'
+apply plugin: "kotlin"
 
 jar {
     baseName = 'etik-tak'
@@ -20,10 +22,22 @@ repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceSets {
+    main {
+        kotlin {
+            srcDir "src/main/kotlin"
+        }
+    }
+    test {
+        kotlin {
+            srcDir "test/main/kotlin"
+        }
+    }
+}
 
 dependencies {
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.+'
+
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.boot:spring-boot-starter-security")
     compile("org.springframework.boot:spring-boot-starter-data-jpa")

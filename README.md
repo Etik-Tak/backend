@@ -12,9 +12,13 @@ Install postgresql. Then run the following psql:
 
 `alter role etiktak with login;`
 
-Build and start the bundled Jetty container:
+Build and start the bundled container:
 
 `$ ./gradlew build && java -jar build/libs/etik-tak-0.1.0.jar`
+
+or:
+
+`./gradlew bootRun`
 
 To skip tests:
 

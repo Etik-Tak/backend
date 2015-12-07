@@ -24,82 +24,63 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Used to keep track of which mobile numbers are in use. Since client entity knows nothing about
- * mobile number (without password) we need this entity. However, there is no direct relation between
- * a client and its mobile number.
- **/
+ * SMS verification entity keeps track of client verification. It consists of two parts; 1) the
+ * actual SMS verification, which the user has to verify by receiving a SMS, and 2) a "hidden"
+ * client challenge sent from the server to the client. Since the SMS verification challenge
+ * is inheritedly weak a client challenge is used to strengthen security, thus forcing an
+ * attacker to guess also a client challenge.
+ */
 
-package dk.etiktak.backend.model.user;
+package dk.etiktak.backend.model.user
 
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat
+import java.util.*
+import javax.persistence.*
 
-import javax.persistence.*;
-import java.util.Date;
+@Entity(name = "sms_verifications")
+class SmsVerification {
 
-@Entity(name = "mobile_numbers")
-public class MobileNumber {
+    enum class SmsVerificationStatus {
+        PENDING, SENT, FAILED, VERIFIED
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "mobile_number_id")
-    private Long id;
+    @Column(name = "sms_verification_id")
+    var id: Long? = null
 
     @Column(name = "mobileNumberHash", nullable = false, unique = true)
-    private String mobileNumberHash;
+    var mobileNumberHash: String? = null
 
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    private Date creationTime;
+    @Column(name = "smsHandle")
+    var smsHandle: String? = null
 
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    private Date modificationTime;
+    @Column(name = "smsChallengeHash", nullable = false)
+    var smsChallengeHash: String? = null
+
+    @Column(name = "clientChallenge", nullable = false)
+    var clientChallenge: String? = null
+
+    @Column(name = "status", nullable = false)
+    var status: SmsVerificationStatus? = null
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var creationTime: Date? = null
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var modificationTime: Date? = null
 
 
-
-    public MobileNumber() {}
 
     @PreUpdate
-    public void preUpdate() {
-        modificationTime = new Date();
+    fun preUpdate() {
+        modificationTime = Date()
     }
 
     @PrePersist
-    public void prePersist() {
-        Date now = new Date();
-        creationTime = now;
-        modificationTime = now;
-    }
-
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getMobileNumberHash() {
-        return mobileNumberHash;
-    }
-
-    public void setMobileNumberHash(String mobileNumberHash) {
-        this.mobileNumberHash = mobileNumberHash;
-    }
-
-    public Date getCreationTime() {
-        return creationTime;
-    }
-
-    public void setCreationTime(Date creationTime) {
-        this.creationTime = creationTime;
-    }
-
-    public Date getModificationTime() {
-        return modificationTime;
-    }
-
-    public void setModificationTime(Date modificationTime) {
-        this.modificationTime = modificationTime;
+    fun prePersist() {
+        val now = Date()
+        creationTime = now
+        modificationTime = now
     }
 }

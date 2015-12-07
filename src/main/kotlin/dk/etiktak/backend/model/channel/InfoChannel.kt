@@ -27,92 +27,45 @@
  * Represents an info channel, which is the basis for contributing content.
  */
 
-package dk.etiktak.backend.model.channel;
+package dk.etiktak.backend.model.channel
 
-import org.springframework.format.annotation.DateTimeFormat;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat
+import java.util.*
+import javax.persistence.*
+import javax.validation.constraints.NotNull
 
 @Entity(name = "info_channels")
-public class InfoChannel {
+class InfoChannel constructor() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "info_channel_id")
-    private Long id;
+    var id: Long? = null
 
     @Column(name = "uuid", nullable = false, unique = true)
-    private String uuid;
+    var uuid: String? = null
 
     @NotNull
-    @OneToMany(mappedBy="infoChannel", fetch=FetchType.LAZY)
-    private List<InfoChannelClient> infoChannelClients = new ArrayList<>();
+    @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
+    var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
 
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    private Date creationTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var creationTime: Date? = null
 
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    private Date modificationTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var modificationTime: Date? = null
 
 
-
-    public InfoChannel() {}
 
     @PreUpdate
-    public void preUpdate() {
-        modificationTime = new Date();
+    fun preUpdate() {
+        modificationTime = Date()
     }
 
     @PrePersist
-    public void prePersist() {
-        Date now = new Date();
-        creationTime = now;
-        modificationTime = now;
-    }
-
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public Date getCreationTime() {
-        return creationTime;
-    }
-
-    public void setCreationTime(Date creationTime) {
-        this.creationTime = creationTime;
-    }
-
-    public Date getModificationTime() {
-        return modificationTime;
-    }
-
-    public void setModificationTime(Date modificationTime) {
-        this.modificationTime = modificationTime;
-    }
-
-    public List<InfoChannelClient> getInfoChannelClients() {
-        return infoChannelClients;
-    }
-
-    public void setInfoChannelClients(List<InfoChannelClient> infoChannelClients) {
-        this.infoChannelClients = infoChannelClients;
+    fun prePersist() {
+        val now = Date()
+        creationTime = now
+        modificationTime = now
     }
 }
