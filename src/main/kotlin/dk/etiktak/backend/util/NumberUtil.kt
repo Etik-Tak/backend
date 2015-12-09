@@ -23,25 +23,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.util;
+package dk.etiktak.backend.util
 
-public class ArrayUtil {
+import java.math.BigDecimal
+import java.math.RoundingMode
 
-    private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-
-    /**
-     * Converts a byte array to a hex string.
-     *
-     * @param bytes    Byte array
-     * @return         Hex representation
-     */
-    public static String convertByteArrayToHexString(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for ( int j = 0; j < bytes.length; j++ ) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = hexArray[v >>> 4];
-            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
+/**
+ * Returns a double with the given decimal precision.
+ *
+ * @param value     Value
+ * @param places    Decimal places
+ * @return          Value with given precision
+ */
+fun Double.getWithScale(places: Int): Double {
+    val bd = BigDecimal(this).setScale(places, RoundingMode.HALF_UP)
+    return bd.toDouble()
 }

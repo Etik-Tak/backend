@@ -23,26 +23,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.util;
+package dk.etiktak.backend.util
 
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCrypt
+import java.io.UnsupportedEncodingException
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+import java.security.SecureRandom
+import java.util.*
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.UUID;
-
-public class CryptoUtil {
+class CryptoUtil {
 
     /**
      * Generates an UUID.
      *
      * @return UUID
      */
-    public static String uuid() {
-        return UUID.randomUUID().toString();
+    fun uuid(): String {
+        return UUID.randomUUID().toString()
     }
 
     /**
@@ -53,11 +51,12 @@ public class CryptoUtil {
      * @throws NoSuchAlgorithmException
      * @throws UnsupportedEncodingException
      */
-    public static String hash(String text) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashedBytes = digest.digest(text.getBytes("UTF-8"));
+    @Throws(NoSuchAlgorithmException::class, UnsupportedEncodingException::class)
+    fun hash(text: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashedBytes = digest.digest(text.toByteArray("UTF-8"))
 
-        return ArrayUtil.convertByteArrayToHexString(hashedBytes);
+        return hashedBytes.convertByteArrayToHexString()
     }
 
     /**
@@ -66,8 +65,8 @@ public class CryptoUtil {
      * @param plainText    Text to encrypt
      * @return             Encrypted text
      */
-    public static String encryptPassword(String plainText) {
-        return BCrypt.hashpw(plainText, BCrypt.gensalt());
+    fun encryptPassword(plainText: String): String {
+        return BCrypt.hashpw(plainText, BCrypt.gensalt())
     }
 
     /**
@@ -77,8 +76,8 @@ public class CryptoUtil {
      * @param hashed       Encrypted password
      * @return             True, if successfully validated, else false
      */
-    public static boolean validatePassword(String plainText, String hashed) {
-        return BCrypt.checkpw(plainText, hashed);
+    fun validatePassword(plainText: String, hashed: String): Boolean {
+        return BCrypt.checkpw(plainText, hashed)
     }
 
     /**
@@ -87,15 +86,16 @@ public class CryptoUtil {
      * @return SMS challenge
      * @throws NoSuchAlgorithmException
      */
-    public static String generateSmsChallenge() throws NoSuchAlgorithmException {
-        final int SMS_CHALLENGE_DIGITS = 5;
+    @Throws(NoSuchAlgorithmException::class)
+    fun generateSmsChallenge(): String {
+        val SMS_CHALLENGE_DIGITS = 5
 
-        int minValue = (int)Math.pow(10, SMS_CHALLENGE_DIGITS - 1);
-        int maxValue = (minValue * 10) - 1;
+        val minValue = Math.pow(10.0, (SMS_CHALLENGE_DIGITS - 1).toDouble()).toInt()
+        val maxValue = (minValue * 10) - 1
 
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed(random.generateSeed(20));
-        return (random.nextInt(maxValue - minValue) + minValue) + "";
+        val random = SecureRandom.getInstance("SHA1PRNG")
+        random.setSeed(random.generateSeed(20))
+        return (random.nextInt(maxValue - minValue) + minValue).toString()
     }
 
     /**
@@ -104,17 +104,19 @@ public class CryptoUtil {
      * @return SMS handle
      * @throws NoSuchAlgorithmException
      */
-    public static String generateSmsHandle() throws NoSuchAlgorithmException {
-        final int SMS_HANDLE_BYTES = 16;
-        final byte[] randomBytes = new byte[SMS_HANDLE_BYTES];
+    @Throws(NoSuchAlgorithmException::class)
+    fun generateSmsHandle(): String {
+        val SMS_HANDLE_BYTES = 16
+        val randomBytes = ByteArray(SMS_HANDLE_BYTES)
 
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed(random.generateSeed(20));
-        random.nextBytes(randomBytes);
-        return Base64.getEncoder().encodeToString(randomBytes);
+        val random = SecureRandom.getInstance("SHA1PRNG")
+        random.setSeed(random.generateSeed(20))
+        random.nextBytes(randomBytes)
+        return Base64.getEncoder().encodeToString(randomBytes)
     }
 
-    public static String hashOfHashes(String value1, String value2) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        return hash(hash(value1) + hash(value2));
+    @Throws(UnsupportedEncodingException::class, NoSuchAlgorithmException::class)
+    fun hashOfHashes(value1: String, value2: String): String {
+        return hash(hash(value1) + hash(value2))
     }
 }

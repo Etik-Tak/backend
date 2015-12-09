@@ -47,7 +47,7 @@ class ClientServiceImpl @Autowired constructor(
     @Throws(Exception::class)
     override fun createClient(): Client {
         val client = Client()
-        client.uuid = CryptoUtil.uuid()
+        client.uuid = CryptoUtil().uuid()
         client.mobileNumberHashPasswordHashHashed = null
         client.verified = false
         clientRepository.save(client)

@@ -442,9 +442,9 @@ public class SmsVerificationServiceTest extends BaseRestTest {
     private SmsVerification modifySmsVerification() throws Exception {
 
         // Overwrite generated challenge to get raw, unhashed challenge in hand
-        SmsVerification smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil.hash("12345678"));
-        smsChallenge = CryptoUtil.generateSmsChallenge();
-        smsVerification.setSmsChallengeHash(CryptoUtil.hash(smsChallenge));
+        SmsVerification smsVerification = smsVerificationRepository.findByMobileNumberHash(new CryptoUtil().hash("12345678"));
+        smsChallenge = new CryptoUtil().generateSmsChallenge();
+        smsVerification.setSmsChallengeHash(new CryptoUtil().hash(smsChallenge));
         smsVerificationRepository.save(smsVerification);
 
         return smsVerification;
@@ -452,7 +452,7 @@ public class SmsVerificationServiceTest extends BaseRestTest {
 
     private Client createAndSaveClient() {
         Client client = new Client();
-        client.setUuid(CryptoUtil.uuid());
+        client.setUuid(new CryptoUtil().uuid());
         client.setVerified(false);
         clientRepository.save(client);
         return client;

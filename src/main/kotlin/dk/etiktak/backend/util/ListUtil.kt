@@ -23,22 +23,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.util;
+package dk.etiktak.backend.util
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.util.*
 
-public class RandomUtil {
-
-    /**
-     * Returns a double with the given decimal precision.
-     *
-     * @param value     Value
-     * @param places    Decimal places
-     * @return          Value with given precision
-     */
-    public static double getValueWithScale(double value, int places) {
-        BigDecimal bd = new BigDecimal(value).setScale(places, RoundingMode.HALF_UP);
-        return bd.doubleValue();
+/**
+ * Converts an iterable to a list.
+ *
+ * @param iter    Iterable
+ * @param      Type
+ * @return        List
+ */
+fun <E> Iterable<E>.asList(iter: Iterable<E>): List<E> {
+    val list = ArrayList<E>()
+    for (item in iter) {
+        list.add(item)
     }
+    return list
 }

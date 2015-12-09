@@ -23,60 +23,60 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.controllers.rest;
+package dk.etiktak.backend.controllers.rest
 
-import dk.etiktak.backend.Application;
-import dk.etiktak.backend.controllers.rest.json.BaseJsonObject;
-import dk.etiktak.backend.repository.user.ClientRepository;
+import dk.etiktak.backend.Application
+import dk.etiktak.backend.controllers.rest.json.BaseJsonObject
+import dk.etiktak.backend.repository.user.ClientRepository
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.SpringApplicationConfiguration
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+import org.springframework.test.context.web.WebAppConfiguration
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.notNullValue
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = Application.class)
+@RunWith(SpringJUnit4ClassRunner::class)
+@SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-public class ClientServiceTest extends BaseRestTest {
+class ClientServiceTest : BaseRestTest() {
 
     @Autowired
-    private ClientRepository clientRepository;
+    private val clientRepository: ClientRepository? = null
 
-    public static String serviceEndpoint(String postfix) {
-        return serviceEndpoint() + "client/" + postfix;
+    fun serviceEndpoint(postfix: String): String {
+        return BaseRestTest.serviceEndpoint() + "client/" + postfix
     }
 
     @Before
-    public void setup() throws Exception {
-        super.setup();
+    @Throws(Exception::class)
+    override fun setup() {
+        super.setup()
 
-        clientRepository.deleteAll();
+        clientRepository!!.deleteAll()
     }
 
     @After
-    public void tearDown() {
-        clientRepository.deleteAll();
+    fun tearDown() {
+        clientRepository!!.deleteAll()
     }
 
     /**
      * Test that we can create a client.
      */
     @Test
-    public void createClient() throws Exception {
+    @Throws(Exception::class)
+    fun createClient() {
         mockMvc.perform(
                 post(serviceEndpoint("create/")))
-                .andExpect(status().isOk())
+                .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", is(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientUuid", notNullValue()));
+                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
+                .andExpect(jsonPath("$.clientUuid", notNullValue()))
     }
 }

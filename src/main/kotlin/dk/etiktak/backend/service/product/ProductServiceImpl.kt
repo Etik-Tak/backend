@@ -145,7 +145,7 @@ class ProductServiceImpl @Autowired constructor(
      */
     private fun createProductScan(product: Product, client: Client, location: Location?): ProductScan {
         val productScan = ProductScan()
-        productScan.uuid = CryptoUtil.uuid()
+        productScan.uuid = CryptoUtil().uuid()
         productScan.product = product
         productScan.client = client
         if (location != null) {

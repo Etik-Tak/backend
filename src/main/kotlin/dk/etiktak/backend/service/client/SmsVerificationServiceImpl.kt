@@ -69,7 +69,7 @@ class SmsVerificationServiceImpl @Autowired constructor(
 
         // Fetch client entry
         val client = clientRepository.findByMobileNumberHashPasswordHashHashed(
-                CryptoUtil.hashOfHashes(mobileNumber, password))
+                CryptoUtil().hashOfHashes(mobileNumber, password))
 
         Assert.notNull(
                 client,
@@ -91,8 +91,8 @@ class SmsVerificationServiceImpl @Autowired constructor(
      */
     @Throws(Exception::class)
     override fun requestSmsChallenge(clientUuid: String, mobileNumber: String, password: String): SmsVerification {
-        val smsChallenge = CryptoUtil.generateSmsChallenge()
-        val clientChallenge = CryptoUtil.uuid()
+        val smsChallenge = CryptoUtil().generateSmsChallenge()
+        val clientChallenge = CryptoUtil().uuid()
 
         // Check for empty fields
         Assert.isTrue(
@@ -117,17 +117,17 @@ class SmsVerificationServiceImpl @Autowired constructor(
         client!!
 
         // Fetch existing SMS verification, if any
-        var smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil.hash(mobileNumber))
+        var smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber))
 
         // Fetch existing mobile number, if any
-        val mobile = mobileNumberRepository.findByMobileNumberHash(CryptoUtil.hash(mobileNumber))
+        val mobile = mobileNumberRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber))
 
         if (mobile != null) {
             // Mobile number already exists
 
             // Check that mobile number and password for client is correct
             Assert.isTrue(
-                    client.mobileNumberHashPasswordHashHashed == CryptoUtil.hashOfHashes(mobileNumber, password),
+                    client.mobileNumberHashPasswordHashHashed == CryptoUtil().hashOfHashes(mobileNumber, password),
                     "Mobile number $mobileNumber already verified with other password than that provided")
         } else {
             // New mobile number registration
@@ -147,11 +147,11 @@ class SmsVerificationServiceImpl @Autowired constructor(
 
             // Create new SMS verification
             smsVerification = SmsVerification()
-            smsVerification.mobileNumberHash = CryptoUtil.hash(mobileNumber)
+            smsVerification.mobileNumberHash = CryptoUtil().hash(mobileNumber)
         }
 
         // Mark client as not verified
-        client.mobileNumberHashPasswordHashHashed = CryptoUtil.hashOfHashes(mobileNumber, password)
+        client.mobileNumberHashPasswordHashHashed = CryptoUtil().hashOfHashes(mobileNumber, password)
         client.verified = false
         clientRepository.save(client)
 
@@ -163,10 +163,10 @@ class SmsVerificationServiceImpl @Autowired constructor(
         smsVerification!!
 
         // Set challenges on verification
-        smsVerification.smsChallengeHash = CryptoUtil.hash(smsChallenge)
+        smsVerification.smsChallengeHash = CryptoUtil().hash(smsChallenge)
         smsVerification.clientChallenge = clientChallenge
         smsVerification.status = SmsVerification.SmsVerificationStatus.PENDING
-        smsVerification.smsHandle = CryptoUtil.generateSmsHandle()
+        smsVerification.smsHandle = CryptoUtil().generateSmsHandle()
         smsVerificationRepository.save(smsVerification)
 
         // Send challenge
@@ -211,7 +211,7 @@ class SmsVerificationServiceImpl @Autowired constructor(
 
         // Verify mobile number and password
         val client = clientRepository.findByMobileNumberHashPasswordHashHashed(
-                CryptoUtil.hashOfHashes(mobileNumber, password))
+                CryptoUtil().hashOfHashes(mobileNumber, password))
 
         Assert.notNull(
                 client,
@@ -220,7 +220,7 @@ class SmsVerificationServiceImpl @Autowired constructor(
         client!!
 
         // Fetch SMS challenge
-        val smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil.hash(mobileNumber))
+        val smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber))
 
         Assert.notNull(
                 smsVerification,
@@ -233,7 +233,7 @@ class SmsVerificationServiceImpl @Autowired constructor(
                 smsVerification.status === SmsVerification.SmsVerificationStatus.SENT,
                 "SMS verification has wrong status. Expected SENT but was '" + smsVerification.status.name + "'")
         Assert.isTrue(
-                smsVerification.smsChallengeHash == CryptoUtil.hash(smsChallenge),
+                smsVerification.smsChallengeHash == CryptoUtil().hash(smsChallenge),
                 "Provided SMS challenge does not match sent challenge")
         Assert.isTrue(
                 smsVerification.clientChallenge == clientChallenge,
@@ -260,11 +260,11 @@ class SmsVerificationServiceImpl @Autowired constructor(
     @Throws(Exception::class)
     private fun createMobileNumber(mobileNumber: String): MobileNumber {
         Assert.isNull(
-                mobileNumberRepository.findByMobileNumberHash(CryptoUtil.hash(mobileNumber)),
+                mobileNumberRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber)),
                 "Mobile number $mobileNumber already exists")
 
         val number = MobileNumber()
-        number.mobileNumberHash = CryptoUtil.hash(mobileNumber)
+        number.mobileNumberHash = CryptoUtil().hash(mobileNumber)
         mobileNumberRepository.save(number)
         return number
     }

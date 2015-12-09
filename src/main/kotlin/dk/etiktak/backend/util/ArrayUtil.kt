@@ -23,24 +23,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.util;
+package dk.etiktak.backend.util
 
-import java.util.ArrayList;
-import java.util.List;
+private val hexArray = "0123456789ABCDEF".toCharArray()
 
-public class ListUtil {
-    /**
-     * Converts an iterable to a list.
-     *
-     * @param iter    Iterable
-     * @param <E>     Type
-     * @return        List
-     */
-    public static <E> List<E> asList(Iterable<E> iter) {
-        List<E> list = new ArrayList<E>();
-        for (E item : iter) {
-            list.add(item);
-        }
-        return list;
+fun ByteArray.convertByteArrayToHexString(): String {
+    val hexChars = CharArray(this.size * 2)
+    for (j in this.indices) {
+        val v = this[j].toInt() and 0xFF
+        hexChars[j * 2] = hexArray[v.ushr(4)]
+        hexChars[j * 2 + 1] = hexArray[v and 15]
     }
+    return String(hexChars)
 }
