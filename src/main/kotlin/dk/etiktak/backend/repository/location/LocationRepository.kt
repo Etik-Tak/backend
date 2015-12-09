@@ -25,10 +25,10 @@
 
 package dk.etiktak.backend.repository.location
 
-import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.Location
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface LocationRepository : PagingAndSortingRepository<Product, Long> {
+interface LocationRepository : PagingAndSortingRepository<Location, Long> {
 }

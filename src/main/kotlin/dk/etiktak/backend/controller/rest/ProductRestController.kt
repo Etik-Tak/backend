@@ -55,10 +55,10 @@ class ProductRestController: BaseRestController() {
             @RequestParam(required = false) barcode: String?): BaseJsonObject? {
         var product: Product? = null
         if (!StringUtils.isEmpty(uuid)) {
-            product = productService!!.getProductByUuid(uuid)
+            product = productService!!.getProductByUuid(uuid!!)
         }
         if (!StringUtils.isEmpty(barcode)) {
-            product = productService!!.getProductByBarcode(barcode)
+            product = productService!!.getProductByBarcode(barcode!!)
         }
         if (product != null) {
             return ProductJsonObject(product)
@@ -93,7 +93,7 @@ class ProductRestController: BaseRestController() {
             @RequestParam latitude: String,
             @RequestParam longitude: String): BaseJsonObject {
         val client = clientService!!.getByUuid(clientUuid)
-        val productScan = productService!!.getProductScanByUuid(productScanUuid)
+        val productScan = productService!!.getProductScanByUuid(productScanUuid)!!
         val location = Location(latitude.toDouble(), longitude.toDouble())
 
         return ProductScanJsonObject(productService.assignLocationToProductScan(client, productScan, location))

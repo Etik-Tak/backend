@@ -23,19 +23,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.service.product;
+package dk.etiktak.backend.service.product
 
-import dk.etiktak.backend.model.product.Location;
-import dk.etiktak.backend.model.product.Product;
-import dk.etiktak.backend.model.product.ProductScan;
-import dk.etiktak.backend.model.user.Client;
+import dk.etiktak.backend.model.product.Location
+import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductScan
+import dk.etiktak.backend.model.user.Client
 
-public interface ProductService {
-    Product getProductByUuid(String uuid);
-    Product getProductByBarcode(String barcode);
+interface ProductService {
 
-    ProductScan getProductScanByUuid(String uuid);
+    fun getProductByUuid(uuid: String): Product?
+    fun getProductByBarcode(barcode: String): Product?
 
-    ProductScan scanProduct(String barcode, Client client, Location location);
-    ProductScan assignLocationToProductScan(Client client, ProductScan productScan, Location location);
+    fun getProductScanByUuid(uuid: String): ProductScan?
+
+    fun scanProduct(barcode: String, client: Client, location: Location?): ProductScan?
+    fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan?
 }
