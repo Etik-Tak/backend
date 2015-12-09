@@ -23,12 +23,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.service.client;
+package dk.etiktak.backend.service.client
 
-import dk.etiktak.backend.model.user.Client;
+import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.model.user.SmsVerification
 
-public interface ClientService {
-    Client createClient() throws Exception;
+interface SmsVerificationService {
 
-    Client getByUuid(String uuid);
+    @Throws(Exception::class)
+    fun requestRecoverySmsChallenge(mobileNumber: String, password: String): SmsVerification
+
+    @Throws(Exception::class)
+    fun requestSmsChallenge(clientUuid: String, mobileNumber: String, password: String): SmsVerification
+
+    @Throws(Exception::class)
+    fun verifySmsChallenge(mobileNumber: String, password: String, smsChallenge: String, clientChallenge: String): Client
 }

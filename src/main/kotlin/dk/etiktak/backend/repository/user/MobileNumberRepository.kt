@@ -32,5 +32,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MobileNumberRepository : PagingAndSortingRepository<MobileNumber, Long> {
 
-    fun findByMobileNumberHash(mobileNumberHash: String): MobileNumber
+    fun findByMobileNumberHash(mobileNumberHash: String): MobileNumber?
 }

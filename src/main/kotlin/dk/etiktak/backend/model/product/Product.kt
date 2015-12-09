@@ -45,29 +45,29 @@ class Product constructor() {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "product_id")
-    var id: Long? = null
+    var id: Long = 0
 
     @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String? = null
+    var uuid: String = ""
 
     @Column(name = "barcode", nullable = false, unique = true)
-    var barcode: String? = null
+    var barcode: String = ""
 
     @Column(name = "barcode_type", nullable = false)
-    var barcodeType: BarcodeType? = null
+    var barcodeType: BarcodeType = BarcodeType.EAN13
 
     @Column(name = "name")
-    var name: String? = null
+    var name: String = ""
 
     @NotNull
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date? = null
+    var creationTime: Date = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date? = null
+    var modificationTime: Date = Date()
 
 
 

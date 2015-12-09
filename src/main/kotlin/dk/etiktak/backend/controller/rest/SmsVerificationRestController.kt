@@ -36,10 +36,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/service/verification")
-class SmsVerificationRestController : BaseRestController() {
-
-    @Autowired
-    private val smsVerificationService: SmsVerificationService? = null
+class SmsVerificationRestController @Autowired constructor(
+        private val smsVerificationService: SmsVerificationService) : BaseRestController() {
 
     @RequestMapping(value = "/request/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
@@ -47,7 +45,7 @@ class SmsVerificationRestController : BaseRestController() {
             @RequestParam clientUuid: String,
             @RequestParam mobileNumber: String,
             @RequestParam password: String): SmsVerificationJsonObject {
-        val smsVerification = smsVerificationService!!.requestSmsChallenge(clientUuid, mobileNumber, password)
+        val smsVerification = smsVerificationService.requestSmsChallenge(clientUuid, mobileNumber, password)
         return SmsVerificationJsonObject(smsVerification)
     }
 
@@ -56,7 +54,7 @@ class SmsVerificationRestController : BaseRestController() {
     fun requestRecoverySmsChallenge(
             @RequestParam mobileNumber: String,
             @RequestParam password: String): SmsVerificationJsonObject {
-        val smsVerification = smsVerificationService!!.requestRecoverySmsChallenge(mobileNumber, password)
+        val smsVerification = smsVerificationService.requestRecoverySmsChallenge(mobileNumber, password)
         return SmsVerificationJsonObject(smsVerification)
     }
 
@@ -66,7 +64,7 @@ class SmsVerificationRestController : BaseRestController() {
                            @RequestParam password: String,
                            @RequestParam smsChallenge: String,
                            @RequestParam clientChallenge: String): ClientJsonObject {
-        val client = smsVerificationService!!.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge)
+        val client = smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge)
         return ClientJsonObject(client)
     }
 }

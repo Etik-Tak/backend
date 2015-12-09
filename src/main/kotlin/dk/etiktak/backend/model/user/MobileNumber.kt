@@ -41,16 +41,16 @@ class MobileNumber constructor() {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "mobile_number_id")
-    var id: Long? = null
+    var id: Long = 0
 
     @Column(name = "mobileNumberHash", nullable = false, unique = true)
-    var mobileNumberHash: String? = null
+    var mobileNumberHash: String = ""
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date? = null
+    var creationTime: Date = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date? = null
+    var modificationTime: Date = Date()
 
 
     @PreUpdate

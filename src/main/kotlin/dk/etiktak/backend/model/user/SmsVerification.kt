@@ -41,16 +41,16 @@ import javax.persistence.*
 class SmsVerification {
 
     enum class SmsVerificationStatus {
-        PENDING, SENT, FAILED, VERIFIED
+        UNKNOWN, PENDING, SENT, FAILED, VERIFIED
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "sms_verification_id")
-    var id: Long? = null
+    var id: Long = 0
 
     @Column(name = "mobileNumberHash", nullable = false, unique = true)
-    var mobileNumberHash: String? = null
+    var mobileNumberHash: String = ""
 
     @Column(name = "smsHandle")
     var smsHandle: String? = null
@@ -62,13 +62,13 @@ class SmsVerification {
     var clientChallenge: String? = null
 
     @Column(name = "status", nullable = false)
-    var status: SmsVerificationStatus? = null
+    var status: SmsVerificationStatus = SmsVerificationStatus.UNKNOWN
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date? = null
+    var creationTime: Date = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date? = null
+    var modificationTime: Date = Date()
 
 
 

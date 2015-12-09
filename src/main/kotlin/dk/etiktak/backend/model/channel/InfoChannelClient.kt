@@ -40,24 +40,24 @@ class InfoChannelClient constructor() {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "info_channel_user_id")
-    private var id: Long? = null
+    private var id: Long = 0
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
-    private var client: Client? = null
+    private var client: Client = Client()
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_channel_id")
-    private var infoChannel: InfoChannel? = null
+    private var infoChannel: InfoChannel = InfoChannel()
 
     @OneToMany(mappedBy = "infoChannelClient", fetch = FetchType.LAZY)
     private var infoChannelRoles: MutableList<InfoChannelRole> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private var creationTime: Date? = null
+    private var creationTime: Date = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private var modificationTime: Date? = null
+    private var modificationTime: Date = Date()
 
 
 

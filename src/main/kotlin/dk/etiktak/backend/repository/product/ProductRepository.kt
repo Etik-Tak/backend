@@ -31,6 +31,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ProductRepository : PagingAndSortingRepository<Product, Long> {
-    fun findByUuid(uuid: String): Product
-    fun findByBarcode(barcode: String): Product
+    fun findByUuid(uuid: String): Product?
+    fun findByBarcode(barcode: String): Product?
 }

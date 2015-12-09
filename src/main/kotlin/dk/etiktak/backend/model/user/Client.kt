@@ -46,16 +46,16 @@ class Client constructor() {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "client_id")
-    var id: Long? = null
+    var id: Long = 0
 
     @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String? = null
+    var uuid: String = ""
 
     @Column(name = "mobileNumberHash_passwordHash_hashed", nullable = true, unique = true)
     var mobileNumberHashPasswordHashHashed: String? = null
 
     @Column(name = "verified", nullable = false)
-    var verified: Boolean? = null
+    var verified: Boolean = false
 
     @NotNull
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
@@ -65,10 +65,10 @@ class Client constructor() {
     var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date? = null
+    var creationTime: Date = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date? = null
+    var modificationTime: Date = Date()
 
 
     @PreUpdate

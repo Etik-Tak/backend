@@ -40,18 +40,18 @@ class ProductScan constructor() {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "product_scan_id")
-    var id: Long? = null
+    var id: Long = 0
 
     @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String? = null
+    var uuid: String = ""
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
-    var client: Client? = null
+    var client: Client = Client()
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "product_id")
-    var product: Product? = null
+    var product: Product = Product()
 
     @Column(name = "timestamp", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -61,10 +61,10 @@ class ProductScan constructor() {
     var location: Location? = null
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date? = null
+    var creationTime: Date = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date? = null
+    var modificationTime: Date = Date()
 
 
 

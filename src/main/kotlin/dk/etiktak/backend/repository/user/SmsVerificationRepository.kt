@@ -32,5 +32,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface SmsVerificationRepository : PagingAndSortingRepository<SmsVerification, Long> {
 
-    fun findByMobileNumberHash(mobileNumberHash: String): SmsVerification
+    fun findByMobileNumberHash(mobileNumberHash: String): SmsVerification?
 }

@@ -34,5 +34,5 @@ interface ProductScanRepository : PagingAndSortingRepository<ProductScan, Long> 
 
     fun findByClientUuid(clientUuid: String): List<ProductScan>
     fun findByProductUuid(clientUuid: String): List<ProductScan>
-    fun findByUuid(uuid: String): ProductScan
+    fun findByUuid(uuid: String): ProductScan?
 }

@@ -43,5 +43,5 @@ class InfoChannelRole constructor(): Role() {
     @NotNull
     @ManyToOne(optional = true)
     @JoinColumn(name = "roles")
-    var infoChannelClient: InfoChannelClient? = null
+    var infoChannelClient: InfoChannelClient = InfoChannelClient()
 }

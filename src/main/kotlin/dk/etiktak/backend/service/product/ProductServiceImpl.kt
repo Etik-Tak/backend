@@ -41,35 +41,47 @@ import org.springframework.util.Assert
 import org.springframework.util.StringUtils
 
 @Service
-class ProductServiceImpl : ProductService {
+class ProductServiceImpl @Autowired constructor(
+        private val productRepository: ProductRepository,
+        private val productScanRepository: ProductScanRepository,
+        private val clientRepository: ClientRepository,
+        private val locationRepository: LocationRepository) : ProductService {
+
     private val logger = LoggerFactory.getLogger(ProductServiceImpl::class.java)
 
-    @Autowired
-    private val productRepository: ProductRepository? = null
-
-    @Autowired
-    private val productScanRepository: ProductScanRepository? = null
-
-    @Autowired
-    private val clientRepository: ClientRepository? = null
-
-    @Autowired
-    private val locationRepository: LocationRepository? = null
-
+    /**
+     * Finds a product from the given UUID.
+     *
+     * @param uuid  UUID
+     * @return      Product with given UUID
+     */
     override fun getProductByUuid(uuid: String): Product? {
-        return productRepository!!.findByUuid(uuid)
+        return productRepository.findByUuid(uuid)
     }
 
+    /**
+     * Finds a product from the given barcode.
+     *
+     * @param barcode   Barcode
+     * @return          Product with given barcode
+     */
     override fun getProductByBarcode(barcode: String): Product? {
-        return productRepository!!.findByBarcode(barcode)
+        return productRepository.findByBarcode(barcode)
     }
 
+    /**
+     * Finds a product scan from the given uuid.
+     *
+     * @param uuid  UUID
+     * @return      Product scan with given UUID
+     */
     override fun getProductScanByUuid(uuid: String): ProductScan? {
-        return productScanRepository!!.findByUuid(uuid)
+        return productScanRepository.findByUuid(uuid)
     }
 
     /**
      * Finds a product from the given barcode and creates and returns a product scan.
+     *
      * @param barcode     Barcode
      * @param client      Client
      * @param location    Optional location
@@ -97,6 +109,7 @@ class ProductServiceImpl : ProductService {
 
     /**
      * Assigns a location to an already created product scan. Fails if location already assigned.
+     *
      * @param client         Client
      * @param productScan    Product scan entry
      * @param location       Location
@@ -104,7 +117,7 @@ class ProductServiceImpl : ProductService {
      */
     override fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan {
         Assert.isTrue(
-                client.uuid == productScan.client!!.uuid,
+                client.uuid == productScan.client.uuid,
                 "Client with UUID: " + client.uuid + " not owner of product scan with UUID: " + productScan.uuid)
 
         Assert.notNull(
@@ -113,10 +126,10 @@ class ProductServiceImpl : ProductService {
 
         Assert.isNull(
                 productScan.location,
-                "Location already set on product scan with UUID: " + productScan.uuid!!)
+                "Location already set on product scan with UUID: " + productScan.uuid)
 
         productScan.location = location
-        productScanRepository!!.save(productScan)
+        productScanRepository.save(productScan)
 
         return productScan
     }
@@ -124,6 +137,7 @@ class ProductServiceImpl : ProductService {
 
     /**
      * Creates a product scan, glues it together with product and client, and saves it all.
+     *
      * @param product     Product
      * @param client      Client
      * @param location    Optional location
@@ -143,11 +157,11 @@ class ProductServiceImpl : ProductService {
         product.productScans.add(productScan)
 
         if (location != null) {
-            locationRepository!!.save(location)
+            locationRepository.save(location)
         }
-        productScanRepository!!.save(productScan)
-        productRepository!!.save(product)
-        clientRepository!!.save(client)
+        productScanRepository.save(productScan)
+        productRepository.save(product)
+        clientRepository.save(client)
 
         return productScan
     }

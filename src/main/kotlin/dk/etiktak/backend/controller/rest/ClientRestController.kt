@@ -34,15 +34,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/service/client")
-class ClientRestController : BaseRestController() {
-
-    @Autowired
-    private val clientService: ClientService? = null
+class ClientRestController @Autowired constructor(
+        private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
     fun create(): ClientJsonObject {
-        val client = clientService!!.createClient()
+        val client = clientService.createClient()
         return ClientJsonObject(client)
     }
 }

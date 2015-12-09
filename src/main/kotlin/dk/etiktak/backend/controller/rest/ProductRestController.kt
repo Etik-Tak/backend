@@ -41,13 +41,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/service/product")
-class ProductRestController: BaseRestController() {
-
-    @Autowired
-    private val productService: ProductService? = null
-
-    @Autowired
-    private val clientService: ClientService? = null
+class ProductRestController @Autowired constructor(
+        private val productService: ProductService,
+        private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/retrieve/", method = arrayOf(RequestMethod.GET))
     fun getProduct(
@@ -55,10 +51,10 @@ class ProductRestController: BaseRestController() {
             @RequestParam(required = false) barcode: String?): BaseJsonObject? {
         var product: Product? = null
         if (!StringUtils.isEmpty(uuid)) {
-            product = productService!!.getProductByUuid(uuid!!)
+            product = productService.getProductByUuid(uuid!!)
         }
         if (!StringUtils.isEmpty(barcode)) {
-            product = productService!!.getProductByBarcode(barcode!!)
+            product = productService.getProductByBarcode(barcode!!)
         }
         if (product != null) {
             return ProductJsonObject(product)
@@ -73,9 +69,9 @@ class ProductRestController: BaseRestController() {
             @RequestParam clientUuid: String,
             @RequestParam(required = false) latitude: String?,
             @RequestParam(required = false) longitude: String?): BaseJsonObject {
-        val product = productService!!.getProductByBarcode(barcode)
-        if (product != null) {
-            val client = clientService!!.getByUuid(clientUuid)
+        val product = productService.getProductByBarcode(barcode)
+        val client = clientService.getByUuid(clientUuid)
+        if (product != null && client != null) {
             var location: Location? = null
             if (!StringUtils.isEmpty(latitude) && !StringUtils.isEmpty(longitude)) {
                 location = Location(latitude!!.toDouble(), longitude!!.toDouble())
@@ -92,10 +88,14 @@ class ProductRestController: BaseRestController() {
             @RequestParam productScanUuid: String,
             @RequestParam latitude: String,
             @RequestParam longitude: String): BaseJsonObject {
-        val client = clientService!!.getByUuid(clientUuid)
-        val productScan = productService!!.getProductScanByUuid(productScanUuid)!!
+        val client = clientService.getByUuid(clientUuid)
+        val productScan = productService.getProductScanByUuid(productScanUuid)
         val location = Location(latitude.toDouble(), longitude.toDouble())
 
-        return ProductScanJsonObject(productService.assignLocationToProductScan(client, productScan, location))
+        if (client != null && productScan != null) {
+            return ProductScanJsonObject(productService.assignLocationToProductScan(client, productScan, location))
+        } else {
+            return BaseJsonObject(BaseJsonObject.RESULT_NOT_FOUND)
+        }
     }
 }

@@ -44,22 +44,22 @@ class Location constructor() {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "location_id")
-    var id: Long? = null
+    var id: Long = 0
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date? = null
+    var creationTime: Date = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date? = null
+    var modificationTime: Date = Date()
 
     @Column(name = "latitude", nullable = false)
-    var latitude: Double? = null
+    var latitude: Double = 0.0
 
     @Column(name = "longitude", nullable = false)
-    var longitude: Double? = null
+    var longitude: Double = 0.0
 
     @Column(name = "name", columnDefinition = "TEXT")
-    var name: String? = null
+    var name: String = ""
 
 
 

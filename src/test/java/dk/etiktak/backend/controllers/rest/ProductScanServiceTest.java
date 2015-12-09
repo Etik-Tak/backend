@@ -258,9 +258,9 @@ public class ProductScanServiceTest extends BaseRestTest {
     private void validateProductScan(ProductScan productScan, Product product, Client client, Location location) {
         Assert.isTrue(productScan.getProduct().getUuid().equals(product.getUuid()), "Product scan's product was not the product expected!");
         Assert.isTrue(productScan.getClient().getUuid().equals(client.getUuid()), "Product scan's client was not the client expected!");
-        if (location != null) {
-            Assert.isTrue(productScan.getLocation().getLatitude().equals(location.getLatitude()), "Latitude for product scan not correct");
-            Assert.isTrue(productScan.getLocation().getLongitude().equals(location.getLongitude()), "Longitude for product scan not correct");
+        if (location != null && productScan.getLocation() != null) {
+            Assert.isTrue(productScan.getLocation().getLatitude() == location.getLatitude(), "Latitude for product scan not correct");
+            Assert.isTrue(productScan.getLocation().getLongitude() == location.getLongitude(), "Longitude for product scan not correct");
         } else {
             Assert.isNull(productScan.getLocation(), "Location for product scan was expected to be null, but was not!");
         }
