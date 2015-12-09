@@ -23,48 +23,52 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.controllers.rest;
+package dk.etiktak.backend.controllers.rest
 
-import org.junit.Assert;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
+import org.junit.Assert
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
+import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.web.context.WebApplicationContext
+import java.nio.charset.Charset
 
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup
 
-import java.nio.charset.Charset;
-import java.util.Arrays;
+open class BaseRestTest {
 
-public class BaseRestTest {
-    public static String serviceEndpoint() {
-        return "/service/";
+    fun serviceEndpoint(): String {
+        return "/service/"
     }
 
     @Autowired
-    private WebApplicationContext webApplicationContext;
+    private val webApplicationContext: WebApplicationContext? = null
 
     @Autowired
-    void setConverters(HttpMessageConverter<?>[] converters) {
-        this.mappingJackson2HttpMessageConverter = Arrays.asList(converters).stream().filter(
-                hmc -> hmc instanceof MappingJackson2HttpMessageConverter).findAny().get();
+    internal fun setConverters(converters: Array<HttpMessageConverter<Any>>) {
+        this.mappingJackson2HttpMessageConverter = converters.asList().filter(
+                { hmc -> hmc is MappingJackson2HttpMessageConverter }).first()
 
         Assert.assertNotNull("the JSON message converter must not be null",
-                this.mappingJackson2HttpMessageConverter);
+                this.mappingJackson2HttpMessageConverter)
     }
 
-    protected MediaType jsonContentType = new MediaType(
-            MediaType.APPLICATION_JSON.getType(),
-            MediaType.APPLICATION_JSON.getSubtype(),
-            Charset.forName("utf8"));
+    protected var jsonContentType = MediaType(
+            MediaType.APPLICATION_JSON.type,
+            MediaType.APPLICATION_JSON.subtype,
+            Charset.forName("utf8"))
 
-    protected MockMvc mockMvc;
+    protected var mockMvcVar: MockMvc? = null
 
-    protected HttpMessageConverter mappingJackson2HttpMessageConverter;
+    protected var mappingJackson2HttpMessageConverter: HttpMessageConverter<Any>? = null
 
-    public void setup() throws Exception {
-        mockMvc = webAppContextSetup(webApplicationContext).build();
+    @Throws(Exception::class)
+    open fun setup() {
+        mockMvcVar = webAppContextSetup(webApplicationContext).build()
+    }
+
+    fun mockMvc(): MockMvc {
+        return mockMvcVar!!
     }
 }

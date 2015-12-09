@@ -54,7 +54,7 @@ class ProductRetrievalServiceTest : BaseRestTest() {
     private var product2: Product = Product()
 
     fun serviceEndpoint(postfix: String): String {
-        return BaseRestTest.serviceEndpoint() + "product/retrieve/" + postfix
+        return super.serviceEndpoint() + "product/retrieve/" + postfix
     }
 
     @Before
@@ -79,7 +79,7 @@ class ProductRetrievalServiceTest : BaseRestTest() {
     @Test
     @Throws(Exception::class)
     fun retrieveProductByUuid() {
-        mockMvc.perform(
+        mockMvc().perform(
                 get(serviceEndpoint(""))
                         .param("uuid", product1.uuid))
                 .andExpect(status().isOk)
@@ -96,7 +96,7 @@ class ProductRetrievalServiceTest : BaseRestTest() {
     @Test
     @Throws(Exception::class)
     fun retrieveProductByEan13Barcode() {
-        mockMvc.perform(
+        mockMvc().perform(
                 get(serviceEndpoint(""))
                         .param("barcode", product1.barcode))
                 .andExpect(status().isOk)
@@ -113,7 +113,7 @@ class ProductRetrievalServiceTest : BaseRestTest() {
     @Test
     @Throws(Exception::class)
     fun retrieveProductByUPCBarcode() {
-        mockMvc.perform(
+        mockMvc().perform(
                 get(serviceEndpoint(""))
                         .param("barcode", product2.barcode))
                 .andExpect(status().isOk)

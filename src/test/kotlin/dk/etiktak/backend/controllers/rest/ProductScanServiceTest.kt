@@ -86,7 +86,7 @@ class ProductScanServiceTest : BaseRestTest() {
     private var location2: Location = Location()
 
     fun serviceEndpoint(postfix: String): String {
-        return BaseRestTest.serviceEndpoint() + "product/scan/" + postfix
+        return super.serviceEndpoint() + "product/scan/" + postfix
     }
 
     @Before
@@ -123,7 +123,7 @@ class ProductScanServiceTest : BaseRestTest() {
     @Test
     @Throws(Exception::class)
     fun scanProductWithLocation() {
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", product1.barcode)
                         .param("clientUuid", client1.uuid)
@@ -146,7 +146,7 @@ class ProductScanServiceTest : BaseRestTest() {
     @Test
     @Throws(Exception::class)
     fun scanProductWithoutLocation() {
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", product1.barcode)
                         .param("clientUuid", client1.uuid))
@@ -170,7 +170,7 @@ class ProductScanServiceTest : BaseRestTest() {
     fun assignLocationToProductScan() {
         val productScan = scanProduct()
 
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
                         .param("clientUuid", client1.uuid)
                         .param("productScanUuid", productScan.uuid)
@@ -197,7 +197,7 @@ class ProductScanServiceTest : BaseRestTest() {
         val productScan = scanProduct()
 
         // Assign first location
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
                         .param("clientUuid", client1.uuid)
                         .param("productScanUuid", productScan.uuid)
@@ -207,7 +207,7 @@ class ProductScanServiceTest : BaseRestTest() {
 
         // Do it once again and fail
         exception.expect(NestedServletException::class.java)
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
                         .param("clientUuid", client1.uuid)
                         .param("productScanUuid", productScan.uuid)
@@ -223,7 +223,7 @@ class ProductScanServiceTest : BaseRestTest() {
     fun cannotAssignEmptyLocationToProductScanWithLocationAlreadyAssigned() {
         val productScan = scanProduct()
 
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
                         .param("clientUuid", client1.uuid)
                         .param("productScanUuid", productScan.uuid))
@@ -233,7 +233,7 @@ class ProductScanServiceTest : BaseRestTest() {
 
     @Throws(Exception::class)
     private fun scanProduct(): ProductScan {
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", product1.barcode)
                         .param("clientUuid", client1.uuid))

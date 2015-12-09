@@ -71,7 +71,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
     private var smsChallenge: String = ""
 
     fun serviceEndpoint(postfix: String): String {
-        return BaseRestTest.serviceEndpoint() + "verification/" + postfix
+        return super.serviceEndpoint() + "verification/" + postfix
     }
 
     @Before
@@ -102,7 +102,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
     fun requestSmsVerification() {
 
         // Request SMS verification
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.uuid)
                         .param("mobileNumber", "12345678")
@@ -121,7 +121,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
     fun cannotRequestSmsVerificationWithEmptyPasssword() {
 
         // Request SMS verification with empty password
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.uuid)
                         .param("mobileNumber", "12345678"))
@@ -136,7 +136,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
     fun cannotRequestSmsVerificationWithEmptyClientUuid() {
 
         // Request SMS verification with empty client uuid
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234"))
@@ -151,7 +151,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
     fun cannotRequestSmsVerificationWithEmptyMobileNumber() {
 
         // Request SMS verification with empty mobile number
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.uuid)
                         .param("password", "test1234"))
@@ -166,7 +166,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
     fun cannotRequestSmsVerificationWithNoParameters() {
 
         // Request SMS verification with no parameters
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/")))
                 .andExpect(status().`is`(400))
     }
@@ -179,7 +179,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
     fun requestMultipleSmsVerificationsToSameMobileNumber() {
 
         // Request first SMS verification
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.uuid)
                         .param("mobileNumber", "12345678")
@@ -190,7 +190,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
                 .andExpect(jsonPath("$.clientChallenge", notNullValue()))
 
         // Request second SMS verification
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.uuid)
                         .param("mobileNumber", "12345678")
@@ -209,7 +209,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
     fun cannotRequestMultipleSmsVerificationsToSameMobileNumberWithDifferentClients() {
 
         // Request first SMS verification
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.uuid)
                         .param("mobileNumber", "12345678")
@@ -221,7 +221,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
 
         // Request second SMS verification with another client uuid
         exception.expect(NestedServletException::class.java)
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("clientUuid", client2.uuid)
                         .param("mobileNumber", "12345678")
@@ -237,7 +237,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
         val smsVerification = requestAndModifySmsVerification()
 
         // Verify challenge
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234")
@@ -259,7 +259,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
 
         // Verify challenge
         exception.expect(NestedServletException::class.java)
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234")
@@ -277,7 +277,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
 
         // Verify challenge
         exception.expect(NestedServletException::class.java)
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234")
@@ -295,7 +295,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
 
         // Verify challenge
         exception.expect(NestedServletException::class.java)
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "wrong")
                         .param("password", "test1234")
@@ -313,7 +313,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
 
         // Verify challenge
         exception.expect(NestedServletException::class.java)
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
                         .param("password", "wrong_password")
@@ -330,7 +330,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
         requestAndVerifySmsVerification()
 
         // Request SMS verification
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/recovery/"))
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234"))
@@ -349,7 +349,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
         requestAndVerifySmsVerification()
 
         // Request SMS verification
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/recovery/"))
                         .param("mobileNumber", "12345678"))
                 .andExpect(status().`is`(400))
@@ -364,7 +364,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
         requestAndVerifySmsVerification()
 
         // Request SMS verification
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/recovery/"))
                         .param("password", "test1234"))
                 .andExpect(status().`is`(400))
@@ -379,7 +379,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
         requestAndVerifySmsVerification()
 
         // Request SMS verification
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/recovery/")))
                 .andExpect(status().`is`(400))
     }
@@ -394,7 +394,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
         val smsVerification = requestAndModifyRecoverySmsVerification()
 
         // Verify challenge
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234")
@@ -416,7 +416,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
         val smsVerification = requestAndModifyRecoverySmsVerification()
 
         // Verify challenge
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
                         .param("smsChallenge", smsChallenge)
@@ -429,7 +429,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
     private fun requestAndVerifySmsVerification() {
         val smsVerification = requestAndModifySmsVerification()
 
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("verify/"))
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234")
@@ -439,7 +439,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
 
     @Throws(Exception::class)
     private fun requestAndModifySmsVerification(): SmsVerification {
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("clientUuid", client1.uuid)
                         .param("mobileNumber", "12345678")
@@ -450,7 +450,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
 
     @Throws(Exception::class)
     private fun requestAndModifyRecoverySmsVerification(): SmsVerification {
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("request/recovery/"))
                         .param("mobileNumber", "12345678")
                         .param("password", "test1234"))

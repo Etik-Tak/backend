@@ -50,7 +50,7 @@ class ClientServiceTest : BaseRestTest() {
     private val clientRepository: ClientRepository? = null
 
     fun serviceEndpoint(postfix: String): String {
-        return BaseRestTest.serviceEndpoint() + "client/" + postfix
+        return super.serviceEndpoint() + "client/" + postfix
     }
 
     @Before
@@ -72,7 +72,7 @@ class ClientServiceTest : BaseRestTest() {
     @Test
     @Throws(Exception::class)
     fun createClient() {
-        mockMvc.perform(
+        mockMvc().perform(
                 post(serviceEndpoint("create/")))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
