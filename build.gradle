@@ -50,3 +50,7 @@ dependencies {
 task wrapper(type: Wrapper) {
     gradleVersion = '2.4'
 }
+
+springBoot {
+    mainClass = 'dk.etiktak.backend.ApplicationKt'
+}

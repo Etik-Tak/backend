@@ -23,15 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend;
+package dk.etiktak.backend
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringApplication
+import org.springframework.boot.autoconfigure.SpringBootApplication
 
 @SpringBootApplication
-public class Application {
+open class Application
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+fun main(args: Array<String>) {
+    SpringApplication.run(Application::class.java, *args)
 }
