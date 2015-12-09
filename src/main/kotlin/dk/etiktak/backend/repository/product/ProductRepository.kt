@@ -23,15 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.user;
+package dk.etiktak.backend.repository.product
 
-import dk.etiktak.backend.model.user.Client;
-
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.stereotype.Repository;
+import dk.etiktak.backend.model.product.Product
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
 @Repository
-public interface ClientRepository extends PagingAndSortingRepository<Client, Long> {
-    Client findByUuid(String uuid);
-    Client findByMobileNumberHashPasswordHashHashed(String mobileNumberHashedPaswordHashedHashed);
+interface ProductRepository : PagingAndSortingRepository<Product, Long> {
+    fun findByUuid(uuid: String): Product
+    fun findByBarcode(barcode: String): Product
 }

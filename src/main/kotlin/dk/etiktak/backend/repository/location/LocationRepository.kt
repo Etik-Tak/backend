@@ -22,15 +22,13 @@
 // ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-package dk.etiktak.backend.repository.product;
 
-import dk.etiktak.backend.model.product.Product;
+package dk.etiktak.backend.repository.location
 
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.stereotype.Repository;
+import dk.etiktak.backend.model.product.Product
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
 @Repository
-public interface ProductRepository extends PagingAndSortingRepository<Product, Long> {
-    Product findByUuid(String uuid);
-    Product findByBarcode(String barcode);
+interface LocationRepository : PagingAndSortingRepository<Product, Long> {
 }

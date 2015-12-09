@@ -22,13 +22,15 @@
 // ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-package dk.etiktak.backend.repository.location;
 
-import dk.etiktak.backend.model.product.Location;
+package dk.etiktak.backend.repository.user
 
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.stereotype.Repository;
+import dk.etiktak.backend.model.user.MobileNumber
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
 @Repository
-public interface LocationRepository extends PagingAndSortingRepository<Location, Long> {
+interface MobileNumberRepository : PagingAndSortingRepository<MobileNumber, Long> {
+
+    fun findByMobileNumberHash(mobileNumberHash: String): MobileNumber
 }

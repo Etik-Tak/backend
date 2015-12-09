@@ -23,12 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.user;
+package dk.etiktak.backend.repository.user
 
-import dk.etiktak.backend.model.user.SmsVerification;
+import dk.etiktak.backend.model.user.SmsVerification
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-import org.springframework.data.repository.PagingAndSortingRepository;
+@Repository
+interface SmsVerificationRepository : PagingAndSortingRepository<SmsVerification, Long> {
 
-public interface SmsVerificationRepository extends PagingAndSortingRepository<SmsVerification, Long> {
-    SmsVerification findByMobileNumberHash(String mobileNumberHash);
+    fun findByMobileNumberHash(mobileNumberHash: String): SmsVerification
 }
