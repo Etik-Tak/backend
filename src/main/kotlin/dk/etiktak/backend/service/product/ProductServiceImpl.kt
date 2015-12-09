@@ -102,7 +102,7 @@ class ProductServiceImpl : ProductService {
      * @param location       Location
      * @return               Updated product scan
      */
-    override fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan? {
+    override fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan {
         Assert.isTrue(
                 client.uuid == productScan.client!!.uuid,
                 "Client with UUID: " + client.uuid + " not owner of product scan with UUID: " + productScan.uuid)
@@ -129,7 +129,7 @@ class ProductServiceImpl : ProductService {
      * @param location    Optional location
      * @return            Product scan
      */
-    private fun createProductScan(product: Product, client: Client, location: Location?): ProductScan? {
+    private fun createProductScan(product: Product, client: Client, location: Location?): ProductScan {
         val productScan = ProductScan()
         productScan.uuid = CryptoUtil.uuid()
         productScan.product = product

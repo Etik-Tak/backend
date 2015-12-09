@@ -38,5 +38,5 @@ interface ProductService {
     fun getProductScanByUuid(uuid: String): ProductScan?
 
     fun scanProduct(barcode: String, client: Client, location: Location?): ProductScan?
-    fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan?
+    fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan
 }
