@@ -25,5 +25,22 @@
 
 package dk.etiktak.backend.controller.rest
 
+import dk.etiktak.backend.controller.rest.json.addMessage
+import java.util.*
+
+enum class WebserviceResult {
+    OK,
+    NotFound
+}
+
 open class BaseRestController {
+    fun okMap() : HashMap<String, Any> {
+        return hashMapOf<String, Any>()
+                .addMessage(WebserviceResult.OK.name)
+    }
+
+    fun notFoundMap() : HashMap<String, Any> {
+        return hashMapOf<String, Any>()
+                .addMessage(WebserviceResult.NotFound.name)
+    }
 }

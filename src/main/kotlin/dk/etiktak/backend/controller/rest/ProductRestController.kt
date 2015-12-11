@@ -25,9 +25,7 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controllers.rest.json.BaseJsonObject
-import dk.etiktak.backend.controllers.rest.json.ProductJsonObject
-import dk.etiktak.backend.controllers.rest.json.ProductScanJsonObject
+import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.service.client.ClientService
@@ -38,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.*
 
 @RestController
 @RequestMapping("/service/product")
@@ -48,7 +47,7 @@ class ProductRestController @Autowired constructor(
     @RequestMapping(value = "/retrieve/", method = arrayOf(RequestMethod.GET))
     fun getProduct(
             @RequestParam(required = false) uuid: String?,
-            @RequestParam(required = false) barcode: String?): BaseJsonObject? {
+            @RequestParam(required = false) barcode: String?): HashMap<String, Any> {
         var product: Product? = null
         if (!StringUtils.isEmpty(uuid)) {
             product = productService.getProductByUuid(uuid!!)
@@ -56,11 +55,10 @@ class ProductRestController @Autowired constructor(
         if (!StringUtils.isEmpty(barcode)) {
             product = productService.getProductByBarcode(barcode!!)
         }
-        if (product != null) {
-            return ProductJsonObject(product)
-        } else {
-            return BaseJsonObject(BaseJsonObject.RESULT_NOT_FOUND)
+        product?.let {
+            return okMap().add(product)
         }
+        return notFoundMap()
     }
 
     @RequestMapping(value = "/scan/", method = arrayOf(RequestMethod.POST))
@@ -68,18 +66,20 @@ class ProductRestController @Autowired constructor(
             @RequestParam barcode: String,
             @RequestParam clientUuid: String,
             @RequestParam(required = false) latitude: String?,
-            @RequestParam(required = false) longitude: String?): BaseJsonObject {
+            @RequestParam(required = false) longitude: String?): HashMap<String, Any> {
         val product = productService.getProductByBarcode(barcode)
-        val client = clientService.getByUuid(clientUuid)
-        if (product != null && client != null) {
-            var location: Location? = null
-            if (!StringUtils.isEmpty(latitude) && !StringUtils.isEmpty(longitude)) {
-                location = Location(latitude!!.toDouble(), longitude!!.toDouble())
+        product?.let {
+            val client = clientService.getByUuid(clientUuid)
+            client?.let {
+                var location: Location? = null
+                if (!StringUtils.isEmpty(latitude) && !StringUtils.isEmpty(longitude)) {
+                    location = Location(latitude!!.toDouble(), longitude!!.toDouble())
+                }
+                val productScan = productService.scanProduct(barcode, client, location)
+                return okMap().add(productScan)
             }
-            return ProductScanJsonObject(productService.scanProduct(barcode, client, location))
-        } else {
-            return BaseJsonObject(BaseJsonObject.RESULT_NOT_FOUND)
         }
+        return notFoundMap()
     }
 
     @RequestMapping(value = "/scan/assign/location/", method = arrayOf(RequestMethod.POST))
@@ -87,15 +87,16 @@ class ProductRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam productScanUuid: String,
             @RequestParam latitude: String,
-            @RequestParam longitude: String): BaseJsonObject {
+            @RequestParam longitude: String): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid)
-        val productScan = productService.getProductScanByUuid(productScanUuid)
-        val location = Location(latitude.toDouble(), longitude.toDouble())
-
-        if (client != null && productScan != null) {
-            return ProductScanJsonObject(productService.assignLocationToProductScan(client, productScan, location))
-        } else {
-            return BaseJsonObject(BaseJsonObject.RESULT_NOT_FOUND)
+        client?.let {
+            val productScan = productService.getProductScanByUuid(productScanUuid)
+            productScan?.let {
+                val location = Location(latitude.toDouble(), longitude.toDouble())
+                val resultProductScan = productService.assignLocationToProductScan(client, productScan, location)
+                return okMap().add(resultProductScan)
+            }
         }
+        return notFoundMap()
     }
 }

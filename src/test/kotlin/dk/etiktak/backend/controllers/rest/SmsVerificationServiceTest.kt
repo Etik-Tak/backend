@@ -26,6 +26,7 @@
 package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
+import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.controllers.rest.json.BaseJsonObject
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.model.user.SmsVerification
@@ -109,8 +110,8 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("password", "test1234"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientChallenge", notNullValue()))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
     }
 
     /**
@@ -186,8 +187,8 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("password", "test1234"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientChallenge", notNullValue()))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
 
         // Request second SMS verification
         mockMvc().perform(
@@ -197,8 +198,8 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("password", "test1234"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientChallenge", notNullValue()))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
     }
 
     /**
@@ -216,8 +217,8 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("password", "test1234"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientChallenge", notNullValue()))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
 
         // Request second SMS verification with another client uuid
         exception.expect(NestedServletException::class.java)
@@ -245,8 +246,8 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("clientChallenge", smsVerification.clientChallenge))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientUuid", `is`(client1.uuid)))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.client.uuid", `is`(client1.uuid)))
     }
 
     /**
@@ -336,8 +337,8 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("password", "test1234"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientChallenge", notNullValue()))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
     }
 
     /**
@@ -402,8 +403,8 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("clientChallenge", smsVerification.clientChallenge))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientUuid", `is`(client1.uuid)))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.client.uuid", `is`(client1.uuid)))
     }
 
     /**

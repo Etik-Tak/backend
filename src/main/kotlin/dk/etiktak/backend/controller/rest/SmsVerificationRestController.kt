@@ -25,14 +25,14 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controllers.rest.json.ClientJsonObject
-import dk.etiktak.backend.controllers.rest.json.SmsVerificationJsonObject
+import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.service.client.SmsVerificationService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.*
 
 @RestController
 @RequestMapping("/service/verification")
@@ -44,18 +44,18 @@ class SmsVerificationRestController @Autowired constructor(
     fun requestSmsChallenge(
             @RequestParam clientUuid: String,
             @RequestParam mobileNumber: String,
-            @RequestParam password: String): SmsVerificationJsonObject {
+            @RequestParam password: String): HashMap<String, Any> {
         val smsVerification = smsVerificationService.requestSmsChallenge(clientUuid, mobileNumber, password)
-        return SmsVerificationJsonObject(smsVerification)
+        return okMap().add(smsVerification)
     }
 
     @RequestMapping(value = "/request/recovery/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
     fun requestRecoverySmsChallenge(
             @RequestParam mobileNumber: String,
-            @RequestParam password: String): SmsVerificationJsonObject {
+            @RequestParam password: String): HashMap<String, Any> {
         val smsVerification = smsVerificationService.requestRecoverySmsChallenge(mobileNumber, password)
-        return SmsVerificationJsonObject(smsVerification)
+        return okMap().add(smsVerification)
     }
 
     @RequestMapping(value = "/verify/", method = arrayOf(RequestMethod.POST))
@@ -63,8 +63,8 @@ class SmsVerificationRestController @Autowired constructor(
     fun verifySmsChallenge(@RequestParam mobileNumber: String,
                            @RequestParam password: String,
                            @RequestParam smsChallenge: String,
-                           @RequestParam clientChallenge: String): ClientJsonObject {
+                           @RequestParam clientChallenge: String): HashMap<String, Any> {
         val client = smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge)
-        return ClientJsonObject(client)
+        return okMap().add(client)
     }
 }

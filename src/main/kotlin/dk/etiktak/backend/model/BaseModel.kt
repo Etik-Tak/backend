@@ -23,26 +23,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.controllers.rest.json;
+/**
+ * The base model class. Using this makes us able to create extensions on models, which fx. is used
+ * when creating model map.
+ */
 
-import dk.etiktak.backend.model.user.Client;
+package dk.etiktak.backend.model
 
-public class ClientJsonObject extends BaseJsonObject {
-    private String clientUuid;
-    private Boolean verified;
-
-    public ClientJsonObject(Client client) {
-        if (client != null) {
-            this.clientUuid = client.getUuid();
-            this.verified = client.getVerified();
-        }
-    }
-
-    public String getClientUuid() {
-        return clientUuid;
-    }
-
-    public Boolean getVerified() {
-        return verified;
-    }
+open class BaseModel {
 }

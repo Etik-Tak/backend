@@ -29,13 +29,14 @@
 
 package dk.etiktak.backend.model.product
 
+import dk.etiktak.backend.model.BaseModel
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "products")
-class Product constructor() {
+class Product constructor() : BaseModel() {
 
     enum class BarcodeType {
         EAN13,

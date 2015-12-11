@@ -29,13 +29,14 @@
 
 package dk.etiktak.backend.model.product
 
+import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
 @Entity(name = "product_scans")
-class ProductScan constructor() {
+class ProductScan constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

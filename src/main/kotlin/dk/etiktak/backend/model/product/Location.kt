@@ -29,12 +29,13 @@
 
 package dk.etiktak.backend.model.product
 
+import dk.etiktak.backend.model.BaseModel
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
 @Entity(name = "location")
-class Location constructor() {
+class Location constructor() : BaseModel() {
 
     constructor(latitude: Double, longitude: Double): this() {
         this.latitude = latitude

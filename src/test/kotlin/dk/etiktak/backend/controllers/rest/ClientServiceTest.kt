@@ -26,7 +26,7 @@
 package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
-import dk.etiktak.backend.controllers.rest.json.BaseJsonObject
+import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.repository.user.ClientRepository
 import org.junit.After
 import org.junit.Before
@@ -76,7 +76,7 @@ class ClientServiceTest : BaseRestTest() {
                 post(serviceEndpoint("create/")))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.clientUuid", notNullValue()))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.client.uuid", notNullValue()))
     }
 }

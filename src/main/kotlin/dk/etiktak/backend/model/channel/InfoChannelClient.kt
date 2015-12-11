@@ -29,13 +29,14 @@
 
 package dk.etiktak.backend.model.channel
 
+import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
 @Entity(name = "info_channel_clients")
-class InfoChannelClient constructor() {
+class InfoChannelClient constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

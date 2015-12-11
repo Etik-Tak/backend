@@ -29,13 +29,14 @@
 
 package dk.etiktak.backend.model.acl
 
+import dk.etiktak.backend.model.BaseModel
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
 @Entity(name = "roles")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public open class Role constructor() {
+public open class Role constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

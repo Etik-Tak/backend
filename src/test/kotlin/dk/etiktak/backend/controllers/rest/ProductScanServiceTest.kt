@@ -26,6 +26,7 @@
 package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
+import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.controllers.rest.json.BaseJsonObject
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
@@ -131,11 +132,12 @@ class ProductScanServiceTest : BaseRestTest() {
                         .param("longitude", "" + location1.longitude))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.uuid", notNullValue()))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.product.name", `is`(product1.name)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product1.barcodeType.name)))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.productScan.uuid", notNullValue()))
+                .andExpect(jsonPath("$.productScan.product.uuid", `is`(product1.uuid)))
+                .andExpect(jsonPath("$.productScan.product.name", `is`(product1.name)))
+                .andExpect(jsonPath("$.productScan.product.barcode", `is`(product1.barcode)))
+                .andExpect(jsonPath("$.productScan.product.barcodeType", `is`(product1.barcodeType.name)))
 
         validateProductScan(product1, client1, location1)
     }
@@ -152,12 +154,12 @@ class ProductScanServiceTest : BaseRestTest() {
                         .param("clientUuid", client1.uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.uuid", notNullValue()))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.product.name", `is`(product1.name)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product1.barcodeType.name)))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.productScan.uuid", notNullValue()))
+                .andExpect(jsonPath("$.productScan.product.uuid", `is`(product1.uuid)))
+                .andExpect(jsonPath("$.productScan.product.name", `is`(product1.name)))
+                .andExpect(jsonPath("$.productScan.product.barcode", `is`(product1.barcode)))
+                .andExpect(jsonPath("$.productScan.product.barcodeType", `is`(product1.barcodeType.name)))
 
         validateProductScan(product1, client1)
     }
@@ -178,14 +180,14 @@ class ProductScanServiceTest : BaseRestTest() {
                         .param("longitude", "" + location1.longitude))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(BaseJsonObject.RESULT_OK)))
-                .andExpect(jsonPath("$.uuid", `is`(productScan.uuid)))
-                .andExpect(jsonPath("$.location.latitude", `is`(location1.latitude)))
-                .andExpect(jsonPath("$.location.longitude", `is`(location1.longitude)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.product.name", `is`(product1.name)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product1.barcodeType.name)))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.productScan.uuid", `is`(productScan.uuid)))
+                .andExpect(jsonPath("$.productScan.location.latitude", `is`(location1.latitude)))
+                .andExpect(jsonPath("$.productScan.location.longitude", `is`(location1.longitude)))
+                .andExpect(jsonPath("$.productScan.product.uuid", `is`(product1.uuid)))
+                .andExpect(jsonPath("$.productScan.product.name", `is`(product1.name)))
+                .andExpect(jsonPath("$.productScan.product.barcode", `is`(product1.barcode)))
+                .andExpect(jsonPath("$.productScan.product.barcodeType", `is`(product1.barcodeType.name)))
     }
 
     /**
@@ -237,8 +239,8 @@ class ProductScanServiceTest : BaseRestTest() {
                 post(serviceEndpoint(""))
                         .param("barcode", product1.barcode)
                         .param("clientUuid", client1.uuid))
-                .andExpect(jsonPath("$.uuid", notNullValue()))
-                .andExpect(jsonPath("$.location", nullValue()))
+                .andExpect(jsonPath("$.productScan.uuid", notNullValue()))
+                .andExpect(jsonPath("$.productScan.location", nullValue()))
 
         val productScans = productScanRepository!!.findByProductUuid(product1.uuid)
         return productScans[0]
