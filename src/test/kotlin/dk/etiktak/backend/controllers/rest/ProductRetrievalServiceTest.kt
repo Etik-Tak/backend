@@ -27,7 +27,6 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
-import dk.etiktak.backend.controllers.rest.json.BaseJsonObject
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.util.CryptoUtil

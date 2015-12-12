@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+/**
+ * Utility (extension) methods for converting model objects to JSON model maps.
+ */
+
 package dk.etiktak.backend.controller.rest.json
 
 import dk.etiktak.backend.model.product.Location

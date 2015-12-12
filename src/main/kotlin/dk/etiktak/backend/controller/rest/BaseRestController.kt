@@ -23,6 +23,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+/**
+ * The base class of the rest controllers. Includes utility methods to
+ * easily create model maps.
+ */
+
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.addMessage
