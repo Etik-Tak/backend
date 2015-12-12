@@ -24,7 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a specific list of roles for a client in relationship to a info channel.
+ * Represents a reference to an info source publication, including url and summary of content.
  */
 
 package dk.etiktak.backend.model.infosource
@@ -43,6 +43,15 @@ class InfoSourceReference constructor() : BaseModel() {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "info_source_reference_id")
     var id: Long = 0
+
+    @Column(name = "uuid", nullable = false, unique = true)
+    var uuid: String = ""
+
+    @Column(name = "url")
+    var url: String = ""
+
+    @Column(name = "title")
+    var title: String = ""
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
