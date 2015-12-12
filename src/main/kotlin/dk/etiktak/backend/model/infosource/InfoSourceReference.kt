@@ -24,55 +24,44 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * A client representation, i.e. a (mobile) user. Can be in two states:
- *
- * - Unverified; Object contains random uuid, has verified set to false and contains empty hash of mobile number and password
- * - Verified; Object contains random uuid, has verified set to true and contains a hash of mobile number and password
- *
- **/
+ * Represents a specific list of roles for a client in relationship to a info channel.
+ */
 
-package dk.etiktak.backend.model.user
+package dk.etiktak.backend.model.infosource
 
-import dk.etiktak.backend.model.channel.InfoChannelClient
-import dk.etiktak.backend.model.infosource.InfoSourceReference
-import dk.etiktak.backend.model.product.ProductScan
+import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.channel.InfoChannel
+import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 
-@Entity(name = "clients")
-class Client constructor() {
+@Entity(name = "info_source_reference")
+class InfoSourceReference constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "client_id")
+    @Column(name = "info_source_reference_id")
     var id: Long = 0
 
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var client: Client = Client()
 
-    @Column(name = "mobileNumberHash_passwordHash_hashed", nullable = true, unique = true)
-    var mobileNumberHashPasswordHashHashed: String? = null
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "info_channel_id")
+    var infoChannel: InfoChannel = InfoChannel()
 
-    @Column(name = "verified", nullable = false)
-    var verified: Boolean = false
-
-    @NotNull
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-    var productScans: MutableList<ProductScan> = ArrayList()
-
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-    var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
-
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-    var infoSourceReference: MutableList<InfoSourceReference> = ArrayList()
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "info_source_id")
+    var infoSource: InfoSource= InfoSource()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
+
 
 
     @PreUpdate

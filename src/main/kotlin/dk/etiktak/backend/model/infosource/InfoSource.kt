@@ -24,55 +24,44 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * A client representation, i.e. a (mobile) user. Can be in two states:
- *
- * - Unverified; Object contains random uuid, has verified set to false and contains empty hash of mobile number and password
- * - Verified; Object contains random uuid, has verified set to true and contains a hash of mobile number and password
- *
- **/
+ * Represents a info source that can be referenced by channels.
+ */
 
-package dk.etiktak.backend.model.user
+package dk.etiktak.backend.model.infosource
 
-import dk.etiktak.backend.model.channel.InfoChannelClient
-import dk.etiktak.backend.model.infosource.InfoSourceReference
-import dk.etiktak.backend.model.product.ProductScan
+import dk.etiktak.backend.model.BaseModel
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-@Entity(name = "clients")
-class Client constructor() {
+@Entity(name = "info_sources")
+class InfoSource constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "client_id")
+    @Column(name = "infosource_id")
     var id: Long = 0
 
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Column(name = "mobileNumberHash_passwordHash_hashed", nullable = true, unique = true)
-    var mobileNumberHashPasswordHashHashed: String? = null
+    @Column(name = "friendly_name")
+    var friendlyName: String = ""
 
-    @Column(name = "verified", nullable = false)
-    var verified: Boolean = false
+    @Column(name = "url_prefix")
+    var urlPrefix: String = ""
 
     @NotNull
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-    var productScans: MutableList<ProductScan> = ArrayList()
-
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-    var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
-
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-    var infoSourceReference: MutableList<InfoSourceReference> = ArrayList()
+    @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)
+    var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
+
 
 
     @PreUpdate
