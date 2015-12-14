@@ -29,6 +29,7 @@
 
 package dk.etiktak.backend.controller.rest.json
 
+import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductScan
@@ -91,6 +92,15 @@ fun HashMap<String, Any>.add(smsVerification: SmsVerification?) : HashMap<String
             map["challenge"] = smsVerification.clientChallenge as Any
         }
         this["smsVerification"] = map
+    }
+    return this
+}
+
+fun HashMap<String, Any>.add(infoChannel: InfoChannel?) : HashMap<String, Any> {
+    infoChannel?.let {
+        val map = hashMapOf<String, Any>()
+        map["name"] = infoChannel.name
+        this["infoChannel"] = map
     }
     return this
 }

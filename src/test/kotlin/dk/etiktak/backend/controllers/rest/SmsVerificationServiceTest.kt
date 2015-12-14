@@ -27,19 +27,11 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
-import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.model.user.SmsVerification
-import dk.etiktak.backend.repository.user.ClientRepository
-import dk.etiktak.backend.repository.user.MobileNumberRepository
-import dk.etiktak.backend.repository.user.SmsVerificationRepository
 import dk.etiktak.backend.util.CryptoUtil
-import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import org.junit.runner.RunWith
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
@@ -54,22 +46,6 @@ import org.hamcrest.Matchers.notNullValue
 @WebAppConfiguration
 class SmsVerificationServiceTest : BaseRestTest() {
 
-    @Autowired
-    private val clientRepository: ClientRepository? = null
-
-    @Autowired
-    private val mobileNumberRepository: MobileNumberRepository? = null
-
-    @Autowired
-    private val smsVerificationRepository: SmsVerificationRepository? = null
-
-    @get:Rule
-    public val exception = ExpectedException.none()
-
-    private var client1: Client = Client()
-    private var client2: Client = Client()
-    private var smsChallenge: String = ""
-
     fun serviceEndpoint(postfix: String): String {
         return super.serviceEndpoint() + "verification/" + postfix
     }
@@ -79,19 +55,8 @@ class SmsVerificationServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        clientRepository!!.deleteAll()
-        mobileNumberRepository!!.deleteAll()
-        smsVerificationRepository!!.deleteAll()
-
         client1 = createAndSaveClient()
         client2 = createAndSaveClient()
-    }
-
-    @After
-    fun tearDown() {
-        clientRepository!!.deleteAll()
-        mobileNumberRepository!!.deleteAll()
-        smsVerificationRepository!!.deleteAll()
     }
 
     /**
@@ -468,13 +433,5 @@ class SmsVerificationServiceTest : BaseRestTest() {
         smsVerificationRepository.save(smsVerification)
 
         return smsVerification
-    }
-
-    private fun createAndSaveClient(): Client {
-        val client = Client()
-        client.uuid = CryptoUtil().uuid()
-        client.verified = false
-        clientRepository!!.save(client)
-        return client
     }
 }

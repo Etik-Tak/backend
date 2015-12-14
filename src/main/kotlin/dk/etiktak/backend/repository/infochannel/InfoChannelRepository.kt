@@ -31,4 +31,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface InfoChannelRepository : PagingAndSortingRepository<InfoChannel, Long> {
+
+    fun findByUuid(uuid: String): InfoChannel?
 }

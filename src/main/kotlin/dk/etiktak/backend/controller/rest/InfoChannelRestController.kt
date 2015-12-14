@@ -24,50 +24,36 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a role.
+ * Rest controller responsible for handling info channel lifecycle.
  */
 
-package dk.etiktak.backend.model.acl
+package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.model.BaseModel
-import org.springframework.format.annotation.DateTimeFormat
+import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.service.client.ClientService
+import dk.etiktak.backend.service.infochannel.InfoChannelService
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import java.util.*
-import javax.persistence.*
 
-@Entity(name = "roles")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public open class Role constructor() : BaseModel() {
+@RestController
+@RequestMapping("/service/infochannel")
+class InfoChannelRestController @Autowired constructor(
+        private val infoChannelService: InfoChannelService,
+        private val clientService: ClientService) : BaseRestController() {
 
-    enum class AclRole(val order: Int) {
-        USER(0),
-        OWNER(100)
-    }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
-    var id: Long = 0
-
-    @Column(name = "name", nullable = false)
-    var role: AclRole = AclRole.USER
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
+    @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
+    fun createInfoChannel(
+            @RequestParam clientUuid: String,
+            @RequestParam name: String): HashMap<String, Any> {
+        val client = clientService.getByUuid(clientUuid)
+        client?.let {
+            val infoChannel = infoChannelService.createInfoChannel(client, name)
+            return okMap().add(infoChannel)
+        }
+        return notFoundMap()
     }
 }

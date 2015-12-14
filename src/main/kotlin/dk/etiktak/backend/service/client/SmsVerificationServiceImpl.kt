@@ -62,6 +62,8 @@ class SmsVerificationServiceImpl @Autowired constructor(
                 !StringUtils.isEmpty(mobileNumber),
                 "Mobile number must be provided")
 
+        logger.info("Requesting new recovery SMS challenge for user with mobile number: $mobileNumber")
+
         // Can only recover users with password
         Assert.isTrue(
                 !StringUtils.isEmpty(password),
@@ -107,6 +109,8 @@ class SmsVerificationServiceImpl @Autowired constructor(
                 !StringUtils.isEmpty(password),
                 "Password must be provided")
 
+        logger.info("Requesting new SMS challenge for user with mobile number: $mobileNumber")
+
         // Fetch client from UUID
         val client = clientRepository.findByUuid(clientUuid)
 
@@ -124,6 +128,7 @@ class SmsVerificationServiceImpl @Autowired constructor(
 
         if (mobile != null) {
             // Mobile number already exists
+            logger.info("Mobile number already exists: $mobileNumber")
 
             // Check that mobile number and password for client is correct
             Assert.isTrue(
@@ -131,6 +136,7 @@ class SmsVerificationServiceImpl @Autowired constructor(
                     "Mobile number $mobileNumber already verified with other password than that provided")
         } else {
             // New mobile number registration
+            logger.info("New mobile number: $mobileNumber")
 
             // Client with given mobile number and password cannot already exist
             Assert.isNull(
@@ -209,6 +215,8 @@ class SmsVerificationServiceImpl @Autowired constructor(
                 !StringUtils.isEmpty(clientChallenge),
                 "Client challenge must be provided")
 
+        logger.info("Verifying SMS challenge for mobile number: $mobileNumber")
+
         // Verify mobile number and password
         val client = clientRepository.findByMobileNumberHashPasswordHashHashed(
                 CryptoUtil().hashOfHashes(mobileNumber, password))
@@ -246,6 +254,8 @@ class SmsVerificationServiceImpl @Autowired constructor(
         // Mark client as verified
         client.verified = true
         clientRepository.save(client)
+
+        logger.info("SMS challenge verified successfully for mobile number: $mobileNumber")
 
         return client
     }

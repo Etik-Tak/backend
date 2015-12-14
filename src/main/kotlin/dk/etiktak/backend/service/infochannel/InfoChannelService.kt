@@ -23,51 +23,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Represents a role.
- */
+package dk.etiktak.backend.service.infochannel
 
-package dk.etiktak.backend.model.acl
+import dk.etiktak.backend.model.infochannel.InfoChannel
+import dk.etiktak.backend.model.user.Client
 
-import dk.etiktak.backend.model.BaseModel
-import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
-import javax.persistence.*
+interface InfoChannelService {
 
-@Entity(name = "roles")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public open class Role constructor() : BaseModel() {
-
-    enum class AclRole(val order: Int) {
-        USER(0),
-        OWNER(100)
-    }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
-    var id: Long = 0
-
-    @Column(name = "name", nullable = false)
-    var role: AclRole = AclRole.USER
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
-    }
+    fun getInfoChannelByUuid(uuid: String): InfoChannel?
+    fun createInfoChannel(client: Client, name: String): InfoChannel
 }

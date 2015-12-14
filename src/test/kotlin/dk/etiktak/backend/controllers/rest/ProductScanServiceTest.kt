@@ -31,20 +31,11 @@ import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductScan
 import dk.etiktak.backend.model.user.Client
-import dk.etiktak.backend.repository.location.LocationRepository
-import dk.etiktak.backend.repository.product.ProductRepository
-import dk.etiktak.backend.repository.product.ProductScanRepository
-import dk.etiktak.backend.repository.user.ClientRepository
-import dk.etiktak.backend.util.CryptoUtil
-import dk.etiktak.backend.util.getWithScale
 
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import org.junit.runner.RunWith
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
@@ -61,30 +52,6 @@ import org.hamcrest.Matchers.nullValue
 @WebAppConfiguration
 class ProductScanServiceTest : BaseRestTest() {
 
-    @Autowired
-    private val productScanRepository: ProductScanRepository? = null
-
-    @Autowired
-    private val productRepository: ProductRepository? = null
-
-    @Autowired
-    private val clientRepository: ClientRepository? = null
-
-    @Autowired
-    private val locationRepository: LocationRepository? = null
-
-    @get:Rule
-    public val exception = ExpectedException.none()
-
-    private var product1: Product = Product()
-    private var product2: Product = Product()
-
-    private var client1: Client = Client()
-    private var client2: Client = Client()
-
-    private var location1: Location = Location()
-    private var location2: Location = Location()
-
     fun serviceEndpoint(postfix: String): String {
         return super.serviceEndpoint() + "product/scan/" + postfix
     }
@@ -94,11 +61,6 @@ class ProductScanServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        productScanRepository!!.deleteAll()
-        locationRepository!!.deleteAll()
-        productRepository!!.deleteAll()
-        clientRepository!!.deleteAll()
-
         product1 = createAndSaveProduct("123456789a", Product.BarcodeType.EAN13)
         product2 = createAndSaveProduct("123456789b", Product.BarcodeType.UPC)
 
@@ -107,14 +69,6 @@ class ProductScanServiceTest : BaseRestTest() {
 
         location1 = createAndSaveLocation()
         location2 = createAndSaveLocation()
-    }
-
-    @After
-    fun tearDown() {
-        productScanRepository!!.deleteAll()
-        locationRepository!!.deleteAll()
-        productRepository!!.deleteAll()
-        clientRepository!!.deleteAll()
     }
 
     /**
@@ -270,31 +224,5 @@ class ProductScanServiceTest : BaseRestTest() {
         } else {
             Assert.isNull(productScan.location, "Location for product scan was expected to be null, but was not!")
         }
-    }
-
-    private fun createAndSaveProduct(barcode: String, barcodeType: Product.BarcodeType): Product {
-        val product = Product()
-        product.uuid = CryptoUtil().uuid()
-        product.name = CryptoUtil().uuid()
-        product.barcode = barcode
-        product.barcodeType = barcodeType
-        productRepository!!.save(product)
-        return product
-    }
-
-    private fun createAndSaveClient(): Client {
-        val client = Client()
-        client.uuid = CryptoUtil().uuid()
-        client.verified = false
-        clientRepository!!.save(client)
-        return client
-    }
-
-    private fun createAndSaveLocation(): Location {
-        val location = Location()
-        location.latitude = Math.random().getWithScale(6)
-        location.longitude = Math.random().getWithScale(6)
-        locationRepository!!.save(location)
-        return location
     }
 }

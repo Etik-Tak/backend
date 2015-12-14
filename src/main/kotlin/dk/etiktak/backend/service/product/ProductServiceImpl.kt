@@ -144,6 +144,8 @@ class ProductServiceImpl @Autowired constructor(
      * @return            Product scan
      */
     private fun createProductScan(product: Product, client: Client, location: Location?): ProductScan {
+
+        // Create product scan
         val productScan = ProductScan()
         productScan.uuid = CryptoUtil().uuid()
         productScan.product = product
@@ -152,10 +154,11 @@ class ProductServiceImpl @Autowired constructor(
             productScan.location = location
         }
 
+        // Glue together with client and product
         client.productScans.add(productScan)
-
         product.productScans.add(productScan)
 
+        // Save if all
         if (location != null) {
             locationRepository.save(location)
         }

@@ -27,24 +27,23 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
-import dk.etiktak.backend.model.product.Product
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class ProductRetrievalServiceTest : BaseRestTest() {
+class InfoChannelServiceTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "product/retrieve/" + postfix
+        return super.serviceEndpoint() + "infochannel/" + postfix
     }
 
     @Before
@@ -52,58 +51,23 @@ class ProductRetrievalServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        product1 = createAndSaveProduct("123456789a", Product.BarcodeType.EAN13)
-        product2 = createAndSaveProduct("123456789b", Product.BarcodeType.UPC)
+        client1 = createAndSaveClient()
+        client2 = createAndSaveClient()
     }
 
     /**
-     * Test that we can retrieve product by UUID.
+     * Test that we can create an info channel.
      */
     @Test
     @Throws(Exception::class)
-    fun retrieveProductByUuid() {
+    fun createClient() {
         mockMvc().perform(
-                get(serviceEndpoint(""))
-                        .param("uuid", product1.uuid))
+                post(serviceEndpoint("create/"))
+                        .param("clientUuid", client1.uuid)
+                        .param("name", "Test Info Channel 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product1.barcodeType.name)))
-    }
-
-    /**
-     * Test that we can retrieve product by EAN13 barcode.
-     */
-    @Test
-    @Throws(Exception::class)
-    fun retrieveProductByEan13Barcode() {
-        mockMvc().perform(
-                get(serviceEndpoint(""))
-                        .param("barcode", product1.barcode))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product1.barcodeType.name)))
-    }
-
-    /**
-     * Test that we can retrieve product by UPC barcode.
-     */
-    @Test
-    @Throws(Exception::class)
-    fun retrieveProductByUPCBarcode() {
-        mockMvc().perform(
-                get(serviceEndpoint(""))
-                        .param("barcode", product2.barcode))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product2.uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product2.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product2.barcodeType.name)))
+                .andExpect(jsonPath("$.infoChannel.name", `is`("Test Info Channel 1")))
     }
 }

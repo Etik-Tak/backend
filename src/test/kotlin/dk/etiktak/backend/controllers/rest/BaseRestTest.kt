@@ -25,7 +25,24 @@
 
 package dk.etiktak.backend.controllers.rest
 
+import dk.etiktak.backend.model.product.Location
+import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
+import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
+import dk.etiktak.backend.repository.infochannel.InfoChannelRoleRepository
+import dk.etiktak.backend.repository.location.LocationRepository
+import dk.etiktak.backend.repository.product.ProductRepository
+import dk.etiktak.backend.repository.product.ProductScanRepository
+import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.repository.user.MobileNumberRepository
+import dk.etiktak.backend.repository.user.SmsVerificationRepository
+import dk.etiktak.backend.util.CryptoUtil
+import dk.etiktak.backend.util.getWithScale
+import org.junit.After
 import org.junit.Assert
+import org.junit.Rule
+import org.junit.rules.ExpectedException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
@@ -38,9 +55,115 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextS
 
 open class BaseRestTest {
 
+
+
     fun serviceEndpoint(): String {
         return "/service/"
     }
+
+
+
+    var product1: Product = Product()
+    var product2: Product = Product()
+
+    var client1: Client = Client()
+    var client2: Client = Client()
+
+    var location1: Location = Location()
+    var location2: Location = Location()
+
+    var smsChallenge: String = ""
+
+
+
+    @Autowired
+    val productScanRepository: ProductScanRepository? = null
+
+    @Autowired
+    val productRepository: ProductRepository? = null
+
+    @Autowired
+    val clientRepository: ClientRepository? = null
+
+    @Autowired
+    val locationRepository: LocationRepository? = null
+
+    @Autowired
+    val mobileNumberRepository: MobileNumberRepository? = null
+
+    @Autowired
+    val smsVerificationRepository: SmsVerificationRepository? = null
+
+    @Autowired
+    val infoChannelRepository: InfoChannelRepository? = null
+
+    @Autowired
+    val infoChannelClientRepository: InfoChannelClientRepository? = null
+
+    @Autowired
+    val infoChannelRoleRepository: InfoChannelRoleRepository? = null
+
+    @get:Rule
+    public val exception = ExpectedException.none()
+
+
+
+    @Throws(Exception::class)
+    open fun setup() {
+        mockMvcVar = webAppContextSetup(webApplicationContext).build()
+
+        cleanRepository()
+    }
+
+    @After
+    fun tearDown() {
+        cleanRepository()
+    }
+
+
+
+    fun cleanRepository() {
+        infoChannelRoleRepository!!.deleteAll()
+        infoChannelClientRepository!!.deleteAll()
+        infoChannelRepository!!.deleteAll()
+
+        productScanRepository!!.deleteAll()
+        locationRepository!!.deleteAll()
+        productRepository!!.deleteAll()
+
+        clientRepository!!.deleteAll()
+
+        mobileNumberRepository!!.deleteAll()
+        smsVerificationRepository!!.deleteAll()
+    }
+
+    fun createAndSaveProduct(barcode: String, barcodeType: Product.BarcodeType): Product {
+        val product = Product()
+        product.uuid = CryptoUtil().uuid()
+        product.name = CryptoUtil().uuid()
+        product.barcode = barcode
+        product.barcodeType = barcodeType
+        productRepository!!.save(product)
+        return product
+    }
+
+    fun createAndSaveClient(): Client {
+        val client = Client()
+        client.uuid = CryptoUtil().uuid()
+        client.verified = false
+        clientRepository!!.save(client)
+        return client
+    }
+
+    fun createAndSaveLocation(): Location {
+        val location = Location()
+        location.latitude = Math.random().getWithScale(6)
+        location.longitude = Math.random().getWithScale(6)
+        locationRepository!!.save(location)
+        return location
+    }
+
+
 
     @Autowired
     private val webApplicationContext: WebApplicationContext? = null
@@ -62,11 +185,6 @@ open class BaseRestTest {
     protected var mockMvcVar: MockMvc? = null
 
     protected var mappingJackson2HttpMessageConverter: HttpMessageConverter<Any>? = null
-
-    @Throws(Exception::class)
-    open fun setup() {
-        mockMvcVar = webAppContextSetup(webApplicationContext).build()
-    }
 
     fun mockMvc(): MockMvc {
         return mockMvcVar!!

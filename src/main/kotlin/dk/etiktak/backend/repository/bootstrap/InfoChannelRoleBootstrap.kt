@@ -23,51 +23,38 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Represents a role.
- */
+package dk.etiktak.backend.repository.bootstrap
 
-package dk.etiktak.backend.model.acl
+import dk.etiktak.backend.model.acl.Role
+import dk.etiktak.backend.repository.acl.RoleRepository
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
-import dk.etiktak.backend.model.BaseModel
-import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
-import javax.persistence.*
+@Component
+class InfoChannelRoleBootstrap @Autowired constructor(
+        private val roleRepository: RoleRepository) {
 
-@Entity(name = "roles")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public open class Role constructor() : BaseModel() {
+    private val logger = LoggerFactory.getLogger(InfoChannelRoleBootstrap::class.java)
 
-    enum class AclRole(val order: Int) {
-        USER(0),
-        OWNER(100)
+    fun init() {
+
+        // Create roles that does not already exist
+        for (role in Role.AclRole.values()) {
+            createRoleIfNotExists(role)
+        }
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
-    var id: Long = 0
+    private fun createRoleIfNotExists(aclRole: Role.AclRole) {
+        if (roleRepository.findByRole(aclRole) != null) {
+            return
+        }
 
-    @Column(name = "name", nullable = false)
-    var role: AclRole = AclRole.USER
+        logger.info("Creating role ${aclRole.name}")
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
+        var role = Role()
+        role.role = aclRole
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
+        roleRepository.save(role)
     }
 }

@@ -47,6 +47,9 @@ class InfoChannel constructor() : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
+    @Column(name = "name")
+    var name: String = ""
+
     @NotNull
     @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
     var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()

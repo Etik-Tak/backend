@@ -27,12 +27,9 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
-import dk.etiktak.backend.repository.user.ClientRepository
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
@@ -46,9 +43,6 @@ import org.hamcrest.Matchers.notNullValue
 @WebAppConfiguration
 class ClientServiceTest : BaseRestTest() {
 
-    @Autowired
-    private val clientRepository: ClientRepository? = null
-
     fun serviceEndpoint(postfix: String): String {
         return super.serviceEndpoint() + "client/" + postfix
     }
@@ -57,13 +51,6 @@ class ClientServiceTest : BaseRestTest() {
     @Throws(Exception::class)
     override fun setup() {
         super.setup()
-
-        clientRepository!!.deleteAll()
-    }
-
-    @After
-    fun tearDown() {
-        clientRepository!!.deleteAll()
     }
 
     /**

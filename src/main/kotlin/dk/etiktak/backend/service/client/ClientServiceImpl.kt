@@ -51,6 +51,9 @@ class ClientServiceImpl @Autowired constructor(
         client.mobileNumberHashPasswordHashHashed = null
         client.verified = false
         clientRepository.save(client)
+
+        logger.info("Created new client with uuid: ${client.uuid}")
+
         return client
     }
 
