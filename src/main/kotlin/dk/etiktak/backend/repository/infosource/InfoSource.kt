@@ -23,55 +23,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Represents an info channel, which is the basis for contributing content.
- */
+package dk.etiktak.backend.repository.infosource
 
-package dk.etiktak.backend.model.channel
+import dk.etiktak.backend.model.infosource.InfoSource
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.infosource.InfoSourceReference
-import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
-import javax.persistence.*
-import javax.validation.constraints.NotNull
-
-@Entity(name = "info_channels")
-class InfoChannel constructor() : BaseModel() {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "info_channel_id")
-    var id: Long = 0
-
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
-
-    @NotNull
-    @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
-    var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
-
-    @NotNull
-    @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
-    var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
-    }
+@Repository
+interface InfoSourceRepository : PagingAndSortingRepository<InfoSource, Long> {
 }

@@ -23,68 +23,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Represents a reference to an info source publication, including url and summary of content.
- */
+package dk.etiktak.backend.repository.infochannel
 
-package dk.etiktak.backend.model.infosource
-
-import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infochannel.InfoChannel
-import dk.etiktak.backend.model.user.Client
-import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
-import javax.persistence.*
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-@Entity(name = "info_source_reference")
-class InfoSourceReference constructor() : BaseModel() {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "info_source_reference_id")
-    var id: Long = 0
-
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
-
-    @Column(name = "url")
-    var url: String = ""
-
-    @Column(name = "title")
-    var title: String = ""
-
-    @Column(name = "summary_markdown")
-    var summaryMarkdown: String = ""
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var client: Client = Client()
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "info_channel_id")
-    var infoChannel: InfoChannel = InfoChannel()
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "info_source_id")
-    var infoSource: InfoSource= InfoSource()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
-    }
+@Repository
+interface InfoChannelRepository : PagingAndSortingRepository<InfoChannel, Long> {
 }

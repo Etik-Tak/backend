@@ -33,7 +33,7 @@
 
 package dk.etiktak.backend.model.user
 
-import dk.etiktak.backend.model.channel.InfoChannelClient
+import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.ProductScan
 import org.springframework.format.annotation.DateTimeFormat

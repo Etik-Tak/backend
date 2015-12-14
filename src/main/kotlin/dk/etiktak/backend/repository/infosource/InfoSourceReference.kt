@@ -23,25 +23,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Client roles in relation to info channels.
- */
+package dk.etiktak.backend.repository.infosource
 
-package dk.etiktak.backend.model.channel
+import dk.etiktak.backend.model.infosource.InfoSourceReference
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-import dk.etiktak.backend.model.acl.Role
-import javax.persistence.DiscriminatorValue
-import javax.persistence.Entity
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
-import javax.validation.constraints.NotNull
-
-@Entity
-@DiscriminatorValue("InfoChannelClient")
-class InfoChannelRole constructor(): Role() {
-
-    @NotNull
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "roles")
-    var infoChannelClient: InfoChannelClient = InfoChannelClient()
+@Repository
+interface InfoSourceReferenceRepository : PagingAndSortingRepository<InfoSourceReference, Long> {
 }

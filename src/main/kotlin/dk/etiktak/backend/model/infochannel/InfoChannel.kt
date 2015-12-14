@@ -24,35 +24,36 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a specific list of roles for a client in relationship to a info channel.
+ * Represents an info channel, which is the basis for contributing content.
  */
 
-package dk.etiktak.backend.model.channel
+package dk.etiktak.backend.model.infochannel
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.model.infosource.InfoSourceReference
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
+import javax.validation.constraints.NotNull
 
-@Entity(name = "info_channel_clients")
-class InfoChannelClient constructor() : BaseModel() {
+@Entity(name = "info_channels")
+class InfoChannel constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "info_channel_user_id")
+    @Column(name = "info_channel_id")
     var id: Long = 0
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var client: Client = Client()
+    @Column(name = "uuid", nullable = false, unique = true)
+    var uuid: String = ""
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "info_channel_id")
-    var infoChannel: InfoChannel = InfoChannel()
+    @NotNull
+    @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
+    var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
 
-    @OneToMany(mappedBy = "infoChannelClient", fetch = FetchType.LAZY)
-    var infoChannelRoles: MutableList<InfoChannelRole> = ArrayList()
+    @NotNull
+    @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
+    var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()

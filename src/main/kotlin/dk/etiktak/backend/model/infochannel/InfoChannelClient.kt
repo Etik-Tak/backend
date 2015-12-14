@@ -24,37 +24,24 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a reference to an info source publication, including url and summary of content.
+ * Represents a specific list of roles for a client in relationship to a info channel.
  */
 
-package dk.etiktak.backend.model.infosource
+package dk.etiktak.backend.model.infochannel
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
-@Entity(name = "info_source_reference")
-class InfoSourceReference constructor() : BaseModel() {
+@Entity(name = "info_channel_clients")
+class InfoChannelClient constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "info_source_reference_id")
+    @Column(name = "info_channel_user_id")
     var id: Long = 0
-
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
-
-    @Column(name = "url")
-    var url: String = ""
-
-    @Column(name = "title")
-    var title: String = ""
-
-    @Column(name = "summary_markdown")
-    var summaryMarkdown: String = ""
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
@@ -64,9 +51,8 @@ class InfoSourceReference constructor() : BaseModel() {
     @JoinColumn(name = "info_channel_id")
     var infoChannel: InfoChannel = InfoChannel()
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "info_source_id")
-    var infoSource: InfoSource= InfoSource()
+    @OneToMany(mappedBy = "infoChannelClient", fetch = FetchType.LAZY)
+    var infoChannelRoles: MutableList<InfoChannelRole> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
