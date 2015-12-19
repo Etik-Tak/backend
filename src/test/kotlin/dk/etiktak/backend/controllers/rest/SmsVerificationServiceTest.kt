@@ -51,7 +51,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
     }
 
     @Before
-    @Throws(Exception::class)
     override fun setup() {
         super.setup()
 
@@ -63,7 +62,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we can request a SMS verification.
      */
     @Test
-    @Throws(Exception::class)
     fun requestSmsVerification() {
 
         // Request SMS verification
@@ -82,7 +80,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot request a SMS verification with empty password.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotRequestSmsVerificationWithEmptyPasssword() {
 
         // Request SMS verification with empty password
@@ -97,7 +94,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot request a SMS verification with empty client uuid.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotRequestSmsVerificationWithEmptyClientUuid() {
 
         // Request SMS verification with empty client uuid
@@ -112,7 +108,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot request a SMS verification with empty mobile number.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotRequestSmsVerificationWithEmptyMobileNumber() {
 
         // Request SMS verification with empty mobile number
@@ -127,7 +122,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot request a SMS verification with no parameters.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotRequestSmsVerificationWithNoParameters() {
 
         // Request SMS verification with no parameters
@@ -140,7 +134,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we can request two SMS verifications to same mobile number for same client.
      */
     @Test
-    @Throws(Exception::class)
     fun requestMultipleSmsVerificationsToSameMobileNumber() {
 
         // Request first SMS verification
@@ -170,7 +163,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot request two SMS verifications to same mobile number for different clients.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotRequestMultipleSmsVerificationsToSameMobileNumberWithDifferentClients() {
 
         // Request first SMS verification
@@ -197,7 +189,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we can verify a SMS verification.
      */
     @Test
-    @Throws(Exception::class)
     fun verifySmsVerification() {
         val smsVerification = requestAndModifySmsVerification()
 
@@ -218,7 +209,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot verify a SMS verification with wrong SMS challenge.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotVerifySmsVerificationWithWrongSmsChallenge() {
         val smsVerification = requestAndModifySmsVerification()
 
@@ -236,7 +226,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot verify a SMS verification with wrong client challenge.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotVerifySmsVerificationWithWrongClientChallenge() {
         val smsVerification = requestAndModifySmsVerification()
 
@@ -254,7 +243,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot verify a SMS verification with wrong mobile number.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotVerifySmsVerificationWithWrongMobileNumber() {
         val smsVerification = requestAndModifySmsVerification()
 
@@ -272,7 +260,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot verify a SMS verification with wrong password.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotVerifySmsVerificationWithWrongPassword() {
         val smsVerification = requestAndModifySmsVerification()
 
@@ -290,7 +277,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we can request a recovery SMS verification.
      */
     @Test
-    @Throws(Exception::class)
     fun requestRecoverySmsVerification() {
         requestAndVerifySmsVerification()
 
@@ -309,7 +295,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot request a recovery SMS verification with empty password.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotRequestRecoverySmsVerificationWithEmptyPassword() {
         requestAndVerifySmsVerification()
 
@@ -324,7 +309,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot request a recovery SMS verification with empty mobile number.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotRequestRecoverySmsVerificationWithEmptyMobileNumber() {
         requestAndVerifySmsVerification()
 
@@ -339,7 +323,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot request a recovery SMS verification with no parameters
      */
     @Test
-    @Throws(Exception::class)
     fun cannotRequestRecoverySmsVerificationWithNoParameters() {
         requestAndVerifySmsVerification()
 
@@ -353,7 +336,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we can verify a recovery SMS verification.
      */
     @Test
-    @Throws(Exception::class)
     fun verifyRecoverySmsVerification() {
         requestAndVerifySmsVerification()
         val smsVerification = requestAndModifyRecoverySmsVerification()
@@ -375,7 +357,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
      * Test that we cannot verify a recovery SMS verification with empty password.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotVerifyRecoverySmsVerificationWithEmptyPassword() {
         requestAndVerifySmsVerification()
         val smsVerification = requestAndModifyRecoverySmsVerification()
@@ -390,7 +371,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
     }
 
 
-    @Throws(Exception::class)
     private fun requestAndVerifySmsVerification() {
         val smsVerification = requestAndModifySmsVerification()
 
@@ -402,7 +382,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("clientChallenge", smsVerification.clientChallenge))
     }
 
-    @Throws(Exception::class)
     private fun requestAndModifySmsVerification(): SmsVerification {
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
@@ -413,7 +392,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
         return modifySmsVerification()
     }
 
-    @Throws(Exception::class)
     private fun requestAndModifyRecoverySmsVerification(): SmsVerification {
         mockMvc().perform(
                 post(serviceEndpoint("request/recovery/"))
@@ -423,7 +401,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
         return modifySmsVerification()
     }
 
-    @Throws(Exception::class)
     private fun modifySmsVerification(): SmsVerification {
 
         // Overwrite generated challenge to get raw, unhashed challenge in hand

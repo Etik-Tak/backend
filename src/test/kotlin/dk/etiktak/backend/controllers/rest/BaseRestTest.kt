@@ -25,18 +25,24 @@
 
 package dk.etiktak.backend.controllers.rest
 
+import dk.etiktak.backend.model.infochannel.InfoChannel
+import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRoleRepository
+import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
+import dk.etiktak.backend.repository.infosource.InfoSourceRepository
+import dk.etiktak.backend.repository.infosource.InfoSourceUrlPrefixRepository
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductScanRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository
+import dk.etiktak.backend.service.infosource.InfoSourceService
 import dk.etiktak.backend.util.CryptoUtil
 import dk.etiktak.backend.util.getWithScale
 import org.junit.After
@@ -68,6 +74,12 @@ open class BaseRestTest {
 
     var client1: Client = Client()
     var client2: Client = Client()
+
+    var infoSource1: InfoSource = InfoSource()
+    var infoSource2: InfoSource = InfoSource()
+
+    var infoChannel1: InfoChannel = InfoChannel()
+    var infoChannel2: InfoChannel = InfoChannel()
 
     var location1: Location = Location()
     var location2: Location = Location()
@@ -103,6 +115,18 @@ open class BaseRestTest {
     @Autowired
     val infoChannelRoleRepository: InfoChannelRoleRepository? = null
 
+    @Autowired
+    val infoSourceRepository: InfoSourceRepository? = null
+
+    @Autowired
+    val infoSourceUrlPrefixRepository: InfoSourceUrlPrefixRepository? = null
+
+    @Autowired
+    val infoSourceReferenceRepository: InfoSourceReferenceRepository? = null
+
+    @Autowired
+    val infoSourceService: InfoSourceService? = null
+
     @get:Rule
     public val exception = ExpectedException.none()
 
@@ -123,6 +147,10 @@ open class BaseRestTest {
 
 
     fun cleanRepository() {
+        infoSourceUrlPrefixRepository!!.deleteAll()
+        infoSourceReferenceRepository!!.deleteAll()
+        infoSourceRepository!!.deleteAll()
+
         infoChannelRoleRepository!!.deleteAll()
         infoChannelClientRepository!!.deleteAll()
         infoChannelRepository!!.deleteAll()
@@ -145,6 +173,18 @@ open class BaseRestTest {
         product.barcodeType = barcodeType
         productRepository!!.save(product)
         return product
+    }
+
+    fun createAndSaveInfoChannel(): InfoChannel {
+        val infoChannel = InfoChannel()
+        infoChannel.uuid = CryptoUtil().uuid()
+        infoChannel.name = CryptoUtil().uuid()
+        infoChannelRepository!!.save(infoChannel)
+        return infoChannel
+    }
+
+    fun createAndSaveInfoSource(client: Client, urlPrefixes: List<String>): InfoSource {
+        return infoSourceService!!.createInfoSource(client, urlPrefixes, CryptoUtil().uuid())
     }
 
     fun createAndSaveClient(): Client {

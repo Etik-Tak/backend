@@ -23,45 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.controllers.rest
+package dk.etiktak.backend.repository.infosource
 
-import dk.etiktak.backend.Application
-import dk.etiktak.backend.controller.rest.WebserviceResult
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.SpringApplicationConfiguration
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import org.springframework.test.context.web.WebAppConfiguration
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.notNullValue
+import dk.etiktak.backend.model.infosource.InfoSourceUrlPrefix
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-@RunWith(SpringJUnit4ClassRunner::class)
-@SpringApplicationConfiguration(classes = arrayOf(Application::class))
-@WebAppConfiguration
-class ClientServiceTest : BaseRestTest() {
+@Repository
+interface InfoSourceUrlPrefixRepository : PagingAndSortingRepository<InfoSourceUrlPrefix, Long> {
 
-    fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "client/" + postfix
-    }
-
-    @Before
-    override fun setup() {
-        super.setup()
-    }
-
-    /**
-     * Test that we can create a client.
-     */
-    @Test
-    fun createClient() {
-        mockMvc().perform(
-                post(serviceEndpoint("create/")))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.client.uuid", notNullValue()))
-    }
+    fun findByUuid(uuid: String): InfoSourceUrlPrefix?
+    fun findByUrlPrefix(urlPrefix: String): InfoSourceUrlPrefix?
 }

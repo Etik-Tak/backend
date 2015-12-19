@@ -48,7 +48,6 @@ class ProductRetrievalServiceTest : BaseRestTest() {
     }
 
     @Before
-    @Throws(Exception::class)
     override fun setup() {
         super.setup()
 
@@ -60,7 +59,6 @@ class ProductRetrievalServiceTest : BaseRestTest() {
      * Test that we can retrieve product by UUID.
      */
     @Test
-    @Throws(Exception::class)
     fun retrieveProductByUuid() {
         mockMvc().perform(
                 get(serviceEndpoint(""))
@@ -77,7 +75,6 @@ class ProductRetrievalServiceTest : BaseRestTest() {
      * Test that we can retrieve product by EAN13 barcode.
      */
     @Test
-    @Throws(Exception::class)
     fun retrieveProductByEan13Barcode() {
         mockMvc().perform(
                 get(serviceEndpoint(""))
@@ -94,7 +91,6 @@ class ProductRetrievalServiceTest : BaseRestTest() {
      * Test that we can retrieve product by UPC barcode.
      */
     @Test
-    @Throws(Exception::class)
     fun retrieveProductByUPCBarcode() {
         mockMvc().perform(
                 get(serviceEndpoint(""))

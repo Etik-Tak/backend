@@ -27,7 +27,6 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
-import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,14 +36,16 @@ import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.notNullValue
+import org.springframework.web.util.NestedServletException
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class InfoChannelServiceTest : BaseRestTest() {
+class InfoSourceReferenceServiceTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "infochannel/" + postfix
+        return super.serviceEndpoint() + "infosourcereference/" + postfix
     }
 
     @Before
@@ -53,21 +54,50 @@ class InfoChannelServiceTest : BaseRestTest() {
 
         client1 = createAndSaveClient()
         client2 = createAndSaveClient()
+
+        infoSource1 = createAndSaveInfoSource(client1, listOf("http://dr.dk", "http://www.dr.dk"))
+        infoSource2 = createAndSaveInfoSource(client2, listOf("http://information.dk"))
+
+        infoChannel1 = createAndSaveInfoChannel()
+        infoChannel2 = createAndSaveInfoChannel()
     }
 
     /**
-     * Test that we can create an info channel.
+     * Test that we can create an info source reference.
      */
     @Test
-    fun createClient() {
+    fun createInfoSourceReference() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
                         .param("clientUuid", client1.uuid)
-                        .param("name", "Test Info Channel 1"))
+                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("infoSourceUuid", infoSource1.uuid)
+                        .param("url", "http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")
+                        .param("title", "Fødevarestyrelsen: Spis ikke for meget mørk chokolade")
+                        .param("summaryMarkdown", "Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3."))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.infoChannel.uuid", Matchers.notNullValue()))
-                .andExpect(jsonPath("$.infoChannel.name", `is`("Test Info Channel 1")))
+                .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
+                .andExpect(jsonPath("$.infoSourceReference.url", `is`("http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")))
+                .andExpect(jsonPath("$.infoSourceReference.title", `is`("Fødevarestyrelsen: Spis ikke for meget mørk chokolade")))
+                .andExpect(jsonPath("$.infoSourceReference.summaryMarkdown", `is`("Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3.")))
+    }
+
+    /**
+     * Test that we cannot create an info source reference with an url that is not in the domain of the info source.
+     */
+    @Test
+    fun createInfoSourceReferanceWithIllegalUrlDomain() {
+        exception.expect(NestedServletException::class.java)
+        mockMvc().perform(
+                post(serviceEndpoint("create/"))
+                        .param("clientUuid", client1.uuid)
+                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("infoSourceUuid", infoSource1.uuid)
+                        .param("url", "http://politiken.dk/forbrugogliv/forbrug/tjekmad/ECE2981742/eksperter-advarer-glutenfri-foedevarer-er-slet-ikke-sunde/")
+                        .param("title", "Eksperter advarer: Glutenfri fødevarer er slet ikke sunde")
+                        .param("summaryMarkdown", "Glutenfri fødevarer opfattes som sunde, men er ofte det modsatte, lyder det fra eksperter."))
+                .andExpect(status().`is`(400))
     }
 }

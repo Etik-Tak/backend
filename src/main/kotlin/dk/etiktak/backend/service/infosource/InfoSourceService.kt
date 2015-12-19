@@ -23,7 +23,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.service.infochannel
+package dk.etiktak.backend.service.infosource
 
 import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.user.Client
@@ -31,5 +31,5 @@ import dk.etiktak.backend.model.user.Client
 interface InfoSourceService {
 
     fun getInfoSourceByUuid(uuid: String): InfoSource?
-    fun createInfoSource(client: Client, urlPrefix: String, friendlyName: String): InfoSource
+    fun createInfoSource(client: Client, urlPrefixes: List<String>, friendlyName: String): InfoSource
 }

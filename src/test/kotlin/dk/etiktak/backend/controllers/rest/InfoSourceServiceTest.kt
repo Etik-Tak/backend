@@ -48,7 +48,6 @@ class InfoSourceServiceTest : BaseRestTest() {
     }
 
     @Before
-    @Throws(Exception::class)
     override fun setup() {
         super.setup()
 
@@ -60,8 +59,7 @@ class InfoSourceServiceTest : BaseRestTest() {
      * Test that we can create an info source.
      */
     @Test
-    @Throws(Exception::class)
-    fun createClient() {
+    fun createInfoSource() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
                         .param("clientUuid", client1.uuid)
@@ -71,7 +69,7 @@ class InfoSourceServiceTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.infoSource.uuid", notNullValue()))
-                .andExpect(jsonPath("$.infoSource.urlPrefix", `is`("http://dr.dk")))
+                .andExpect(jsonPath("$.infoSource.urlPrefixes", `is`(listOf("http://dr.dk"))))
                 .andExpect(jsonPath("$.infoSource.friendlyName", `is`("Test Info Source 1")))
     }
 }

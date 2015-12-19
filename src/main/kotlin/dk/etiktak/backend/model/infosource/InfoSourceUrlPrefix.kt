@@ -23,45 +23,53 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.controllers.rest
+/**
+ * Represents a info source url prefix that can be referenced by info sources.
+ */
 
-import dk.etiktak.backend.Application
-import dk.etiktak.backend.controller.rest.WebserviceResult
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.SpringApplicationConfiguration
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import org.springframework.test.context.web.WebAppConfiguration
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.notNullValue
+package dk.etiktak.backend.model.infosource
 
-@RunWith(SpringJUnit4ClassRunner::class)
-@SpringApplicationConfiguration(classes = arrayOf(Application::class))
-@WebAppConfiguration
-class ClientServiceTest : BaseRestTest() {
+import dk.etiktak.backend.model.BaseModel
+import org.springframework.format.annotation.DateTimeFormat
+import java.util.*
+import javax.persistence.*
+import javax.validation.constraints.NotNull
 
-    fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "client/" + postfix
+@Entity(name = "info_source_url_prefixes")
+class InfoSourceUrlPrefix constructor() : BaseModel() {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "infosourceurlprefix_id")
+    var id: Long = 0
+
+    @Column(name = "uuid", nullable = false, unique = true)
+    var uuid: String = ""
+
+    @Column(name = "url_prefix", unique = true)
+    var urlPrefix: String = ""
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "infosource_id")
+    var infoSource: InfoSource = InfoSource()
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var creationTime: Date = Date()
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var modificationTime: Date = Date()
+
+
+
+    @PreUpdate
+    fun preUpdate() {
+        modificationTime = Date()
     }
 
-    @Before
-    override fun setup() {
-        super.setup()
-    }
-
-    /**
-     * Test that we can create a client.
-     */
-    @Test
-    fun createClient() {
-        mockMvc().perform(
-                post(serviceEndpoint("create/")))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.client.uuid", notNullValue()))
+    @PrePersist
+    fun prePersist() {
+        val now = Date()
+        creationTime = now
+        modificationTime = now
     }
 }

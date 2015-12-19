@@ -31,6 +31,8 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.service.client.ClientService
+import dk.etiktak.backend.service.infochannel.InfoChannelService
+import dk.etiktak.backend.service.infosource.InfoSourceReferenceService
 import dk.etiktak.backend.service.infosource.InfoSourceService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -40,20 +42,32 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
-@RequestMapping("/service/infosource")
-class InfoSourceRestController @Autowired constructor(
+@RequestMapping("/service/infosourcereference")
+class InfoSourceReferenceRestController @Autowired constructor(
         private val infoSourceService: InfoSourceService,
+        private val infoSourceReferenceService: InfoSourceReferenceService,
+        private val infoChannelService: InfoChannelService,
         private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
-    fun createInfoSource(
+    fun createInfoSourceReference(
             @RequestParam clientUuid: String,
-            @RequestParam urlPrefix: String,
-            @RequestParam friendlyName: String): HashMap<String, Any> {
+            @RequestParam infoChannelUuid: String,
+            @RequestParam infoSourceUuid: String,
+            @RequestParam url: String,
+            @RequestParam title: String,
+            @RequestParam summaryMarkdown: String): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid)
         client?.let {
-            val infoSource = infoSourceService.createInfoSource(client, listOf(urlPrefix), friendlyName)
-            return okMap().add(infoSource)
+            val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid)
+            infoChannel?.let {
+                val infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid)
+                infoSource?.let {
+                    val infoSourceReference = infoSourceReferenceService.createInfoSourceReference(
+                            client, infoChannel, infoSource, url, title, summaryMarkdown)
+                    return okMap().add(infoSourceReference)
+                }
+            }
         }
         return notFoundMap()
     }

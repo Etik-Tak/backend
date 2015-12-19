@@ -32,7 +32,6 @@ import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductScan
 import dk.etiktak.backend.model.user.Client
 
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -57,7 +56,6 @@ class ProductScanServiceTest : BaseRestTest() {
     }
 
     @Before
-    @Throws(Exception::class)
     override fun setup() {
         super.setup()
 
@@ -75,7 +73,6 @@ class ProductScanServiceTest : BaseRestTest() {
      * Test that we can retrieve a product by scanning with location.
      */
     @Test
-    @Throws(Exception::class)
     fun scanProductWithLocation() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
@@ -99,7 +96,6 @@ class ProductScanServiceTest : BaseRestTest() {
      * Test that we can retrieve a product by scanning without location.
      */
     @Test
-    @Throws(Exception::class)
     fun scanProductWithoutLocation() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
@@ -121,7 +117,6 @@ class ProductScanServiceTest : BaseRestTest() {
      * Test that we can assign a location to an already existant product scan.
      */
     @Test
-    @Throws(Exception::class)
     fun assignLocationToProductScan() {
         val productScan = scanProduct()
 
@@ -147,7 +142,6 @@ class ProductScanServiceTest : BaseRestTest() {
      * Test that we cannot assign a location to a product scan that already has a location assigned.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotAssignLocationToProductScanWithLocationAlreadyAssigned() {
         val productScan = scanProduct()
 
@@ -174,7 +168,6 @@ class ProductScanServiceTest : BaseRestTest() {
      * Test that we cannot assign empty location to already scanned product scan.
      */
     @Test
-    @Throws(Exception::class)
     fun cannotAssignEmptyLocationToProductScanWithLocationAlreadyAssigned() {
         val productScan = scanProduct()
 
@@ -186,7 +179,6 @@ class ProductScanServiceTest : BaseRestTest() {
     }
 
 
-    @Throws(Exception::class)
     private fun scanProduct(): ProductScan {
         mockMvc().perform(
                 post(serviceEndpoint(""))

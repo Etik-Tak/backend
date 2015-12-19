@@ -49,8 +49,9 @@ class InfoSource constructor() : BaseModel() {
     @Column(name = "friendly_name")
     var friendlyName: String = ""
 
-    @Column(name = "url_prefix")
-    var urlPrefix: String = ""
+    @NotNull
+    @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)
+    var urlPrefixes: MutableList<InfoSourceUrlPrefix> = ArrayList()
 
     @NotNull
     @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)

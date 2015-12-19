@@ -31,6 +31,8 @@ package dk.etiktak.backend.controller.rest.json
 
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infosource.InfoSource
+import dk.etiktak.backend.model.infosource.InfoSourceReference
+import dk.etiktak.backend.model.infosource.InfoSourceUrlPrefix
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductScan
@@ -111,9 +113,44 @@ fun HashMap<String, Any>.add(infoSource: InfoSource?) : HashMap<String, Any> {
     infoSource?.let {
         val map = hashMapOf<String, Any>()
         map["uuid"] = infoSource.uuid
-        map["urlPrefix"] = infoSource.urlPrefix
         map["friendlyName"] = infoSource.friendlyName
+        map.add(infoSource.urlPrefixes)
         this["infoSource"] = map
+    }
+    return this
+}
+
+fun HashMap<String, Any>.add(infoSourceReference: InfoSourceReference?) : HashMap<String, Any> {
+    infoSourceReference?.let {
+        val map = hashMapOf<String, Any>()
+        map["uuid"] = infoSourceReference.uuid
+        map["url"] = infoSourceReference.url
+        map["title"] = infoSourceReference.title
+        map["summaryMarkdown"] = infoSourceReference.summaryMarkdown
+        this["infoSourceReference"] = map
+    }
+    return this
+}
+
+fun HashMap<String, Any>.add(urlPrefixes: List<InfoSourceUrlPrefix>?) : HashMap<String, Any> {
+    urlPrefixes?.let {
+        val list: MutableList<String> = ArrayList()
+        System.out.println("HEY")
+        for (urlPrefix in urlPrefixes) {
+            System.out.println("-----> " + urlPrefix)
+            list.add(urlPrefix.urlPrefix)
+        }
+        this["urlPrefixes"] = list
+    }
+    return this
+}
+
+fun HashMap<String, Any>.add(infoSourceUrlPrefix: InfoSourceUrlPrefix?) : HashMap<String, Any> {
+    infoSourceUrlPrefix?.let {
+        val map = hashMapOf<String, Any>()
+        map["uuid"] = infoSourceUrlPrefix.uuid
+        map["urlPrefix"] = infoSourceUrlPrefix.urlPrefix
+        this["infoSourceUrlPrefix"] = map
     }
     return this
 }

@@ -23,15 +23,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.service.infochannel
+package dk.etiktak.backend.service.infosource
 
-import dk.etiktak.backend.model.infochannel.InfoChannel
-import dk.etiktak.backend.model.infochannel.InfoChannelClient
-import dk.etiktak.backend.model.infochannel.InfoChannelRole
 import dk.etiktak.backend.model.infosource.InfoSource
+import dk.etiktak.backend.model.infosource.InfoSourceUrlPrefix
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
-import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.repository.infosource.InfoSourceUrlPrefixRepository
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -41,8 +39,8 @@ import org.springframework.util.StringUtils
 
 @Service
 class InfoSourceServiceImpl @Autowired constructor(
-        private val clientRepository: ClientRepository,
-        private val infoSourceRepository: InfoSourceRepository) : InfoSourceService {
+        private val infoSourceRepository: InfoSourceRepository,
+        private val infoSourceUrlPrefixRepository: InfoSourceUrlPrefixRepository) : InfoSourceService {
 
     private val logger = LoggerFactory.getLogger(InfoSourceServiceImpl::class.java)
 
@@ -60,11 +58,11 @@ class InfoSourceServiceImpl @Autowired constructor(
      * Creates an info source.
      *
      * @param client         Creator
-     * @param urlPrefix      Url prefix of info source
+     * @param urlPrefexes    Url prefixes of info source
      * @param friendlyName   Name of info source
      * @return               Created info source
      */
-    override fun createInfoSource(client: Client, urlPrefix: String, friendlyName: String): InfoSource {
+    override fun createInfoSource(client: Client, urlPrefixes: List<String>, friendlyName: String): InfoSource {
 
         // Check for empty fields
         Assert.notNull(
@@ -72,17 +70,32 @@ class InfoSourceServiceImpl @Autowired constructor(
                 "Client must be provided")
 
         // Validate url prefix
-        validateUrlPrefix(urlPrefix)
+        for (urlPrefix in urlPrefixes) {
+            validateUrlPrefix(urlPrefix)
+        }
 
         logger.info("Creating new info source with name: $friendlyName")
 
         // Create info source
         val infoSource = InfoSource()
         infoSource.uuid = CryptoUtil().uuid()
-        infoSource.urlPrefix = urlPrefix
         infoSource.friendlyName = friendlyName
 
+        // Create url prefixes
+        for (urlPrefix in urlPrefixes) {
+            val infoSourceUrlPrefix = InfoSourceUrlPrefix()
+            infoSourceUrlPrefix.uuid = CryptoUtil().uuid()
+            infoSourceUrlPrefix.urlPrefix = urlPrefix
+            infoSourceUrlPrefix.infoSource = infoSource
+
+            infoSource.urlPrefixes.add(infoSourceUrlPrefix)
+        }
+
+        // Save it all
         infoSourceRepository.save(infoSource)
+        for (infoSourceUrlPrefix in infoSource.urlPrefixes) {
+            infoSourceUrlPrefixRepository.save(infoSourceUrlPrefix)
+        }
 
         return infoSource
     }
