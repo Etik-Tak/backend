@@ -27,7 +27,6 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
-import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,14 +36,15 @@ import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.notNullValue
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class InfoChannelServiceTest : BaseRestTest() {
+class InfoSourceServiceTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "infochannel/" + postfix
+        return super.serviceEndpoint() + "infosource/" + postfix
     }
 
     @Before
@@ -57,7 +57,7 @@ class InfoChannelServiceTest : BaseRestTest() {
     }
 
     /**
-     * Test that we can create an info channel.
+     * Test that we can create an info source.
      */
     @Test
     @Throws(Exception::class)
@@ -65,11 +65,13 @@ class InfoChannelServiceTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
                         .param("clientUuid", client1.uuid)
-                        .param("name", "Test Info Channel 1"))
+                        .param("urlPrefix", "http://dr.dk")
+                        .param("friendlyName", "Test Info Source 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.infoChannel.uuid", Matchers.notNullValue()))
-                .andExpect(jsonPath("$.infoChannel.name", `is`("Test Info Channel 1")))
+                .andExpect(jsonPath("$.infoSource.uuid", notNullValue()))
+                .andExpect(jsonPath("$.infoSource.urlPrefix", `is`("http://dr.dk")))
+                .andExpect(jsonPath("$.infoSource.friendlyName", `is`("Test Info Source 1")))
     }
 }

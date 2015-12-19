@@ -23,12 +23,38 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.infosource
+/**
+ * Rest controller responsible for handling info sources.
+ */
 
-import dk.etiktak.backend.model.infosource.InfoSource
-import org.springframework.data.repository.PagingAndSortingRepository
-import org.springframework.stereotype.Repository
+package dk.etiktak.backend.controller.rest
 
-@Repository
-interface InfoSourceRepository : PagingAndSortingRepository<InfoSource, Long> {
+import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.service.client.ClientService
+import dk.etiktak.backend.service.infochannel.InfoSourceService
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import java.util.*
+
+@RestController
+@RequestMapping("/service/infosource")
+class InfoSourceRestController @Autowired constructor(
+        private val infoSourceService: InfoSourceService,
+        private val clientService: ClientService) : BaseRestController() {
+
+    @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
+    fun createInfoSource(
+            @RequestParam clientUuid: String,
+            @RequestParam urlPrefix: String,
+            @RequestParam friendlyName: String): HashMap<String, Any> {
+        val client = clientService.getByUuid(clientUuid)
+        client?.let {
+            val infoSource = infoSourceService.createInfoSource(client, urlPrefix, friendlyName)
+            return okMap().add(infoSource)
+        }
+        return notFoundMap()
+    }
 }

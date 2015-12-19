@@ -31,4 +31,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface InfoSourceReferenceRepository : PagingAndSortingRepository<InfoSourceReference, Long> {
+
+    fun findByUuid(uuid: String): InfoSourceReference?
 }
