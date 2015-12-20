@@ -29,6 +29,8 @@
 
 package dk.etiktak.backend.model.product
 
+import dk.etiktak.backend.controller.rest.json.Jsonifier
+import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -36,6 +38,7 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "products")
+@Jsonifier(jsonKey = "product")
 class Product constructor() : BaseModel() {
 
     enum class BarcodeType {
@@ -48,15 +51,19 @@ class Product constructor() : BaseModel() {
     @Column(name = "product_id")
     var id: Long = 0
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "barcode", nullable = false, unique = true)
     var barcode: String = ""
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "barcode_type", nullable = false)
     var barcodeType: BarcodeType = BarcodeType.EAN13
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "name")
     var name: String = ""
 
@@ -64,9 +71,11 @@ class Product constructor() : BaseModel() {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

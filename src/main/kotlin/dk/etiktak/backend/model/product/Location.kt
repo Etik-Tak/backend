@@ -29,12 +29,15 @@
 
 package dk.etiktak.backend.model.product
 
+import dk.etiktak.backend.controller.rest.json.Jsonifier
+import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
 @Entity(name = "location")
+@Jsonifier(jsonKey = "location")
 class Location constructor() : BaseModel() {
 
     constructor(latitude: Double, longitude: Double): this() {
@@ -47,20 +50,25 @@ class Location constructor() : BaseModel() {
     @Column(name = "location_id")
     var id: Long = 0
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
-
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "latitude", nullable = false)
     var latitude: Double = 0.0
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "longitude", nullable = false)
     var longitude: Double = 0.0
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "name", columnDefinition = "TEXT")
     var name: String = ""
+
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var creationTime: Date = Date()
+
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var modificationTime: Date = Date()
 
 
 

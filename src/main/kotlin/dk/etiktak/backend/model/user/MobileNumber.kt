@@ -31,11 +31,14 @@
 
 package dk.etiktak.backend.model.user
 
+import dk.etiktak.backend.controller.rest.json.Jsonifier
+import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
 @Entity(name = "mobile_numbers")
+@Jsonifier(jsonKey = "mobileNumber")
 class MobileNumber constructor() {
 
     @Id
@@ -46,9 +49,11 @@ class MobileNumber constructor() {
     @Column(name = "mobileNumberHash", nullable = false, unique = true)
     var mobileNumberHash: String = ""
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

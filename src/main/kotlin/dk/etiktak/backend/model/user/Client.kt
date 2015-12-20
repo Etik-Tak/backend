@@ -33,6 +33,8 @@
 
 package dk.etiktak.backend.model.user
 
+import dk.etiktak.backend.controller.rest.json.Jsonifier
+import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.ProductScan
@@ -42,6 +44,7 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "clients")
+@Jsonifier(jsonKey = "client")
 class Client constructor() {
 
     @Id
@@ -49,12 +52,14 @@ class Client constructor() {
     @Column(name = "client_id")
     var id: Long = 0
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
     @Column(name = "mobileNumberHash_passwordHash_hashed", nullable = true, unique = true)
     var mobileNumberHashPasswordHashHashed: String? = null
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "verified", nullable = false)
     var verified: Boolean = false
 
@@ -62,15 +67,19 @@ class Client constructor() {
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var infoSourceReference: MutableList<InfoSourceReference> = ArrayList()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

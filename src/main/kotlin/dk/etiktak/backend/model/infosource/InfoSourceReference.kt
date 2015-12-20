@@ -29,6 +29,8 @@
 
 package dk.etiktak.backend.model.infosource
 
+import dk.etiktak.backend.controller.rest.json.Jsonifier
+import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.user.Client
@@ -37,6 +39,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "info_source_reference")
+@Jsonifier(jsonKey = "infoSourceReference")
 class InfoSourceReference constructor() : BaseModel() {
 
     @Id
@@ -44,15 +47,19 @@ class InfoSourceReference constructor() : BaseModel() {
     @Column(name = "info_source_reference_id")
     var id: Long = 0
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "url")
     var url: String = ""
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "title")
     var title: String = ""
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "summary_markdown")
     var summaryMarkdown: String = ""
 
@@ -60,17 +67,21 @@ class InfoSourceReference constructor() : BaseModel() {
     @JoinColumn(name = "client_id")
     var client: Client = Client()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_channel_id")
     var infoChannel: InfoChannel = InfoChannel()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_source_id")
     var infoSource: InfoSource= InfoSource()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

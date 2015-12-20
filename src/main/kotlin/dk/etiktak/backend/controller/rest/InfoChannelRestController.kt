@@ -29,7 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
 import org.springframework.beans.factory.annotation.Autowired
@@ -52,7 +52,7 @@ class InfoChannelRestController @Autowired constructor(
         val client = clientService.getByUuid(clientUuid)
         client?.let {
             val infoChannel = infoChannelService.createInfoChannel(client, name)
-            return okMap().add(infoChannel)
+            return okMap().addEntity(infoChannel)
         }
         return notFoundMap()
     }

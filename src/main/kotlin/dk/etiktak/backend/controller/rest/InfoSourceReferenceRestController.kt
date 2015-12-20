@@ -29,7 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
 import dk.etiktak.backend.service.infosource.InfoSourceReferenceService
@@ -65,7 +65,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
                 infoSource?.let {
                     val infoSourceReference = infoSourceReferenceService.createInfoSourceReference(
                             client, infoChannel, infoSource, url, title, summaryMarkdown)
-                    return okMap().add(infoSourceReference)
+                    return okMap().addEntity(infoSourceReference)
                 }
             }
         }

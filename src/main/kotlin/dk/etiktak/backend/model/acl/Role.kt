@@ -29,6 +29,8 @@
 
 package dk.etiktak.backend.model.acl
 
+import dk.etiktak.backend.controller.rest.json.Jsonifier
+import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -36,6 +38,7 @@ import javax.persistence.*
 
 @Entity(name = "roles")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Jsonifier(jsonKey = "role")
 public open class Role constructor() : BaseModel() {
 
     enum class AclRole(val order: Int) {
@@ -48,12 +51,15 @@ public open class Role constructor() : BaseModel() {
     @Column(name = "role_id")
     var id: Long = 0
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "name", nullable = false)
     var role: AclRole = AclRole.USER
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

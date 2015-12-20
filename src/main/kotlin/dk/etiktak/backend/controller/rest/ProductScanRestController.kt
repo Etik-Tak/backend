@@ -29,7 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductService
@@ -62,7 +62,7 @@ class ProductScanRestController @Autowired constructor(
                     location = Location(latitude!!.toDouble(), longitude!!.toDouble())
                 }
                 val productScan = productService.scanProduct(barcode, client, location)
-                return okMap().add(productScan)
+                return okMap().addEntity(productScan)
             }
         }
         return notFoundMap()
@@ -80,7 +80,7 @@ class ProductScanRestController @Autowired constructor(
             productScan?.let {
                 val location = Location(latitude.toDouble(), longitude.toDouble())
                 val resultProductScan = productService.assignLocationToProductScan(client, productScan, location)
-                return okMap().add(resultProductScan)
+                return okMap().addEntity(resultProductScan)
             }
         }
         return notFoundMap()

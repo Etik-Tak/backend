@@ -29,7 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
@@ -57,7 +57,7 @@ class ProductRestController @Autowired constructor(
             product = productService.getProductByBarcode(barcode!!)
         }
         product?.let {
-            return okMap().add(product)
+            return okMap().addEntity(product)
         }
         return notFoundMap()
     }

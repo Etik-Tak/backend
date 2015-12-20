@@ -29,6 +29,8 @@
 
 package dk.etiktak.backend.model.infochannel
 
+import dk.etiktak.backend.controller.rest.json.Jsonifier
+import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import org.springframework.format.annotation.DateTimeFormat
@@ -37,6 +39,7 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "info_channels")
+@Jsonifier(jsonKey = "infoChannel")
 class InfoChannel constructor() : BaseModel() {
 
     @Id
@@ -44,23 +47,29 @@ class InfoChannel constructor() : BaseModel() {
     @Column(name = "info_channel_id")
     var id: Long = 0
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "name")
     var name: String = ""
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @NotNull
     @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
     var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @NotNull
     @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

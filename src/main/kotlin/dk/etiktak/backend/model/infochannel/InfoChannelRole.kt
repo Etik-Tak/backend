@@ -29,6 +29,7 @@
 
 package dk.etiktak.backend.model.infochannel
 
+import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.model.acl.Role
 import javax.persistence.DiscriminatorValue
 import javax.persistence.Entity
@@ -36,8 +37,9 @@ import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.validation.constraints.NotNull
 
-@Entity
+@Entity(name = "info_channel_roles")
 @DiscriminatorValue("InfoChannelClient")
+@Jsonifier(jsonKey = "infoChannelRole")
 class InfoChannelRole constructor(): Role() {
 
     @NotNull
