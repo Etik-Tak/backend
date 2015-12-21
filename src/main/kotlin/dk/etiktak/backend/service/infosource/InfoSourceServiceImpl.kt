@@ -26,10 +26,8 @@
 package dk.etiktak.backend.service.infosource
 
 import dk.etiktak.backend.model.infosource.InfoSource
-import dk.etiktak.backend.model.infosource.InfoSourceUrlPrefix
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
-import dk.etiktak.backend.repository.infosource.InfoSourceUrlPrefixRepository
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,8 +37,7 @@ import org.springframework.util.StringUtils
 
 @Service
 class InfoSourceServiceImpl @Autowired constructor(
-        private val infoSourceRepository: InfoSourceRepository,
-        private val infoSourceUrlPrefixRepository: InfoSourceUrlPrefixRepository) : InfoSourceService {
+        private val infoSourceRepository: InfoSourceRepository) : InfoSourceService {
 
     private val logger = LoggerFactory.getLogger(InfoSourceServiceImpl::class.java)
 
@@ -83,19 +80,11 @@ class InfoSourceServiceImpl @Autowired constructor(
 
         // Create url prefixes
         for (urlPrefix in urlPrefixes) {
-            val infoSourceUrlPrefix = InfoSourceUrlPrefix()
-            infoSourceUrlPrefix.uuid = CryptoUtil().uuid()
-            infoSourceUrlPrefix.urlPrefix = urlPrefix
-            infoSourceUrlPrefix.infoSource = infoSource
-
-            infoSource.urlPrefixes.add(infoSourceUrlPrefix)
+            infoSource.urlPrefixes.add(urlPrefix)
         }
 
         // Save it all
         infoSourceRepository.save(infoSource)
-        for (infoSourceUrlPrefix in infoSource.urlPrefixes) {
-            infoSourceUrlPrefixRepository.save(infoSourceUrlPrefix)
-        }
 
         return infoSource
     }

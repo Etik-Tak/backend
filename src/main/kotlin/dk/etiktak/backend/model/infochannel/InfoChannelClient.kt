@@ -32,6 +32,7 @@ package dk.etiktak.backend.model.infochannel
 import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.acl.AclRole
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -57,8 +58,8 @@ class InfoChannelClient constructor() : BaseModel() {
     var infoChannel: InfoChannel = InfoChannel()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
-    @OneToMany(mappedBy = "infoChannelClient", fetch = FetchType.LAZY)
-    var infoChannelRoles: MutableList<InfoChannelRole> = ArrayList()
+    @ElementCollection
+    var infoChannelRoles: MutableSet<AclRole> = HashSet()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

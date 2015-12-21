@@ -25,13 +25,12 @@
 
 package dk.etiktak.backend.service.infochannel
 
+import dk.etiktak.backend.model.acl.AclRole
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
-import dk.etiktak.backend.model.infochannel.InfoChannelRole
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
-import dk.etiktak.backend.repository.infochannel.InfoChannelRoleRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
@@ -43,8 +42,7 @@ import org.springframework.util.Assert
 class InfoChannelServiceImpl @Autowired constructor(
         private val clientRepository: ClientRepository,
         private val infoChannelRepository: InfoChannelRepository,
-        private val infoChannelClientRepository: InfoChannelClientRepository,
-        private val infoChannelRoleRepository: InfoChannelRoleRepository) : InfoChannelService {
+        private val infoChannelClientRepository: InfoChannelClientRepository) : InfoChannelService {
 
     private val logger = LoggerFactory.getLogger(InfoChannelServiceImpl::class.java)
 
@@ -83,20 +81,15 @@ class InfoChannelServiceImpl @Autowired constructor(
         val infoChannelClient = InfoChannelClient()
         infoChannelClient.client = client
         infoChannelClient.infoChannel = infoChannel
-
-        // Create info channel role
-        val infoChannelRole = InfoChannelRole()
-        infoChannelRole.infoChannelClient = infoChannelClient
+        infoChannelClient.infoChannelRoles.add(AclRole.OWNER)
 
         // Glue them together
-        infoChannelClient.infoChannelRoles.add(infoChannelRole)
         infoChannel.infoChannelClients.add(infoChannelClient)
         client.infoChannelClients.add(infoChannelClient)
 
         // Save them all
         infoChannelRepository.save(infoChannel)
         infoChannelClientRepository.save(infoChannelClient)
-        infoChannelRoleRepository.save(infoChannelRole)
 
         return infoChannel
     }

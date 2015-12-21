@@ -142,11 +142,11 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
 
         var didMatchAny = false
         for (urlPrefix in infoSource.urlPrefixes) {
-            didMatchAny = didMatchAny || url.toLowerCase().startsWith(urlPrefix.urlPrefix)
+            didMatchAny = didMatchAny || url.toLowerCase().startsWith(urlPrefix)
         }
         Assert.isTrue(
                 didMatchAny,
-                "URL must be from the given info source, e.g. it must start with fx. " + infoSource.urlPrefixes[0].urlPrefix + ", but was: " + url
+                "URL must be from the given info source, e.g. it must start with fx. " + infoSource.urlPrefixes.first() + ", but was: " + url
         )
     }
 }

@@ -32,10 +32,8 @@ import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
-import dk.etiktak.backend.repository.infochannel.InfoChannelRoleRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
-import dk.etiktak.backend.repository.infosource.InfoSourceUrlPrefixRepository
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductScanRepository
@@ -113,13 +111,7 @@ open class BaseRestTest {
     val infoChannelClientRepository: InfoChannelClientRepository? = null
 
     @Autowired
-    val infoChannelRoleRepository: InfoChannelRoleRepository? = null
-
-    @Autowired
     val infoSourceRepository: InfoSourceRepository? = null
-
-    @Autowired
-    val infoSourceUrlPrefixRepository: InfoSourceUrlPrefixRepository? = null
 
     @Autowired
     val infoSourceReferenceRepository: InfoSourceReferenceRepository? = null
@@ -147,11 +139,9 @@ open class BaseRestTest {
 
 
     fun cleanRepository() {
-        infoSourceUrlPrefixRepository!!.deleteAll()
         infoSourceReferenceRepository!!.deleteAll()
         infoSourceRepository!!.deleteAll()
 
-        infoChannelRoleRepository!!.deleteAll()
         infoChannelClientRepository!!.deleteAll()
         infoChannelRepository!!.deleteAll()
 

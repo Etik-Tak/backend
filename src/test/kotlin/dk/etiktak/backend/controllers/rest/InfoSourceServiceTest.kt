@@ -27,6 +27,7 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
+import org.hamcrest.Matchers.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,8 +36,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.notNullValue
+import org.springframework.http.MediaType
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
@@ -63,13 +63,14 @@ class InfoSourceServiceTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
                         .param("clientUuid", client1.uuid)
-                        .param("urlPrefix", "http://dr.dk")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[\"http://dr.dk\", \"https://dr.dk\", \"http://www.dr.dk\", \"https://www.dr.dk\"]")
                         .param("friendlyName", "Test Info Source 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.infoSource.uuid", notNullValue()))
-                .andExpect(jsonPath("$.infoSource.urlPrefixes", `is`(listOf("http://dr.dk"))))
+                .andExpect(jsonPath("$.infoSource.urlPrefixes", containsInAnyOrder("http://dr.dk", "https://dr.dk", "http://www.dr.dk", "https://www.dr.dk")))
                 .andExpect(jsonPath("$.infoSource.friendlyName", `is`("Test Info Source 1")))
     }
 }

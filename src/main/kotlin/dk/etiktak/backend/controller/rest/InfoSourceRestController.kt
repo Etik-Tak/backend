@@ -33,10 +33,7 @@ import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infosource.InfoSourceService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
@@ -48,11 +45,11 @@ class InfoSourceRestController @Autowired constructor(
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoSource(
             @RequestParam clientUuid: String,
-            @RequestParam urlPrefix: String,
-            @RequestParam friendlyName: String): HashMap<String, Any> {
+            @RequestParam friendlyName: String,
+            @RequestBody urlPrefixes: List<String>): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid)
         client?.let {
-            val infoSource = infoSourceService.createInfoSource(client, listOf(urlPrefix), friendlyName)
+            val infoSource = infoSourceService.createInfoSource(client, urlPrefixes, friendlyName)
             return okMap().addEntity(infoSource)
         }
         return notFoundMap()
