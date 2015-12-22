@@ -31,21 +31,23 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.service.client.ClientService
+import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.StringUtils
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
 @RequestMapping("/service/product")
 class ProductRestController @Autowired constructor(
-        private val productService: ProductService) : BaseRestController() {
+        private val productService: ProductService,
+        private val productCategoryService: ProductCategoryService,
+        private val clientService: ClientService) : BaseRestController() {
 
-    @RequestMapping(value = "/retrieve/", method = arrayOf(RequestMethod.GET))
+    @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProduct(
             @RequestParam(required = false) uuid: String?,
             @RequestParam(required = false) barcode: String?): HashMap<String, Any> {
@@ -57,6 +59,40 @@ class ProductRestController @Autowired constructor(
             product = productService.getProductByBarcode(barcode!!)
         }
         product?.let {
+            return okMap().addEntity(product)
+        }
+        return notFoundMap()
+    }
+
+    @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.GET))
+    fun createProduct(
+            @RequestParam clientUuid: String,
+            @RequestParam name: String,
+            @RequestParam(required = false) barcode: String?,
+            @RequestParam(required = false) barcodeType: String?,
+            @RequestBody(required = false) categoriesUuid: List<String>?): HashMap<String, Any> {
+
+        val client = clientService.getByUuid(clientUuid)
+        client?.let {
+
+            // List of product categories
+            val productCategories = ArrayList<ProductCategory>()
+            categoriesUuid?.let {
+                for (productCategoryUuid in categoriesUuid) {
+                    val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid)
+                    productCategory?.let {
+                        productCategories.add(productCategory)
+                    }
+                }
+            }
+
+            // Create product
+            val product = productService.createProduct(
+                    client,
+                    barcode,
+                    if (barcodeType != null) Product.BarcodeType.valueOf(barcodeType) else null,
+                    name,
+                    productCategories)
             return okMap().addEntity(product)
         }
         return notFoundMap()

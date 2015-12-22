@@ -27,9 +27,11 @@ package dk.etiktak.backend.service.product
 
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductScan
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.location.LocationRepository
+import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductScanRepository
 import dk.etiktak.backend.repository.user.ClientRepository
@@ -45,7 +47,8 @@ class ProductServiceImpl @Autowired constructor(
         private val productRepository: ProductRepository,
         private val productScanRepository: ProductScanRepository,
         private val clientRepository: ClientRepository,
-        private val locationRepository: LocationRepository) : ProductService {
+        private val locationRepository: LocationRepository,
+        private val productCategoryRepository: ProductCategoryRepository) : ProductService {
 
     private val logger = LoggerFactory.getLogger(ProductServiceImpl::class.java)
 
@@ -77,6 +80,49 @@ class ProductServiceImpl @Autowired constructor(
      */
     override fun getProductScanByUuid(uuid: String): ProductScan? {
         return productScanRepository.findByUuid(uuid)
+    }
+
+    /**
+     * Creates a new product.
+     *
+     * @param client        Client
+     * @param barcode       Barcode
+     * @param barcodeType   Barcode type
+     * @param name          Name of product
+     * @param categories    Product categories
+     * @return              Created product
+     */
+    override fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String, categories: List<ProductCategory>): Product {
+        val product = Product()
+        product.creator = client
+        product.name = name
+
+        // Glue it together
+        client.products.add(product)
+        for (productCategory in categories) {
+            productCategory.products.add(product)
+        }
+
+        // Save it all
+        for (productCategory in categories) {
+            productCategoryRepository.save(productCategory)
+        }
+        clientRepository.save(client)
+        productRepository.save(product)
+
+        // Assign barcode
+        if (barcode != null && barcodeType != null) {
+            assignBarcodeToProduct(product, barcode, barcodeType)
+        }
+
+        return product
+    }
+
+    override fun assignBarcodeToProduct(product: Product, barcode: String, barcodeType: Product.BarcodeType) {
+        product.barcode = barcode
+        product.barcodeType = barcodeType
+
+        productRepository.save(product)
     }
 
     /**

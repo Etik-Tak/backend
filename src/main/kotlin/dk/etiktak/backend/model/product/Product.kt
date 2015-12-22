@@ -32,6 +32,7 @@ package dk.etiktak.backend.model.product
 import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -56,18 +57,19 @@ class Product constructor() : BaseModel() {
     var uuid: String = ""
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
-    @Column(name = "barcode", nullable = false, unique = true)
+    @Column(name = "barcode", unique = true)
     var barcode: String = ""
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
-    @Column(name = "barcode_type", nullable = false)
+    @Column(name = "barcode_type")
     var barcodeType: BarcodeType = BarcodeType.EAN13
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "name")
     var name: String = ""
 
-    @ManyToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @NotNull
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
@@ -77,6 +79,11 @@ class Product constructor() : BaseModel() {
             joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
             inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
     var productCategories: MutableList<ProductCategory> = ArrayList()
+
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var creator: Client = Client()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

@@ -34,72 +34,41 @@ import org.junit.runner.RunWith
 import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.notNullValue
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class ProductRetrievalServiceTest : BaseRestTest() {
+class ProductCategoryServiceTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "product/retrieve/" + postfix
+        return super.serviceEndpoint() + "product/category/" + postfix
     }
 
     @Before
     override fun setup() {
         super.setup()
 
-        product1 = createAndSaveProduct("123456789a", Product.BarcodeType.EAN13)
-        product2 = createAndSaveProduct("123456789b", Product.BarcodeType.UPC)
+        client1 = createAndSaveClient()
+        client2 = createAndSaveClient()
     }
 
     /**
-     * Test that we can retrieve product by UUID.
+     * Test that we can create a product category.
      */
     @Test
-    fun retrieveProductByUuid() {
+    fun createProductCategory() {
         mockMvc().perform(
-                get(serviceEndpoint(""))
-                        .param("uuid", product1.uuid))
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1.uuid)
+                        .param("name", "Chokolade"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product1.barcodeType.name)))
-    }
-
-    /**
-     * Test that we can retrieve product by EAN13 barcode.
-     */
-    @Test
-    fun retrieveProductByEan13Barcode() {
-        mockMvc().perform(
-                get(serviceEndpoint(""))
-                        .param("barcode", product1.barcode))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product1.barcodeType.name)))
-    }
-
-    /**
-     * Test that we can retrieve product by UPC barcode.
-     */
-    @Test
-    fun retrieveProductByUPCBarcode() {
-        mockMvc().perform(
-                get(serviceEndpoint(""))
-                        .param("barcode", product2.barcode))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product2.uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product2.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product2.barcodeType.name)))
+                .andExpect(jsonPath("$.productCategory.uuid", notNullValue()))
+                .andExpect(jsonPath("$.productCategory.name", `is`("Chokolade")))
     }
 }

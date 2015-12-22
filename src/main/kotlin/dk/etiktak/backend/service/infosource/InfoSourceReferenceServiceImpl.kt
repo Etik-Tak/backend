@@ -109,12 +109,12 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
         infoSourceReference.url = url
         infoSourceReference.title = title
         infoSourceReference.summaryMarkdown = summaryMarkdown
-        infoSourceReference.client = client
+        infoSourceReference.creator = client
         infoSourceReference.infoSource = infoSource
         infoSourceReference.infoChannel = infoChannel
 
         // Glue it all together
-        client.infoSourceReference.add(infoSourceReference)
+        client.infoSourceReferences.add(infoSourceReference)
         infoChannel.infoSourceReferences.add(infoSourceReference)
         infoSource.infoSourceReferences.add(infoSourceReference)
 

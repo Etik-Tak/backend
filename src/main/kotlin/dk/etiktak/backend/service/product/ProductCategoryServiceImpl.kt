@@ -28,6 +28,7 @@ package dk.etiktak.backend.service.product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.product.ProductCategoryRepository
+import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,7 +36,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class ProductCategoryServiceImpl @Autowired constructor(
-        private val productCategoryRepository: ProductCategoryRepository) : ProductCategoryService {
+        private val productCategoryRepository: ProductCategoryRepository,
+        private val clientRepository: ClientRepository) : ProductCategoryService {
 
     private val logger = LoggerFactory.getLogger(ProductCategoryServiceImpl::class.java)
 
@@ -58,8 +60,12 @@ class ProductCategoryServiceImpl @Autowired constructor(
     override fun createProductCategory(client: Client, name: String): ProductCategory {
         val productCategory = ProductCategory()
         productCategory.uuid = CryptoUtil().uuid()
+        productCategory.creator = client
         productCategory.name = name
 
+        client.productCategories.add(productCategory)
+
+        clientRepository.save(client)
         productCategoryRepository.save(productCategory)
 
         return productCategory

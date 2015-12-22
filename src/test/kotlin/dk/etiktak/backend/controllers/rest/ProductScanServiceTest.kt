@@ -59,8 +59,10 @@ class ProductScanServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        product1 = createAndSaveProduct("123456789a", Product.BarcodeType.EAN13)
-        product2 = createAndSaveProduct("123456789b", Product.BarcodeType.UPC)
+        client1 = createAndSaveClient()
+
+        product1 = createAndSaveProduct(client1, "123456789a", Product.BarcodeType.EAN13)
+        product2 = createAndSaveProduct(client1, "123456789b", Product.BarcodeType.UPC)
 
         client1 = createAndSaveClient()
         client2 = createAndSaveClient()

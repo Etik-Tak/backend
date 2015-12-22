@@ -27,6 +27,7 @@ package dk.etiktak.backend.service.product
 
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductScan
 import dk.etiktak.backend.model.user.Client
 
@@ -36,6 +37,9 @@ interface ProductService {
     fun getProductByBarcode(barcode: String): Product?
 
     fun getProductScanByUuid(uuid: String): ProductScan?
+
+    fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String, categories: List<ProductCategory>): Product
+    fun assignBarcodeToProduct(product: Product, barcode: String, barcodeType: Product.BarcodeType)
 
     fun scanProduct(barcode: String, client: Client, location: Location?): ProductScan?
     fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan

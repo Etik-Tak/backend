@@ -37,6 +37,8 @@ import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infosource.InfoSourceReference
+import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductScan
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -72,8 +74,16 @@ class Client constructor() {
     var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-    var infoSourceReference: MutableList<InfoSourceReference> = ArrayList()
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
+
+    @NotNull
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    var productCategories: MutableList<ProductCategory> = ArrayList()
+
+    @NotNull
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    var products: MutableList<Product> = ArrayList()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

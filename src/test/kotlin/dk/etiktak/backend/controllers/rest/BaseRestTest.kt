@@ -29,12 +29,14 @@ import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
 import dk.etiktak.backend.repository.location.LocationRepository
+import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductScanRepository
 import dk.etiktak.backend.repository.user.ClientRepository
@@ -70,6 +72,9 @@ open class BaseRestTest {
     var product1: Product = Product()
     var product2: Product = Product()
 
+    var productCategory1: ProductCategory = ProductCategory()
+    var productCategory2: ProductCategory = ProductCategory()
+
     var client1: Client = Client()
     var client2: Client = Client()
 
@@ -88,6 +93,9 @@ open class BaseRestTest {
 
     @Autowired
     val productScanRepository: ProductScanRepository? = null
+
+    @Autowired
+    val productCategoryRepository: ProductCategoryRepository? = null
 
     @Autowired
     val productRepository: ProductRepository? = null
@@ -148,6 +156,7 @@ open class BaseRestTest {
         productScanRepository!!.deleteAll()
         locationRepository!!.deleteAll()
         productRepository!!.deleteAll()
+        productCategoryRepository!!.deleteAll()
 
         clientRepository!!.deleteAll()
 
@@ -155,14 +164,34 @@ open class BaseRestTest {
         smsVerificationRepository!!.deleteAll()
     }
 
-    fun createAndSaveProduct(barcode: String, barcodeType: Product.BarcodeType): Product {
+    fun createAndSaveProduct(creator: Client, barcode: String, barcodeType: Product.BarcodeType): Product {
         val product = Product()
         product.uuid = CryptoUtil().uuid()
+        product.creator = creator
         product.name = CryptoUtil().uuid()
         product.barcode = barcode
         product.barcodeType = barcodeType
+
+        creator.products.add(product)
+
+        clientRepository!!.save(creator)
         productRepository!!.save(product)
+
         return product
+    }
+
+    fun createAndSaveProductCategory(creator: Client): ProductCategory {
+        val productCategory = ProductCategory()
+        productCategory.uuid = CryptoUtil().uuid()
+        productCategory.creator = creator
+        productCategory.name = CryptoUtil().uuid()
+
+        creator.productCategories.add(productCategory)
+
+        clientRepository!!.save(creator)
+        productCategoryRepository!!.save(productCategory)
+
+        return productCategory
     }
 
     fun createAndSaveInfoChannel(): InfoChannel {

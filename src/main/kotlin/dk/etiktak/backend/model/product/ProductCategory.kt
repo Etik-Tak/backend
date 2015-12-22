@@ -32,6 +32,7 @@ package dk.etiktak.backend.model.product
 import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -50,10 +51,10 @@ class ProductCategory constructor() : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
-    @NotNull
-    @Column(name = "creator")
-    var creatorUuid: String = ""
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var creator: Client = Client()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "name")

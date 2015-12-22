@@ -65,7 +65,7 @@ class InfoSourceReference constructor() : BaseModel() {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
-    var client: Client = Client()
+    var creator: Client = Client()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @ManyToOne(optional = false)
