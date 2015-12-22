@@ -24,7 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product.
+ * Represents a product category.
  */
 
 package dk.etiktak.backend.model.product
@@ -37,46 +37,30 @@ import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-@Entity(name = "products")
-@Jsonifier(jsonKey = "product")
-class Product constructor() : BaseModel() {
-
-    enum class BarcodeType {
-        EAN13,
-        UPC
-    }
+@Entity(name = "product_categories")
+@Jsonifier(jsonKey = "productCategory")
+class ProductCategory constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_id")
+    @Column(name = "product_category_id")
     var id: Long = 0
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
-    @Column(name = "barcode", nullable = false, unique = true)
-    var barcode: String = ""
-
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
-    @Column(name = "barcode_type", nullable = false)
-    var barcodeType: BarcodeType = BarcodeType.EAN13
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @NotNull
+    @Column(name = "creator")
+    var creatorUuid: String = ""
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @Column(name = "name")
     var name: String = ""
 
-    @ManyToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    var productScans: MutableList<ProductScan> = ArrayList()
-
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
-    @ManyToMany
-    @JoinTable(
-            name="product_productCategory",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
-    var productCategories: MutableList<ProductCategory> = ArrayList()
+    @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
+    var products: MutableList<Product> = ArrayList()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
