@@ -30,6 +30,7 @@ import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
@@ -37,6 +38,7 @@ import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.ProductCategoryRepository
+import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductScanRepository
 import dk.etiktak.backend.repository.user.ClientRepository
@@ -75,6 +77,9 @@ open class BaseRestTest {
     var productCategory1: ProductCategory = ProductCategory()
     var productCategory2: ProductCategory = ProductCategory()
 
+    var productLabel1: ProductLabel = ProductLabel()
+    var productLabel2: ProductLabel = ProductLabel()
+
     var client1: Client = Client()
     var client2: Client = Client()
 
@@ -96,6 +101,9 @@ open class BaseRestTest {
 
     @Autowired
     val productCategoryRepository: ProductCategoryRepository? = null
+
+    @Autowired
+    val productLabelRepository: ProductLabelRepository? = null
 
     @Autowired
     val productRepository: ProductRepository? = null
@@ -157,6 +165,7 @@ open class BaseRestTest {
         locationRepository!!.deleteAll()
         productRepository!!.deleteAll()
         productCategoryRepository!!.deleteAll()
+        productLabelRepository!!.deleteAll()
 
         clientRepository!!.deleteAll()
 
@@ -192,6 +201,20 @@ open class BaseRestTest {
         productCategoryRepository!!.save(productCategory)
 
         return productCategory
+    }
+
+    fun createAndSaveProductLabel(creator: Client): ProductLabel {
+        val productLabel = ProductLabel()
+        productLabel.uuid = CryptoUtil().uuid()
+        productLabel.creator = creator
+        productLabel.name = CryptoUtil().uuid()
+
+        creator.productLabels.add(productLabel)
+
+        clientRepository!!.save(creator)
+        productLabelRepository!!.save(productLabel)
+
+        return productLabel
     }
 
     fun createAndSaveInfoChannel(): InfoChannel {

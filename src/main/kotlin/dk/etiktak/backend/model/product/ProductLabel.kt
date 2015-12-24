@@ -24,7 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product category.
+ * Represents a product label.
  */
 
 package dk.etiktak.backend.model.product
@@ -37,13 +37,13 @@ import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
-@Entity(name = "product_categories")
-@Jsonifier(jsonKey = "productCategory")
-class ProductCategory constructor() : BaseModel() {
+@Entity(name = "product_labels")
+@Jsonifier(jsonKey = "productLabel")
+class ProductLabel constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_category_id")
+    @Column(name = "product_label_id")
     var id: Long = 0
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
@@ -59,7 +59,7 @@ class ProductCategory constructor() : BaseModel() {
     @Column(name = "name")
     var name: String = ""
 
-    @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "productLabels", fetch = FetchType.LAZY)
     var products: MutableList<Product> = ArrayList()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))

@@ -24,7 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Rest controller responsible for handling product scans.
+ * Rest controller responsible for handling product labels.
  */
 
 package dk.etiktak.backend.controller.rest
@@ -32,6 +32,7 @@ package dk.etiktak.backend.controller.rest
 import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductCategoryService
+import dk.etiktak.backend.service.product.ProductLabelService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
@@ -40,29 +41,29 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
-@RequestMapping("/service/product/category")
-class ProductCategoryRestController @Autowired constructor(
-        private val productCategoryService: ProductCategoryService,
+@RequestMapping("/service/product/label")
+class ProductLabelRestController @Autowired constructor(
+        private val productLabelService: ProductLabelService,
         private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
-    fun getProductCategory(
+    fun getProductLabel(
             @RequestParam uuid: String): HashMap<String, Any> {
-        val productCategory = productCategoryService.getProductCategoryByUuid(uuid)
-        productCategory?.let {
-            return okMap().addEntity(productCategory)
+        val productLabel = productLabelService.getProductLabelByUuid(uuid)
+        productLabel?.let {
+            return okMap().addEntity(productLabel)
         }
         return notFoundMap()
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
-    fun createProductCategory(
+    fun createProductLabel(
             @RequestParam clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid)
         client?.let {
-            val productCategory = productCategoryService.createProductCategory(client, name)
-            return okMap().addEntity(productCategory)
+            val productLabel = productLabelService.createProductLabel(client, name)
+            return okMap().addEntity(productLabel)
         }
         return notFoundMap()
     }

@@ -80,6 +80,14 @@ class Product constructor() : BaseModel() {
             inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
     var productCategories: MutableList<ProductCategory> = ArrayList()
 
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @ManyToMany
+    @JoinTable(
+            name="product_productLabel",
+            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
+            inverseJoinColumns=arrayOf(JoinColumn(name="product_label_id", referencedColumnName="product_label_id")))
+    var productLabels: MutableList<ProductLabel> = ArrayList()
+
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")

@@ -42,10 +42,10 @@ import org.hamcrest.Matchers.notNullValue
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class ProductCategoryServiceTest : BaseRestTest() {
+class ProductLabelServiceTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "product/category/" + postfix
+        return super.serviceEndpoint() + "product/label/" + postfix
     }
 
     @Before
@@ -55,38 +55,38 @@ class ProductCategoryServiceTest : BaseRestTest() {
         client1 = createAndSaveClient()
         client2 = createAndSaveClient()
 
-        productCategory1 = createAndSaveProductCategory(client1)
-        productCategory2 = createAndSaveProductCategory(client2)
+        productLabel1 = createAndSaveProductLabel(client1)
+        productLabel2 = createAndSaveProductLabel(client2)
     }
 
     /**
-     * Test that we can create a product category.
+     * Test that we can create a product label.
      */
     @Test
-    fun createProductCategory() {
+    fun createProductLabel() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
                         .param("clientUuid", client1.uuid)
-                        .param("name", "Chokolade"))
+                        .param("name", "KRAV"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.productCategory.uuid", notNullValue()))
-                .andExpect(jsonPath("$.productCategory.name", `is`("Chokolade")))
+                .andExpect(jsonPath("$.productLabel.uuid", notNullValue()))
+                .andExpect(jsonPath("$.productLabel.name", `is`("KRAV")))
     }
 
     /**
-     * Test that we can retrieve a product category.
+     * Test that we can retrieve a product label.
      */
     @Test
-    fun retrieveProductCategory() {
+    fun retrieveProductLabel() {
         mockMvc().perform(
                 get(serviceEndpoint("/"))
-                        .param("uuid", productCategory1.uuid))
+                        .param("uuid", productLabel1.uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.productCategory.uuid", `is`(productCategory1.uuid)))
-                .andExpect(jsonPath("$.productCategory.name", `is`(productCategory1.name)))
+                .andExpect(jsonPath("$.productLabel.uuid", `is`(productLabel1.uuid)))
+                .andExpect(jsonPath("$.productLabel.name", `is`(productLabel1.name)))
     }
 }

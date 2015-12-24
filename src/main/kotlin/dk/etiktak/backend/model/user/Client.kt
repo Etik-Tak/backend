@@ -39,6 +39,7 @@ import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.product.ProductScan
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -80,6 +81,10 @@ class Client constructor() {
     @NotNull
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     var productCategories: MutableList<ProductCategory> = ArrayList()
+
+    @NotNull
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    var productLabels: MutableList<ProductLabel> = ArrayList()
 
     @NotNull
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
