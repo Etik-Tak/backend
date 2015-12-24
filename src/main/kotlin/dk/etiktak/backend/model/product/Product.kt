@@ -72,21 +72,21 @@ class Product constructor() : BaseModel() {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(jsonKey = "categories", rules = arrayOf(JsonifyRule.NORMAL))
     @ManyToMany
     @JoinTable(
             name="product_productCategory",
             joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
             inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
-    var productCategories: MutableList<ProductCategory> = ArrayList()
+    var productCategories: MutableSet<ProductCategory> = HashSet()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(jsonKey = "labels", rules = arrayOf(JsonifyRule.NORMAL))
     @ManyToMany
     @JoinTable(
             name="product_productLabel",
             joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
             inverseJoinColumns=arrayOf(JoinColumn(name="product_label_id", referencedColumnName="product_label_id")))
-    var productLabels: MutableList<ProductLabel> = ArrayList()
+    var productLabels: MutableSet<ProductLabel> = HashSet()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @ManyToOne(optional = false)

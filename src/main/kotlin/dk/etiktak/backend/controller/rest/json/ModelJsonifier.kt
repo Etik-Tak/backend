@@ -29,6 +29,7 @@
 
 package dk.etiktak.backend.controller.rest.json
 
+import dk.etiktak.backend.util.asList
 import org.slf4j.LoggerFactory
 import org.springframework.util.StringUtils
 import java.lang.reflect.Field
@@ -143,10 +144,16 @@ fun HashMap<String, Any>.addEntity(entity: Any, field: Field, rule: JsonifyRule,
 
     val jsonKey = if (!StringUtils.isEmpty(annotation.jsonKey)) annotation.jsonKey else field.name
 
-    if (field.type == List::class.java) {
+    if (field.type == List::class.java || field.type == Set::class.java) {
         if (deep) {
             field.isAccessible = true
-            val entries = field.get(entity) as List<Any>
+            val entries = ArrayList<Any>()
+            if (field.type == List::class.java) {
+                entries.addAll(field.get(entity) as List<Any>)
+            }
+            if (field.type == Set::class.java) {
+                entries.addAll(field.get(entity) as Set<Any>)
+            }
             if (!StringUtils.isEmpty(annotation.simpleListFieldName)) {
                 this[jsonKey] = extractSimpleListFromFieldName(entries, annotation.simpleListFieldName)
             /*} else if (!StringUtils.isEmpty(annotation.extractFieldNames)) {

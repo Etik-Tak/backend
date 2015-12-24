@@ -189,21 +189,27 @@ open class BaseRestTest {
         return product
     }
 
-    fun createAndSaveProductCategory(creator: Client): ProductCategory {
+    fun createAndSaveProductCategory(creator: Client, product: Product? = null): ProductCategory {
         val productCategory = ProductCategory()
         productCategory.uuid = CryptoUtil().uuid()
         productCategory.creator = creator
         productCategory.name = CryptoUtil().uuid()
 
+        product?.let {
+            productCategory.products.add(product)
+            product.productCategories.add(productCategory)
+        }
+
         creator.productCategories.add(productCategory)
 
         clientRepository!!.save(creator)
         productCategoryRepository!!.save(productCategory)
+        productRepository!!.save(product)
 
         return productCategory
     }
 
-    fun createAndSaveProductLabel(creator: Client): ProductLabel {
+    fun createAndSaveProductLabel(creator: Client, product: Product? = null): ProductLabel {
         val productLabel = ProductLabel()
         productLabel.uuid = CryptoUtil().uuid()
         productLabel.creator = creator
@@ -211,8 +217,14 @@ open class BaseRestTest {
 
         creator.productLabels.add(productLabel)
 
+        product?.let {
+            productLabel.products.add(product)
+            product.productLabels.add(productLabel)
+        }
+
         clientRepository!!.save(creator)
         productLabelRepository!!.save(productLabel)
+        productRepository!!.save(product)
 
         return productLabel
     }

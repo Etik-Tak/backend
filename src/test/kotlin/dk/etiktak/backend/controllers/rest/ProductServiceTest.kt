@@ -28,6 +28,7 @@ package dk.etiktak.backend.controllers.rest
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
+import org.hamcrest.Matchers.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,8 +37,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.isEmptyOrNullString
 import org.springframework.http.MediaType
 
 @RunWith(SpringJUnit4ClassRunner::class)
@@ -58,8 +57,11 @@ class ProductServiceTest : BaseRestTest() {
         product1 = createAndSaveProduct(client1, "123456789a", Product.BarcodeType.EAN13)
         product2 = createAndSaveProduct(client1, "123456789b", Product.BarcodeType.UPC)
 
-        productCategory1 = createAndSaveProductCategory(client1)
-        productCategory2 = createAndSaveProductCategory(client1)
+        productCategory1 = createAndSaveProductCategory(client1, product1)
+        productCategory2 = createAndSaveProductCategory(client1, product1)
+
+        productLabel1 = createAndSaveProductLabel(client1, product1)
+        productLabel2 = createAndSaveProductLabel(client1, product1)
     }
 
     /**
@@ -76,6 +78,8 @@ class ProductServiceTest : BaseRestTest() {
                 .andExpect(jsonPath("$.product.uuid", `is`(product1.uuid)))
                 .andExpect(jsonPath("$.product.barcode", `is`(product1.barcode)))
                 .andExpect(jsonPath("$.product.barcodeType", `is`(product1.barcodeType.name)))
+                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
+                .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
     }
 
     /**
