@@ -142,7 +142,7 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
 
         var didMatchAny = false
         for (urlPrefix in infoSource.urlPrefixes) {
-            didMatchAny = didMatchAny || url.toLowerCase().startsWith(urlPrefix)
+            didMatchAny = didMatchAny || url.toLowerCase().startsWith(urlPrefix.urlPrefix)
         }
         Assert.isTrue(
                 didMatchAny,

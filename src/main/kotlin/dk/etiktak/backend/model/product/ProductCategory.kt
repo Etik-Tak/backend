@@ -60,7 +60,7 @@ class ProductCategory constructor() : BaseModel() {
     var name: String = ""
 
     @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
-    var products: MutableList<Product> = ArrayList()
+    var products: MutableSet<Product> = HashSet()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

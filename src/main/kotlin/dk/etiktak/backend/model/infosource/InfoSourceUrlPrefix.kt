@@ -24,76 +24,38 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product.
+ * Represents a info source url prefix that can be referenced by info sources.
  */
 
-package dk.etiktak.backend.model.product
+package dk.etiktak.backend.model.infosource
 
 import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 
-@Entity(name = "products")
-@Jsonifier(jsonKey = "product")
-class Product constructor() : BaseModel() {
-
-    enum class BarcodeType {
-        EAN13,
-        UPC
-    }
+@Entity(name = "info_source_url_prefixes")
+@Jsonifier(jsonKey = "infoSourceUrlPrefix")
+class InfoSourceUrlPrefix constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_id")
+    @Column(name = "infosourceurlprefix_id")
     var id: Long = 0
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
-    @Column(name = "barcode", unique = true)
-    var barcode: String = ""
+    @Column(name = "url_prefix", unique = true)
+    var urlPrefix: String = ""
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
-    @Column(name = "barcode_type")
-    var barcodeType: BarcodeType = BarcodeType.EAN13
-
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
-    @Column(name = "name")
-    var name: String = ""
-
-    @NotNull
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    var productScans: MutableList<ProductScan> = ArrayList()
-
-    @Jsonifier(jsonKey = "categories", rules = arrayOf(JsonifyRule.NORMAL))
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name="product_productCategory",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
-    @Column(name = "product_categories")
-    var productCategories: MutableSet<ProductCategory> = HashSet()
-
-    @Jsonifier(jsonKey = "labels", rules = arrayOf(JsonifyRule.NORMAL))
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name="product_productLabel",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_label_id", referencedColumnName="product_label_id")))
-    @Column(name = "product_labels")
-    var productLabels: MutableSet<ProductLabel> = HashSet()
-
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var creator: Client = Client()
+    @JoinColumn(name = "infosource_id")
+    var infoSource: InfoSource = InfoSource()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

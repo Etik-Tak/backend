@@ -36,6 +36,7 @@ import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
+import dk.etiktak.backend.repository.infosource.InfoSourceUrlPrefixRepository
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.product.ProductLabelRepository
@@ -44,7 +45,12 @@ import dk.etiktak.backend.repository.product.ProductScanRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository
+import dk.etiktak.backend.service.client.ClientService
+import dk.etiktak.backend.service.infochannel.InfoChannelService
 import dk.etiktak.backend.service.infosource.InfoSourceService
+import dk.etiktak.backend.service.product.ProductCategoryService
+import dk.etiktak.backend.service.product.ProductLabelService
+import dk.etiktak.backend.service.product.ProductService
 import dk.etiktak.backend.util.CryptoUtil
 import dk.etiktak.backend.util.getWithScale
 import org.junit.After
@@ -60,6 +66,7 @@ import org.springframework.web.context.WebApplicationContext
 import java.nio.charset.Charset
 
 import org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup
+import java.util.*
 
 open class BaseRestTest {
 
@@ -130,10 +137,28 @@ open class BaseRestTest {
     val infoSourceRepository: InfoSourceRepository? = null
 
     @Autowired
+    val infoSourceUrlPrefixRepository: InfoSourceUrlPrefixRepository? = null
+
+    @Autowired
     val infoSourceReferenceRepository: InfoSourceReferenceRepository? = null
 
     @Autowired
+    val productService: ProductService? = null
+
+    @Autowired
+    val productCategoryService: ProductCategoryService? = null
+
+    @Autowired
+    val productLabelService: ProductLabelService? = null
+
+    @Autowired
+    val infoChannelService: InfoChannelService? = null
+
+    @Autowired
     val infoSourceService: InfoSourceService? = null
+
+    @Autowired
+    val clientService: ClientService? = null
 
     @get:Rule
     public val exception = ExpectedException.none()
@@ -155,6 +180,7 @@ open class BaseRestTest {
 
 
     fun cleanRepository() {
+        infoSourceUrlPrefixRepository!!.deleteAll()
         infoSourceReferenceRepository!!.deleteAll()
         infoSourceRepository!!.deleteAll()
 
@@ -174,67 +200,27 @@ open class BaseRestTest {
     }
 
     fun createAndSaveProduct(creator: Client, barcode: String, barcodeType: Product.BarcodeType): Product {
-        val product = Product()
-        product.uuid = CryptoUtil().uuid()
-        product.creator = creator
-        product.name = CryptoUtil().uuid()
-        product.barcode = barcode
-        product.barcodeType = barcodeType
-
-        creator.products.add(product)
-
-        clientRepository!!.save(creator)
-        productRepository!!.save(product)
-
-        return product
+        return productService!!.createProduct(creator, barcode, barcodeType, CryptoUtil().uuid(), ArrayList())
     }
 
     fun createAndSaveProductCategory(creator: Client, product: Product? = null): ProductCategory {
-        val productCategory = ProductCategory()
-        productCategory.uuid = CryptoUtil().uuid()
-        productCategory.creator = creator
-        productCategory.name = CryptoUtil().uuid()
-
+        val productCategory = productCategoryService!!.createProductCategory(creator, CryptoUtil().uuid())
         product?.let {
-            productCategory.products.add(product)
-            product.productCategories.add(productCategory)
+            productService!!.assignCategoryToProduct(product.creator, product, productCategory)
         }
-
-        creator.productCategories.add(productCategory)
-
-        clientRepository!!.save(creator)
-        productCategoryRepository!!.save(productCategory)
-        productRepository!!.save(product)
-
         return productCategory
     }
 
     fun createAndSaveProductLabel(creator: Client, product: Product? = null): ProductLabel {
-        val productLabel = ProductLabel()
-        productLabel.uuid = CryptoUtil().uuid()
-        productLabel.creator = creator
-        productLabel.name = CryptoUtil().uuid()
-
-        creator.productLabels.add(productLabel)
-
+        val productLabel = productLabelService!!.createProductLabel(creator, CryptoUtil().uuid())
         product?.let {
-            productLabel.products.add(product)
-            product.productLabels.add(productLabel)
+            productService!!.assignLabelToProduct(product.creator, product, productLabel)
         }
-
-        clientRepository!!.save(creator)
-        productLabelRepository!!.save(productLabel)
-        productRepository!!.save(product)
-
         return productLabel
     }
 
-    fun createAndSaveInfoChannel(): InfoChannel {
-        val infoChannel = InfoChannel()
-        infoChannel.uuid = CryptoUtil().uuid()
-        infoChannel.name = CryptoUtil().uuid()
-        infoChannelRepository!!.save(infoChannel)
-        return infoChannel
+    fun createAndSaveInfoChannel(client: Client): InfoChannel {
+        return infoChannelService!!.createInfoChannel(client, CryptoUtil().uuid())
     }
 
     fun createAndSaveInfoSource(client: Client, urlPrefixes: List<String>): InfoSource {
@@ -242,11 +228,7 @@ open class BaseRestTest {
     }
 
     fun createAndSaveClient(): Client {
-        val client = Client()
-        client.uuid = CryptoUtil().uuid()
-        client.verified = false
-        clientRepository!!.save(client)
-        return client
+        return clientService!!.createClient();
     }
 
     fun createAndSaveLocation(): Location {

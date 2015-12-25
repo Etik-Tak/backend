@@ -58,8 +58,8 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
         infoSource1 = createAndSaveInfoSource(client1, listOf("http://dr.dk", "http://www.dr.dk"))
         infoSource2 = createAndSaveInfoSource(client2, listOf("http://information.dk"))
 
-        infoChannel1 = createAndSaveInfoChannel()
-        infoChannel2 = createAndSaveInfoChannel()
+        infoChannel1 = createAndSaveInfoChannel(client1)
+        infoChannel2 = createAndSaveInfoChannel(client2)
     }
 
     /**

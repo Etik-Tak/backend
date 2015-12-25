@@ -55,13 +55,19 @@ class ProductServiceTest : BaseRestTest() {
         client1 = createAndSaveClient()
 
         product1 = createAndSaveProduct(client1, "123456789a", Product.BarcodeType.EAN13)
-        product2 = createAndSaveProduct(client1, "123456789b", Product.BarcodeType.UPC)
+        product2 = createAndSaveProduct(client2, "123456789b", Product.BarcodeType.UPC)
 
         productCategory1 = createAndSaveProductCategory(client1, product1)
-        productCategory2 = createAndSaveProductCategory(client1, product1)
+        product1 = productService!!.getProductByUuid(product1.uuid)!!
+
+        productCategory2 = createAndSaveProductCategory(client2, product1)
+        product1 = productService!!.getProductByUuid(product1.uuid)!!
 
         productLabel1 = createAndSaveProductLabel(client1, product1)
-        productLabel2 = createAndSaveProductLabel(client1, product1)
+        product1 = productService!!.getProductByUuid(product1.uuid)!!
+
+        productLabel2 = createAndSaveProductLabel(client2, product1)
+        product1 = productService!!.getProductByUuid(product1.uuid)!!
     }
 
     /**

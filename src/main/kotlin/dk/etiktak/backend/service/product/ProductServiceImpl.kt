@@ -25,16 +25,15 @@
 
 package dk.etiktak.backend.service.product
 
-import dk.etiktak.backend.model.product.Location
-import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductCategory
-import dk.etiktak.backend.model.product.ProductScan
+import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.ProductCategoryRepository
+import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductScanRepository
 import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.security.SecurityService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -48,7 +47,9 @@ class ProductServiceImpl @Autowired constructor(
         private val productScanRepository: ProductScanRepository,
         private val clientRepository: ClientRepository,
         private val locationRepository: LocationRepository,
-        private val productCategoryRepository: ProductCategoryRepository) : ProductService {
+        private val productCategoryRepository: ProductCategoryRepository,
+        private val productLabelRepository: ProductLabelRepository,
+        private val securityService: SecurityService) : ProductService {
 
     private val logger = LoggerFactory.getLogger(ProductServiceImpl::class.java)
 
@@ -94,6 +95,7 @@ class ProductServiceImpl @Autowired constructor(
      */
     override fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String, categories: List<ProductCategory>): Product {
         val product = Product()
+        product.uuid = CryptoUtil().uuid()
         product.creator = client
         product.name = name
 
@@ -112,16 +114,64 @@ class ProductServiceImpl @Autowired constructor(
 
         // Assign barcode
         if (barcode != null && barcodeType != null) {
-            assignBarcodeToProduct(product, barcode, barcodeType)
+            assignBarcodeToProduct(client, product, barcode, barcodeType)
         }
 
         return product
     }
 
-    override fun assignBarcodeToProduct(product: Product, barcode: String, barcodeType: Product.BarcodeType) {
+    /**
+     * Assign barcode to product.
+     *
+     * @param client        Client
+     * @param product       Product
+     * @param barcode       Barcode
+     * @param barcodeType   Barcode type
+     */
+    override fun assignBarcodeToProduct(client: Client, product: Product, barcode: String, barcodeType: Product.BarcodeType) {
+        securityService.assertCreatorOrAdmin(client, product.creator)
+
         product.barcode = barcode
         product.barcodeType = barcodeType
 
+        productRepository.save(product)
+    }
+
+    /**
+     * Assigns a category to a product.
+     *
+     * @param client            Client
+     * @param product           Product
+     * @param productCategory   Product category
+     */
+    override fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory) {
+        securityService.assertCreatorOrAdmin(client, product.creator)
+
+        // Glue it together
+        product.productCategories.add(productCategory)
+        productCategory.products.add(product)
+
+        // Save it all
+        productCategoryRepository.save(productCategory)
+        productRepository.save(product)
+    }
+
+    /**
+     * Assigns a label to a product.
+     *
+     * @param client            Client
+     * @param product           Product
+     * @param productLabel      Product label
+     */
+    override fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel) {
+        securityService.assertCreatorOrAdmin(client, product.creator)
+
+        // Glue it together
+        product.productLabels.add(productLabel)
+        productLabel.products.add(product)
+
+        // Save it all
+        productLabelRepository.save(productLabel)
         productRepository.save(product)
     }
 
@@ -162,9 +212,7 @@ class ProductServiceImpl @Autowired constructor(
      * @return               Updated product scan
      */
     override fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan {
-        Assert.isTrue(
-                client.uuid == productScan.client.uuid,
-                "Client with UUID: " + client.uuid + " not owner of product scan with UUID: " + productScan.uuid)
+        securityService.assertCreatorOrAdmin(client, productScan.client)
 
         Assert.notNull(
                 location,

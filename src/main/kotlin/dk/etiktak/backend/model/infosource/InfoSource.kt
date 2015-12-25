@@ -54,10 +54,10 @@ class InfoSource constructor() : BaseModel() {
     @Column(name = "friendly_name")
     var friendlyName: String = ""
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL), simpleListFieldName = "urlPrefix")
     @NotNull
-    @ElementCollection
-    var urlPrefixes: MutableSet<String> = HashSet()
+    @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)
+    var urlPrefixes: MutableList<InfoSourceUrlPrefix> = ArrayList()
 
     @NotNull
     @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)

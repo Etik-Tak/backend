@@ -23,23 +23,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.service.product
+package dk.etiktak.backend.service.security
 
-import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.user.Client
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 
-interface ProductService {
+@Service
+class SecurityServiceImpl : SecurityService {
 
-    fun getProductByUuid(uuid: String): Product?
-    fun getProductByBarcode(barcode: String): Product?
+    private val logger = LoggerFactory.getLogger(SecurityServiceImpl::class.java)
 
-    fun getProductScanByUuid(uuid: String): ProductScan?
+    override fun assertCreatorOrAdmin(callingClient: Client, creatorClient: Client) {
 
-    fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String, categories: List<ProductCategory>): Product
-    fun assignBarcodeToProduct(client: Client, product: Product, barcode: String, barcodeType: Product.BarcodeType)
-    fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory)
-    fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel)
+        // Check if same client
+        if (callingClient.uuid.equals(creatorClient.uuid)) {
+            return
+        }
 
-    fun scanProduct(barcode: String, client: Client, location: Location?): ProductScan?
-    fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan
+        throw RuntimeException("Client with UUID: ${callingClient.uuid} not owner of object. Owner is client with UUID: ${creatorClient.uuid}")
+    }
 }
