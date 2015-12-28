@@ -114,7 +114,7 @@ class ProductServiceImpl @Autowired constructor(
 
         // Assign barcode
         if (barcode != null && barcodeType != null) {
-            assignBarcodeToProduct(client, product, barcode, barcodeType)
+            assignBarcodeToProduct(client, product, barcode, barcodeType, {})
         }
 
         return product
@@ -127,14 +127,17 @@ class ProductServiceImpl @Autowired constructor(
      * @param product       Product
      * @param barcode       Barcode
      * @param barcodeType   Barcode type
+     * @param modifyValues  Function called with modified product
      */
-    override fun assignBarcodeToProduct(client: Client, product: Product, barcode: String, barcodeType: Product.BarcodeType) {
+    override fun assignBarcodeToProduct(client: Client, product: Product, barcode: String, barcodeType: Product.BarcodeType, modifyValues: (Product) -> Unit) {
         securityService.assertCreatorOrAdmin(client, product.creator)
 
         product.barcode = barcode
         product.barcodeType = barcodeType
 
-        productRepository.save(product)
+        val modifiedProduct = productRepository.save(product)
+
+        modifyValues(modifiedProduct)
     }
 
     /**
@@ -143,8 +146,9 @@ class ProductServiceImpl @Autowired constructor(
      * @param client            Client
      * @param product           Product
      * @param productCategory   Product category
+     * @param modifyValues      Function called with modified product and product category
      */
-    override fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory) {
+    override fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory, modifyValues: (Product, ProductCategory) -> Unit) {
         securityService.assertCreatorOrAdmin(client, product.creator)
 
         // Glue it together
@@ -152,8 +156,10 @@ class ProductServiceImpl @Autowired constructor(
         productCategory.products.add(product)
 
         // Save it all
-        productCategoryRepository.save(productCategory)
-        productRepository.save(product)
+        val modifiedProductCategory = productCategoryRepository.save(productCategory)
+        val modifiedProduct = productRepository.save(product)
+
+        modifyValues(modifiedProduct, modifiedProductCategory)
     }
 
     /**
@@ -162,8 +168,9 @@ class ProductServiceImpl @Autowired constructor(
      * @param client            Client
      * @param product           Product
      * @param productLabel      Product label
+     * @param modifyValues      Function called with modified product and product label
      */
-    override fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel) {
+    override fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel, modifyValues: (Product, ProductLabel) -> Unit) {
         securityService.assertCreatorOrAdmin(client, product.creator)
 
         // Glue it together
@@ -171,8 +178,10 @@ class ProductServiceImpl @Autowired constructor(
         productLabel.products.add(product)
 
         // Save it all
-        productLabelRepository.save(productLabel)
-        productRepository.save(product)
+        val modifiedProductLabel = productLabelRepository.save(productLabel)
+        val modifiedProduct = productRepository.save(product)
+
+        modifyValues(modifiedProduct, modifiedProductLabel)
     }
 
     /**
@@ -209,9 +218,9 @@ class ProductServiceImpl @Autowired constructor(
      * @param client         Client
      * @param productScan    Product scan entry
      * @param location       Location
-     * @return               Updated product scan
+     * @param modifyValues   Function called with modified product scan
      */
-    override fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan {
+    override fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?, modifyValues: (ProductScan) -> Unit) {
         securityService.assertCreatorOrAdmin(client, productScan.client)
 
         Assert.notNull(
@@ -223,9 +232,9 @@ class ProductServiceImpl @Autowired constructor(
                 "Location already set on product scan with UUID: " + productScan.uuid)
 
         productScan.location = location
-        productScanRepository.save(productScan)
+        val productScan = productScanRepository.save(productScan)
 
-        return productScan
+        modifyValues(productScan)
     }
 
 

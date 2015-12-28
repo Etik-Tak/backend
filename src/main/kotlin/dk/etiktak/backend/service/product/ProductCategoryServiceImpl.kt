@@ -54,10 +54,11 @@ class ProductCategoryServiceImpl @Autowired constructor(
     /**
      * Creates a product category.
      *
-     * @param name  Name
-     * @return      Product category
+     * @param name          Name
+     * @param modifyValues  Function called with modified client
+     * @return              Product category
      */
-    override fun createProductCategory(client: Client, name: String): ProductCategory {
+    override fun createProductCategory(client: Client, name: String, modifyValues: (Client) -> Unit): ProductCategory {
         val productCategory = ProductCategory()
         productCategory.uuid = CryptoUtil().uuid()
         productCategory.creator = client
@@ -65,9 +66,11 @@ class ProductCategoryServiceImpl @Autowired constructor(
 
         client.productCategories.add(productCategory)
 
-        clientRepository.save(client)
-        productCategoryRepository.save(productCategory)
+        val modifiedClient = clientRepository.save(client)
+        val modifiedProductCategory = productCategoryRepository.save(productCategory)
 
-        return productCategory
+        modifyValues(modifiedClient)
+
+        return modifiedProductCategory
     }
 }

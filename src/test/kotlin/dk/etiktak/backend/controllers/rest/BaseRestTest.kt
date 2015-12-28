@@ -203,18 +203,18 @@ open class BaseRestTest {
         return productService!!.createProduct(creator, barcode, barcodeType, CryptoUtil().uuid(), ArrayList())
     }
 
-    fun createAndSaveProductCategory(creator: Client, product: Product? = null): ProductCategory {
-        val productCategory = productCategoryService!!.createProductCategory(creator, CryptoUtil().uuid())
+    fun createAndSaveProductCategory(creator: Client, product: Product? = null, modifyValues: (Product) -> Unit = {}): ProductCategory {
+        val productCategory = productCategoryService!!.createProductCategory(creator, CryptoUtil().uuid(), {})
         product?.let {
-            productService!!.assignCategoryToProduct(product.creator, product, productCategory)
+            productService!!.assignCategoryToProduct(product.creator, product, productCategory, {product, productCategory -> modifyValues(product)})
         }
         return productCategory
     }
 
-    fun createAndSaveProductLabel(creator: Client, product: Product? = null): ProductLabel {
+    fun createAndSaveProductLabel(creator: Client, product: Product? = null, modifyValues: (Product) -> Unit = {}): ProductLabel {
         val productLabel = productLabelService!!.createProductLabel(creator, CryptoUtil().uuid())
         product?.let {
-            productService!!.assignLabelToProduct(product.creator, product, productLabel)
+            productService!!.assignLabelToProduct(product.creator, product, productLabel, {product, productLabel -> modifyValues(product)})
         }
         return productLabel
     }

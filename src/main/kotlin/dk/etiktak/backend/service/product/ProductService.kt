@@ -36,10 +36,10 @@ interface ProductService {
     fun getProductScanByUuid(uuid: String): ProductScan?
 
     fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String, categories: List<ProductCategory>): Product
-    fun assignBarcodeToProduct(client: Client, product: Product, barcode: String, barcodeType: Product.BarcodeType)
-    fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory)
-    fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel)
+    fun assignBarcodeToProduct(client: Client, product: Product, barcode: String, barcodeType: Product.BarcodeType, modifyValues: (Product) -> Unit = {})
+    fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory, modifyValues: (Product, ProductCategory) -> Unit = {product, productCategory -> Unit})
+    fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel, modifyValues: (Product, ProductLabel) -> Unit = {product, productLabel -> Unit})
 
     fun scanProduct(barcode: String, client: Client, location: Location?): ProductScan?
-    fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?): ProductScan
+    fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?, modifyValues: (ProductScan) -> Unit = {})
 }

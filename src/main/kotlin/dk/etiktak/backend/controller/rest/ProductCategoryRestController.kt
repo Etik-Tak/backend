@@ -61,7 +61,7 @@ class ProductCategoryRestController @Autowired constructor(
             @RequestParam name: String): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid)
         client?.let {
-            val productCategory = productCategoryService.createProductCategory(client, name)
+            val productCategory = productCategoryService.createProductCategory(client, name, {})
             return okMap().addEntity(productCategory)
         }
         return notFoundMap()

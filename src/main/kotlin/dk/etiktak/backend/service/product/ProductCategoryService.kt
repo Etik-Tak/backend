@@ -32,5 +32,5 @@ interface ProductCategoryService {
 
     fun getProductCategoryByUuid(uuid: String): ProductCategory?
 
-    fun createProductCategory(client: Client, name: String): ProductCategory
+    fun createProductCategory(client: Client, name: String, modifyValues: (Client) -> Unit): ProductCategory
 }

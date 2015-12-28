@@ -31,6 +31,7 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.model.product.Location
+import dk.etiktak.backend.model.product.ProductScan
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
@@ -79,7 +80,8 @@ class ProductScanRestController @Autowired constructor(
             val productScan = productService.getProductScanByUuid(productScanUuid)
             productScan?.let {
                 val location = Location(latitude.toDouble(), longitude.toDouble())
-                val resultProductScan = productService.assignLocationToProductScan(client, productScan, location)
+                var resultProductScan: ProductScan? = null
+                productService.assignLocationToProductScan(client, productScan, location, {scan -> resultProductScan = scan})
                 return okMap().addEntity(resultProductScan)
             }
         }
