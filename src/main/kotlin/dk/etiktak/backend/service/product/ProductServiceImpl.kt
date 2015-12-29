@@ -237,9 +237,9 @@ class ProductServiceImpl @Autowired constructor(
                 "Location already set on product scan with UUID: " + productScan.uuid)
 
         productScan.location = location
-        val productScan = productScanRepository.save(productScan)
+        val modifiedProductScan = productScanRepository.save(productScan)
 
-        modifyValues(productScan)
+        modifyValues(modifiedProductScan)
     }
 
 
