@@ -32,5 +32,5 @@ interface ProductLabelService {
 
     fun getProductLabelByUuid(uuid: String): ProductLabel?
 
-    fun createProductLabel(client: Client, name: String): ProductLabel
+    fun createProductLabel(client: Client, name: String, modifyValues: (Client) -> Unit = {}): ProductLabel
 }

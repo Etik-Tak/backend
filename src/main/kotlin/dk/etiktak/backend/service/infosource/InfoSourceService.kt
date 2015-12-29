@@ -31,5 +31,6 @@ import dk.etiktak.backend.model.user.Client
 interface InfoSourceService {
 
     fun getInfoSourceByUuid(uuid: String): InfoSource?
+
     fun createInfoSource(client: Client, urlPrefixes: List<String>, friendlyName: String): InfoSource
 }

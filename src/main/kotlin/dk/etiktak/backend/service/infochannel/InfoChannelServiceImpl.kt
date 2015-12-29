@@ -59,11 +59,12 @@ class InfoChannelServiceImpl @Autowired constructor(
     /**
      * Creates an info channel with the given client as owner.
      *
-     * @param client  Owner
-     * @param name    Name of info channel
-     * @return        Created info channel
+     * @param client        Owner
+     * @param name          Name of info channel
+     * @param modifyValues  Function called with modified client
+     * @return              Created info channel
      */
-    override fun createInfoChannel(client: Client, name: String): InfoChannel {
+    override fun createInfoChannel(client: Client, name: String, modifyValues: (Client) -> Unit): InfoChannel {
 
         // Check for empty fields
         Assert.notNull(
@@ -88,9 +89,12 @@ class InfoChannelServiceImpl @Autowired constructor(
         client.infoChannelClients.add(infoChannelClient)
 
         // Save them all
-        infoChannelRepository.save(infoChannel)
+        val modifiedClient = clientRepository.save(client)
+        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
         infoChannelClientRepository.save(infoChannelClient)
 
-        return infoChannel
+        modifyValues(modifiedClient)
+
+        return modifiedInfoChannel
     }
 }

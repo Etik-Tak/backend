@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.util.Assert
 import org.springframework.util.StringUtils
+import java.util.*
 
 @Service
 class ProductServiceImpl @Autowired constructor(
@@ -91,9 +92,10 @@ class ProductServiceImpl @Autowired constructor(
      * @param barcodeType   Barcode type
      * @param name          Name of product
      * @param categories    Product categories
+     * @param modifyValues  Function called with modified client and product categories
      * @return              Created product
      */
-    override fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String, categories: List<ProductCategory>): Product {
+    override fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String, categories: List<ProductCategory>, modifyValues: (Client, List<ProductCategory>) -> Unit): Product {
         val product = Product()
         product.uuid = CryptoUtil().uuid()
         product.creator = client
@@ -106,18 +108,21 @@ class ProductServiceImpl @Autowired constructor(
         }
 
         // Save it all
+        val modifiedProductCategories: MutableList<ProductCategory> = ArrayList()
         for (productCategory in categories) {
-            productCategoryRepository.save(productCategory)
+            modifiedProductCategories.add(productCategoryRepository.save(productCategory))
         }
-        clientRepository.save(client)
-        productRepository.save(product)
+        val modifiedClient = clientRepository.save(client)
+        var modifiedProduct = productRepository.save(product)
 
         // Assign barcode
         if (barcode != null && barcodeType != null) {
-            assignBarcodeToProduct(client, product, barcode, barcodeType, {})
+            assignBarcodeToProduct(client, product, barcode, barcodeType, {product -> modifiedProduct = product})
         }
 
-        return product
+        modifyValues(modifiedClient, modifiedProductCategories)
+
+        return modifiedProduct
     }
 
     /**

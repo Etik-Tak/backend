@@ -68,10 +68,12 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
      * @param url              Reference URL
      * @param title            Title of reference
      * @param summaryMarkdown  Summary markdown
+     * @param modifyValues     Function called with modified client, info channel and info source
      * @return                 Created info source reference
      */
     override fun createInfoSourceReference(client: Client, infoChannel: InfoChannel, infoSource: InfoSource,
-                                           url: String, title: String, summaryMarkdown: String): InfoSourceReference {
+                                           url: String, title: String, summaryMarkdown: String,
+                                           modifyValues: (Client, InfoChannel, InfoSource) -> Unit): InfoSourceReference {
 
         // Check for empty fields
         Assert.notNull(
@@ -119,12 +121,14 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
         infoSource.infoSourceReferences.add(infoSourceReference)
 
         // Save it all
-        infoSourceReferenceRepository.save(infoSourceReference)
-        clientRepository.save(client)
-        infoSourceRepository.save(infoSource)
-        infoChannelRepository.save(infoChannel)
+        val modifiedInfoSourceReference = infoSourceReferenceRepository.save(infoSourceReference)
+        val modifiedClient = clientRepository.save(client)
+        val modifiedInfoSource = infoSourceRepository.save(infoSource)
+        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
 
-        return infoSourceReference
+        modifyValues(modifiedClient, modifiedInfoChannel, modifiedInfoSource)
+
+        return modifiedInfoSourceReference
     }
 
     /**

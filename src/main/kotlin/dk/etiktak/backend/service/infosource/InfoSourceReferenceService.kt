@@ -33,6 +33,8 @@ import dk.etiktak.backend.model.user.Client
 interface InfoSourceReferenceService {
 
     fun getInfoSourceReferenceByUuid(uuid: String): InfoSourceReference?
+
     fun createInfoSourceReference(client: Client, infoChannel: InfoChannel, infoSource: InfoSource,
-                                  url: String, title: String, summaryMarkdown: String): InfoSourceReference
+                                  url: String, title: String, summaryMarkdown: String,
+                                  modifyValues: (Client, InfoChannel, InfoSource) -> Unit = {client, infoChannel, infoSource -> Unit}): InfoSourceReference
 }

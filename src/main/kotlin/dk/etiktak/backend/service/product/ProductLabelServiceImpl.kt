@@ -54,10 +54,11 @@ class ProductLabelServiceImpl @Autowired constructor(
     /**
      * Creates a product label.
      *
-     * @param name  Name
-     * @return      Product label
+     * @param name          Name
+     * @param modifyValues  Function called with modified client
+     * @return              Product label
      */
-    override fun createProductLabel(client: Client, name: String): ProductLabel {
+    override fun createProductLabel(client: Client, name: String, modifyValues: (Client) -> Unit): ProductLabel {
         val productLabel = ProductLabel()
         productLabel.uuid = CryptoUtil().uuid()
         productLabel.creator = client
@@ -65,9 +66,11 @@ class ProductLabelServiceImpl @Autowired constructor(
 
         client.productLabels.add(productLabel)
 
-        clientRepository.save(client)
-        productLabelRepository.save(productLabel)
+        val modifiedClient = clientRepository.save(client)
+        val modifiedProductLabel = productLabelRepository.save(productLabel)
 
-        return productLabel
+        modifyValues(modifiedClient)
+
+        return modifiedProductLabel
     }
 }
