@@ -115,19 +115,26 @@ class ProductServiceTest : BaseRestTest() {
     }
 
     /**
-     * Test that we can create a product without barcode and categories.
+     * Test that we can create a product with barcode, categories and labels.
      */
     @Test
-    fun createProductWithoutBarcodeAndCategories() {
+    fun createProduct() {
         mockMvc().perform(
                 get(serviceEndpoint("/create/"))
                         .param("clientUuid", client1.uuid)
-                        .param("name", "Coca Cola"))
+                        .param("name", "Coca Cola")
+                        .param("barcode", "12345678")
+                        .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
+                        .param("categoryUuidList", "${productCategory1.uuid}, ${productCategory2.uuid}")
+                        .param("labelUuidList", "${productLabel1.uuid}, ${productLabel2.uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
-                .andExpect(jsonPath("$.product.barcode", isEmptyOrNullString()))
+                .andExpect(jsonPath("$.product.barcode", `is`("12345678")))
+                .andExpect(jsonPath("$.product.barcodeType", `is`("EAN13")))
+                .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
+                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
     }
 
     /**
@@ -139,12 +146,58 @@ class ProductServiceTest : BaseRestTest() {
                 get(serviceEndpoint("/create/"))
                         .param("clientUuid", client1.uuid)
                         .param("name", "Coca Cola")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("[\"{$productCategory1.uuid}, ${productCategory2.uuid}\"]"))
+                        .param("categoryUuidList", "${productCategory1.uuid}, ${productCategory2.uuid}")
+                        .param("labelUuidList", "${productLabel1.uuid}, ${productLabel2.uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
                 .andExpect(jsonPath("$.product.barcode", isEmptyOrNullString()))
+                .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
+                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
+    }
+
+    /**
+     * Test that we can create a product without categories.
+     */
+    @Test
+    fun createProductWithoutCategories() {
+        mockMvc().perform(
+                get(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1.uuid)
+                        .param("name", "Coca Cola")
+                        .param("barcode", "12345678")
+                        .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
+                        .param("labelUuidList", "${productLabel1.uuid}, ${productLabel2.uuid}"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
+                .andExpect(jsonPath("$.product.barcode", `is`("12345678")))
+                .andExpect(jsonPath("$.product.barcodeType", `is`("EAN13")))
+                .andExpect(jsonPath("$.product.categories", hasSize<Any>(0)))
+                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
+    }
+
+    /**
+     * Test that we can create a product without labels.
+     */
+    @Test
+    fun createProductWithoutLabels() {
+        mockMvc().perform(
+                get(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1.uuid)
+                        .param("name", "Coca Cola")
+                        .param("barcode", "12345678")
+                        .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
+                        .param("categoryUuidList", "${productCategory1.uuid}, ${productCategory2.uuid}"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
+                .andExpect(jsonPath("$.product.barcode", `is`("12345678")))
+                .andExpect(jsonPath("$.product.barcodeType", `is`("EAN13")))
+                .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
+                .andExpect(jsonPath("$.product.labels", hasSize<Any>(0)))
     }
 }

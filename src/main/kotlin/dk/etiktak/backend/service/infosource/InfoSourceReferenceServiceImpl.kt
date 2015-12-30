@@ -261,7 +261,7 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
         }
         Assert.isTrue(
                 didMatchAny,
-                "URL must be from the given info source, e.g. it must start with fx. " + infoSource.urlPrefixes.first() + ", but was: " + url
+                "URL must be from the given info source, e.g. it must start with fx. " + infoSource.urlPrefixes.first().urlPrefix + ", but was: " + url
         )
     }
 }

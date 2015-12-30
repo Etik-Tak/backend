@@ -27,6 +27,7 @@ package dk.etiktak.backend.service.product
 
 import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.user.Client
+import java.util.*
 
 interface ProductService {
 
@@ -35,7 +36,11 @@ interface ProductService {
 
     fun getProductScanByUuid(uuid: String): ProductScan?
 
-    fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String, categories: List<ProductCategory>, modifyValues: (Client, List<ProductCategory>) -> Unit = {client, productCategories -> Unit}): Product
+    fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String,
+                      categories: List<ProductCategory> = ArrayList(),
+                      labels: List<ProductLabel> = ArrayList(),
+                      modifyValues: (Client, List<ProductCategory>, List<ProductLabel>) -> Unit = {client, productCategories, productLabels -> Unit}): Product
+
     fun assignBarcodeToProduct(client: Client, product: Product, barcode: String, barcodeType: Product.BarcodeType, modifyValues: (Product) -> Unit = {})
     fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory, modifyValues: (Product, ProductCategory) -> Unit = {product, productCategory -> Unit})
     fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel, modifyValues: (Product, ProductLabel) -> Unit = {product, productLabel -> Unit})

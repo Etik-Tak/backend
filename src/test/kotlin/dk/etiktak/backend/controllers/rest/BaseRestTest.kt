@@ -47,6 +47,7 @@ import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
+import dk.etiktak.backend.service.infosource.InfoSourceReferenceService
 import dk.etiktak.backend.service.infosource.InfoSourceService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
@@ -156,6 +157,9 @@ open class BaseRestTest {
 
     @Autowired
     val infoSourceService: InfoSourceService? = null
+
+    @Autowired
+    val infoSourceReferenceService: InfoSourceReferenceService? = null
 
     @Autowired
     val clientService: ClientService? = null

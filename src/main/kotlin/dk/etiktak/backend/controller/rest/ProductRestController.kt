@@ -32,8 +32,10 @@ package dk.etiktak.backend.controller.rest
 import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductCategoryService
+import dk.etiktak.backend.service.product.ProductLabelService
 import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.StringUtils
@@ -45,6 +47,7 @@ import java.util.*
 class ProductRestController @Autowired constructor(
         private val productService: ProductService,
         private val productCategoryService: ProductCategoryService,
+        private val productLabelService: ProductLabelService,
         private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
@@ -70,18 +73,30 @@ class ProductRestController @Autowired constructor(
             @RequestParam name: String,
             @RequestParam(required = false) barcode: String?,
             @RequestParam(required = false) barcodeType: String?,
-            @RequestBody(required = false) categoriesUuid: List<String>?): HashMap<String, Any> {
+            @RequestParam(required = false) categoryUuidList: List<String>?,
+            @RequestParam(required = false) labelUuidList: List<String>?): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid)
         client?.let {
 
             // List of product categories
             val productCategories = ArrayList<ProductCategory>()
-            categoriesUuid?.let {
-                for (productCategoryUuid in categoriesUuid) {
+            categoryUuidList?.let {
+                for (productCategoryUuid in categoryUuidList) {
                     val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid)
                     productCategory?.let {
                         productCategories.add(productCategory)
+                    }
+                }
+            }
+
+            // List of product labels
+            val productLabels = ArrayList<ProductLabel>()
+            labelUuidList?.let {
+                for (productLabelUuid in labelUuidList) {
+                    val productLabel = productLabelService.getProductLabelByUuid(productLabelUuid)
+                    productLabel?.let {
+                        productLabels.add(productLabel)
                     }
                 }
             }
@@ -92,7 +107,8 @@ class ProductRestController @Autowired constructor(
                     barcode,
                     if (barcodeType != null) Product.BarcodeType.valueOf(barcodeType) else null,
                     name,
-                    productCategories)
+                    productCategories,
+                    productLabels)
             return okMap().addEntity(product)
         }
         return notFoundMap()

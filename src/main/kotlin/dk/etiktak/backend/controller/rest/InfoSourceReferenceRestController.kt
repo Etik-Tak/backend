@@ -30,15 +30,18 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.addEntity
+import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
 import dk.etiktak.backend.service.infosource.InfoSourceReferenceService
 import dk.etiktak.backend.service.infosource.InfoSourceService
+import dk.etiktak.backend.service.product.ProductCategoryService
+import dk.etiktak.backend.service.product.ProductLabelService
+import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
@@ -46,6 +49,9 @@ import java.util.*
 class InfoSourceReferenceRestController @Autowired constructor(
         private val infoSourceService: InfoSourceService,
         private val infoSourceReferenceService: InfoSourceReferenceService,
+        private val productService: ProductService,
+        private val productCategoryService: ProductCategoryService,
+        private val productLabelService: ProductLabelService,
         private val infoChannelService: InfoChannelService,
         private val clientService: ClientService) : BaseRestController() {
 
@@ -67,6 +73,84 @@ class InfoSourceReferenceRestController @Autowired constructor(
                             client, infoChannel, infoSource, url, title, summary)
                     return okMap().addEntity(infoSourceReference)
                 }
+            }
+        }
+        return notFoundMap()
+    }
+
+    @RequestMapping(value = "/assign/products/", method = arrayOf(RequestMethod.POST))
+    fun assignProductsToInfoSourceReference(
+            @RequestParam clientUuid: String,
+            @RequestParam infoSourceReferenceUuid: String,
+            @RequestParam productUuids: List<String>): HashMap<String, Any> {
+        val client = clientService.getByUuid(clientUuid)
+        client?.let {
+            val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid)
+            infoSourceReference?.let {
+                val products: MutableList<Product> = ArrayList()
+                for (productUuid in productUuids) {
+                    val product = productService.getProductByUuid(productUuid)
+                    product?.let {
+                        products.add(product)
+                    }
+                }
+                infoSourceReferenceService.assignProductsToInfoSourceReference(
+                        client,
+                        infoSourceReference,
+                        products)
+                return okMap().addEntity(infoSourceReference)
+            }
+        }
+        return notFoundMap()
+    }
+
+    @RequestMapping(value = "/assign/categories/", method = arrayOf(RequestMethod.POST))
+    fun assignCategoriesToInfoSourceReference(
+            @RequestParam clientUuid: String,
+            @RequestParam infoSourceReferenceUuid: String,
+            @RequestParam productCategoryUuids: List<String>): HashMap<String, Any> {
+        val client = clientService.getByUuid(clientUuid)
+        client?.let {
+            val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid)
+            infoSourceReference?.let {
+                val productCategories: MutableList<ProductCategory> = ArrayList()
+                for (productCategoryUuid in productCategoryUuids) {
+                    val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid)
+                    productCategory?.let {
+                        productCategories.add(productCategory)
+                    }
+                }
+                infoSourceReferenceService.assignProductCategoriesToInfoSourceReference(
+                        client,
+                        infoSourceReference,
+                        productCategories)
+                return okMap().addEntity(infoSourceReference)
+            }
+        }
+        return notFoundMap()
+    }
+
+    @RequestMapping(value = "/assign/labels/", method = arrayOf(RequestMethod.POST))
+    fun assignLabelsToInfoSourceReference(
+            @RequestParam clientUuid: String,
+            @RequestParam infoSourceReferenceUuid: String,
+            @RequestParam productLabelUuids: List<String>): HashMap<String, Any> {
+        val client = clientService.getByUuid(clientUuid)
+        client?.let {
+            val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid)
+            infoSourceReference?.let {
+                val productLabels: MutableList<ProductLabel> = ArrayList()
+                for (productLabelUuid in productLabelUuids) {
+                    val productLabel = productLabelService.getProductLabelByUuid(productLabelUuid)
+                    productLabel?.let {
+                        productLabels.add(productLabel)
+                    }
+                }
+                infoSourceReferenceService.assignProductLabelsToInfoSourceReference(
+                        client,
+                        infoSourceReference,
+                        productLabels)
+                return okMap().addEntity(infoSourceReference)
             }
         }
         return notFoundMap()

@@ -92,25 +92,37 @@ class ProductServiceImpl @Autowired constructor(
      * @param barcodeType   Barcode type
      * @param name          Name of product
      * @param categories    Product categories
-     * @param modifyValues  Function called with modified client and product categories
+     * @param categories    Product labels
+     * @param modifyValues  Function called with modified client, product categories and product labels
      * @return              Created product
      */
-    override fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String, categories: List<ProductCategory>, modifyValues: (Client, List<ProductCategory>) -> Unit): Product {
+    override fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String,
+                               categories: List<ProductCategory>, labels: List<ProductLabel>,
+                               modifyValues: (Client, List<ProductCategory>, List<ProductLabel>) -> Unit): Product {
         val product = Product()
         product.uuid = CryptoUtil().uuid()
         product.creator = client
         product.name = name
+        product.productCategories.addAll(categories)
+        product.productLabels.addAll(labels)
 
         // Glue it together
         client.products.add(product)
         for (productCategory in categories) {
             productCategory.products.add(product)
         }
+        for (productLabel in labels) {
+            productLabel.products.add(product)
+        }
 
         // Save it all
         val modifiedProductCategories: MutableList<ProductCategory> = ArrayList()
         for (productCategory in categories) {
             modifiedProductCategories.add(productCategoryRepository.save(productCategory))
+        }
+        val modifiedProductLabels: MutableList<ProductLabel> = ArrayList()
+        for (productLabel in labels) {
+            modifiedProductLabels.add(productLabelRepository.save(productLabel))
         }
         val modifiedClient = clientRepository.save(client)
         var modifiedProduct = productRepository.save(product)
@@ -120,7 +132,7 @@ class ProductServiceImpl @Autowired constructor(
             assignBarcodeToProduct(client, product, barcode, barcodeType, {product -> modifiedProduct = product})
         }
 
-        modifyValues(modifiedClient, modifiedProductCategories)
+        modifyValues(modifiedClient, modifiedProductCategories, modifiedProductLabels)
 
         return modifiedProduct
     }

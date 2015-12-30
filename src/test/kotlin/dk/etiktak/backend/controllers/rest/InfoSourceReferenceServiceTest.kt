@@ -27,6 +27,7 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
+import dk.etiktak.backend.model.product.Product
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,6 +38,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.notNullValue
+import org.springframework.http.MediaType
 import org.springframework.web.util.NestedServletException
 
 @RunWith(SpringJUnit4ClassRunner::class)
@@ -60,6 +62,9 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
 
         infoChannel1 = createAndSaveInfoChannel(client1)
         infoChannel2 = createAndSaveInfoChannel(client2)
+
+        product1 = createAndSaveProduct(client1, "12345678", Product.BarcodeType.EAN13)
+        product2 = createAndSaveProduct(client2, "87654321", Product.BarcodeType.EAN13)
     }
 
     /**
@@ -99,5 +104,29 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
                         .param("title", "Eksperter advarer: Glutenfri fødevarer er slet ikke sunde")
                         .param("summary", "Glutenfri fødevarer opfattes som sunde, men er ofte det modsatte, lyder det fra eksperter."))
                 .andExpect(status().`is`(400))
+    }
+
+    /**
+     * Test that we can assign products to an existing info source reference.
+     */
+    @Test
+    fun assignProductsToExistingInfoSourceReference() {
+        val infoSourceReference = infoSourceReferenceService!!.createInfoSourceReference(
+                client1,
+                infoChannel1,
+                infoSource1,
+                "http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade",
+                "Fødevarestyrelsen: Spis ikke for meget mørk chokolade",
+                "Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3.")
+
+        mockMvc().perform(
+                post(serviceEndpoint("assign/products/"))
+                        .param("clientUuid", client1.uuid)
+                        .param("infoSourceReferenceUuid", infoSourceReference.uuid)
+                        .param("productUuids", "${product1.uuid}, ${product2.uuid}"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
     }
 }
