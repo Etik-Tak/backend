@@ -28,6 +28,7 @@ package dk.etiktak.backend.controllers.rest
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
+import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -65,6 +66,15 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
 
         product1 = createAndSaveProduct(client1, "12345678", Product.BarcodeType.EAN13)
         product2 = createAndSaveProduct(client2, "87654321", Product.BarcodeType.EAN13)
+
+        productCategory1 = createAndSaveProductCategory(client1, product1, modifyValues = {product -> product1 = product})
+        productCategory2 = createAndSaveProductCategory(client2, product2, modifyValues = {product -> product2 = product})
+
+        productLabel1 = createAndSaveProductLabel(client1, product1, modifyValues = {product -> product1 = product})
+        productLabel2 = createAndSaveProductLabel(client2, product2, modifyValues = {product -> product2 = product})
+
+        infoSourceReference1 = createAndSaveInfoSourceReference(client1, infoChannel1, infoSource1, "http://dr.dk/somenews")
+        infoSourceReference2 = createAndSaveInfoSourceReference(client2, infoChannel2, infoSource2, "http://information.dk/somenews")
     }
 
     /**
@@ -111,22 +121,50 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
      */
     @Test
     fun assignProductsToExistingInfoSourceReference() {
-        val infoSourceReference = infoSourceReferenceService!!.createInfoSourceReference(
-                client1,
-                infoChannel1,
-                infoSource1,
-                "http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade",
-                "Fødevarestyrelsen: Spis ikke for meget mørk chokolade",
-                "Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3.")
-
         mockMvc().perform(
                 post(serviceEndpoint("assign/products/"))
                         .param("clientUuid", client1.uuid)
-                        .param("infoSourceReferenceUuid", infoSourceReference.uuid)
+                        .param("infoSourceReferenceUuid", infoSourceReference1.uuid)
                         .param("productUuids", "${product1.uuid}, ${product2.uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
+    }
+
+    /**
+     * Test that we can assign product categories to an existing info source reference.
+     */
+    @Test
+    fun assignProductCategoriesToExistingInfoSourceReference() {
+        mockMvc().perform(
+                post(serviceEndpoint("assign/categories/"))
+                        .param("clientUuid", client1.uuid)
+                        .param("infoSourceReferenceUuid", infoSourceReference1.uuid)
+                        .param("productCategoryUuids", "${productCategory1.uuid}, ${productCategory2.uuid}"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
+                .andExpect(jsonPath("$.infoSourceReference.categories", Matchers.hasSize<Any>(2)))
+                .andExpect(jsonPath("$.infoSourceReference.labels", Matchers.hasSize<Any>(0)))
+    }
+
+    /**
+     * Test that we can assign product labels to an existing info source reference.
+     */
+    @Test
+    fun assignProductLabelsToExistingInfoSourceReference() {
+        mockMvc().perform(
+                post(serviceEndpoint("assign/labels/"))
+                        .param("clientUuid", client1.uuid)
+                        .param("infoSourceReferenceUuid", infoSourceReference1.uuid)
+                        .param("productLabelUuids", "${productLabel1.uuid}, ${productLabel2.uuid}"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
+                .andExpect(jsonPath("$.infoSourceReference.categories", Matchers.hasSize<Any>(0)))
+                .andExpect(jsonPath("$.infoSourceReference.labels", Matchers.hasSize<Any>(2)))
     }
 }

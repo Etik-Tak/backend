@@ -142,11 +142,6 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
     override fun assignProductsToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, products: List<Product>,
                                                      modifyValues: (InfoSourceReference, List<Product>) -> Unit) {
 
-        // Check for empty fields
-        Assert.isTrue(
-                products.size > 0,
-                "Products must be provided")
-
         // Validate ownership to info channel
         Assert.isTrue(
                 infoChannelService.isClientMemberOfInfoChannel(client, infoSourceReference.infoChannel),
@@ -179,11 +174,6 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
     override fun assignProductCategoriesToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productCategories: List<ProductCategory>,
                                                               modifyValues: (InfoSourceReference, List<ProductCategory>) -> Unit) {
 
-        // Check for empty fields
-        Assert.isTrue(
-                productCategories.size > 0,
-                "Product categories must be provided")
-
         // Validate ownership to info channel
         Assert.isTrue(
                 infoChannelService.isClientMemberOfInfoChannel(client, infoSourceReference.infoChannel),
@@ -215,11 +205,6 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
      */
     override fun assignProductLabelsToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productLabels: List<ProductLabel>,
                                                           modifyValues: (InfoSourceReference, List<ProductLabel>) -> Unit) {
-
-        // Check for empty fields
-        Assert.isTrue(
-                productLabels.size > 0,
-                "Product labels must be provided")
 
         // Validate ownership to info channel
         Assert.isTrue(

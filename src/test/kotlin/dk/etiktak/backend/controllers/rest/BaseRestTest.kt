@@ -27,6 +27,7 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infosource.InfoSource
+import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
@@ -93,6 +94,9 @@ open class BaseRestTest {
 
     var infoSource1: InfoSource = InfoSource()
     var infoSource2: InfoSource = InfoSource()
+
+    var infoSourceReference1: InfoSourceReference = InfoSourceReference()
+    var infoSourceReference2: InfoSourceReference = InfoSourceReference()
 
     var infoChannel1: InfoChannel = InfoChannel()
     var infoChannel2: InfoChannel = InfoChannel()
@@ -229,6 +233,17 @@ open class BaseRestTest {
 
     fun createAndSaveInfoSource(client: Client, urlPrefixes: List<String>): InfoSource {
         return infoSourceService!!.createInfoSource(client, urlPrefixes, CryptoUtil().uuid())
+    }
+
+    fun createAndSaveInfoSourceReference(client: Client, infoChannel: InfoChannel, infoSource: InfoSource, url: String): InfoSourceReference {
+        return infoSourceReferenceService!!.createInfoSourceReference(
+                client,
+                infoChannel,
+                infoSource,
+                url,
+                "Some title",
+                "Some summary.")
+
     }
 
     fun createAndSaveClient(): Client {

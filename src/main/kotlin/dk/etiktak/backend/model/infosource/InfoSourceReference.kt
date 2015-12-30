@@ -89,6 +89,7 @@ class InfoSourceReference constructor() : BaseModel() {
     @Column(name = "products")
     var products: MutableSet<Product> = HashSet()
 
+    @Jsonifier(jsonKey = "categories", rules = arrayOf(JsonifyRule.NORMAL))
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="infoSourceReference_productCategory",
@@ -97,6 +98,7 @@ class InfoSourceReference constructor() : BaseModel() {
     @Column(name = "product_categories")
     var productCategories: MutableSet<ProductCategory> = HashSet()
 
+    @Jsonifier(jsonKey = "labels", rules = arrayOf(JsonifyRule.NORMAL))
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="infoSourceReference_productLabel",
