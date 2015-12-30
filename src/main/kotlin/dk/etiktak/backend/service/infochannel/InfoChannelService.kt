@@ -33,4 +33,6 @@ interface InfoChannelService {
     fun getInfoChannelByUuid(uuid: String): InfoChannel?
 
     fun createInfoChannel(client: Client, name: String, modifyValues: (Client) -> Unit = {}): InfoChannel
+
+    fun isClientMemberOfInfoChannel(client: Client, infoChannel: InfoChannel): Boolean
 }

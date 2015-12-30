@@ -56,7 +56,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
             @RequestParam infoSourceUuid: String,
             @RequestParam url: String,
             @RequestParam title: String,
-            @RequestParam summaryMarkdown: String): HashMap<String, Any> {
+            @RequestParam summary: String): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid)
         client?.let {
             val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid)
@@ -64,7 +64,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
                 val infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid)
                 infoSource?.let {
                     val infoSourceReference = infoSourceReferenceService.createInfoSourceReference(
-                            client, infoChannel, infoSource, url, title, summaryMarkdown)
+                            client, infoChannel, infoSource, url, title, summary)
                     return okMap().addEntity(infoSourceReference)
                 }
             }

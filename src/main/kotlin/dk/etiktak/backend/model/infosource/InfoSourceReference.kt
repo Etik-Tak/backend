@@ -33,10 +33,14 @@ import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infochannel.InfoChannel
+import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
+import javax.validation.constraints.NotNull
 
 @Entity(name = "info_source_reference")
 @Jsonifier(jsonKey = "infoSourceReference")
@@ -60,8 +64,8 @@ class InfoSourceReference constructor() : BaseModel() {
     var title: String = ""
 
     @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
-    @Column(name = "summary_markdown")
-    var summaryMarkdown: String = ""
+    @Column(name = "summary")
+    var summary: String = ""
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
@@ -75,7 +79,31 @@ class InfoSourceReference constructor() : BaseModel() {
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_source_id")
-    var infoSource: InfoSource= InfoSource()
+    var infoSource: InfoSource = InfoSource()
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name="infoSourceReference_product",
+            joinColumns=arrayOf(JoinColumn(name="info_source_reference_id", referencedColumnName="info_source_reference_id")),
+            inverseJoinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")))
+    @Column(name = "products")
+    var products: MutableSet<Product> = HashSet()
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name="infoSourceReference_productCategory",
+            joinColumns=arrayOf(JoinColumn(name="info_source_reference_id", referencedColumnName="info_source_reference_id")),
+            inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
+    @Column(name = "product_categories")
+    var productCategories: MutableSet<ProductCategory> = HashSet()
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name="infoSourceReference_productLabel",
+            joinColumns=arrayOf(JoinColumn(name="info_source_reference_id", referencedColumnName="info_source_reference_id")),
+            inverseJoinColumns=arrayOf(JoinColumn(name="product_label_id", referencedColumnName="product_label_id")))
+    @Column(name = "product_labels")
+    var productLabels: MutableSet<ProductLabel> = HashSet()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

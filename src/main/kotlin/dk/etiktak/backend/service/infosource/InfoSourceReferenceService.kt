@@ -28,6 +28,9 @@ package dk.etiktak.backend.service.infosource
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.infosource.InfoSourceReference
+import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.user.Client
 
 interface InfoSourceReferenceService {
@@ -35,6 +38,15 @@ interface InfoSourceReferenceService {
     fun getInfoSourceReferenceByUuid(uuid: String): InfoSourceReference?
 
     fun createInfoSourceReference(client: Client, infoChannel: InfoChannel, infoSource: InfoSource,
-                                  url: String, title: String, summaryMarkdown: String,
+                                  url: String, title: String, summary: String,
                                   modifyValues: (Client, InfoChannel, InfoSource) -> Unit = {client, infoChannel, infoSource -> Unit}): InfoSourceReference
+
+    fun assignProductsToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, products: List<Product>,
+                                            modifyValues: (InfoSourceReference, List<Product>) -> Unit = {infoSourceReference, products -> Unit})
+
+    fun assignProductCategoriesToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productCategories: List<ProductCategory>,
+                                                     modifyValues: (InfoSourceReference, List<ProductCategory>) -> Unit = {infoSourceReference, productCategories -> Unit})
+
+    fun assignProductLabelsToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productLabels: List<ProductLabel>,
+                                                 modifyValues: (InfoSourceReference, List<ProductLabel>) -> Unit = {infoSourceReference, productLabels -> Unit})
 }

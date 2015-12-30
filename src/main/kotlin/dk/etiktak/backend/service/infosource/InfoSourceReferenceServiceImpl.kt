@@ -28,24 +28,36 @@ package dk.etiktak.backend.service.infosource
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.infosource.InfoSourceReference
+import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
+import dk.etiktak.backend.repository.product.ProductCategoryRepository
+import dk.etiktak.backend.repository.product.ProductLabelRepository
+import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.infochannel.InfoChannelService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.util.Assert
 import org.springframework.util.StringUtils
+import java.util.*
 
 @Service
 class InfoSourceReferenceServiceImpl @Autowired constructor(
+        private val infoChannelService: InfoChannelService,
         private val infoSourceReferenceRepository: InfoSourceReferenceRepository,
         private val infoSourceRepository: InfoSourceRepository,
         private val infoChannelRepository: InfoChannelRepository,
-        private val clientRepository: ClientRepository) : InfoSourceReferenceService {
+        private val clientRepository: ClientRepository,
+        private val productRepository: ProductRepository,
+        private val productCategoryRepository: ProductCategoryRepository,
+        private val productLabelRepository: ProductLabelRepository) : InfoSourceReferenceService {
 
     private val logger = LoggerFactory.getLogger(InfoSourceReferenceServiceImpl::class.java)
 
@@ -67,27 +79,15 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
      * @param infoSource       Info source from which it is based
      * @param url              Reference URL
      * @param title            Title of reference
-     * @param summaryMarkdown  Summary markdown
+     * @param summary          Summary
      * @param modifyValues     Function called with modified client, info channel and info source
      * @return                 Created info source reference
      */
     override fun createInfoSourceReference(client: Client, infoChannel: InfoChannel, infoSource: InfoSource,
-                                           url: String, title: String, summaryMarkdown: String,
+                                           url: String, title: String, summary: String,
                                            modifyValues: (Client, InfoChannel, InfoSource) -> Unit): InfoSourceReference {
 
         // Check for empty fields
-        Assert.notNull(
-                client,
-                "Client must be provided")
-
-        Assert.notNull(
-                infoChannel,
-                "Info channel must be provided")
-
-        Assert.notNull(
-                infoSource,
-                "Info source must be provided")
-
         Assert.isTrue(
                 !StringUtils.isEmpty(url),
                 "URL must be provided")
@@ -97,8 +97,8 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
                 "Title must be provided")
 
         Assert.isTrue(
-                !StringUtils.isEmpty(summaryMarkdown),
-                "Summary markdown must be provided")
+                !StringUtils.isEmpty(summary),
+                "Summary must be provided")
 
         // Validate url
         validateUrlReference(url, infoSource)
@@ -110,7 +110,7 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
         infoSourceReference.uuid = CryptoUtil().uuid()
         infoSourceReference.url = url
         infoSourceReference.title = title
-        infoSourceReference.summaryMarkdown = summaryMarkdown
+        infoSourceReference.summary = summary
         infoSourceReference.creator = client
         infoSourceReference.infoSource = infoSource
         infoSourceReference.infoChannel = infoChannel
@@ -129,6 +129,117 @@ class InfoSourceReferenceServiceImpl @Autowired constructor(
         modifyValues(modifiedClient, modifiedInfoChannel, modifiedInfoSource)
 
         return modifiedInfoSourceReference
+    }
+
+    /**
+     * Assigns products to an info source reference.
+     *
+     * @param client                Client
+     * @param infoSourceReference   Info source reference
+     * @param products              Products
+     * @param modifyValues          Function called with modified info source reference and products
+     */
+    override fun assignProductsToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, products: List<Product>,
+                                                     modifyValues: (InfoSourceReference, List<Product>) -> Unit) {
+
+        // Check for empty fields
+        Assert.isTrue(
+                products.size > 0,
+                "Products must be provided")
+
+        // Validate ownership to info channel
+        Assert.isTrue(
+                infoChannelService.isClientMemberOfInfoChannel(client, infoSourceReference.infoChannel),
+                "Client not member of info channel")
+
+        // Assign products to info source reference
+        infoSourceReference.products.addAll(products)
+        for (product in products) {
+            product.infoSourceReferences.add(infoSourceReference)
+        }
+
+        // Save it all
+        val modifiedInfoSourceReference = infoSourceReferenceRepository.save(infoSourceReference)
+        val modifiedProducts: MutableList<Product> = ArrayList()
+        for (product in products) {
+            modifiedProducts.add(productRepository.save(product))
+        }
+
+        modifyValues(modifiedInfoSourceReference, modifiedProducts)
+    }
+
+    /**
+     * Assigns product categories to an info source reference.
+     *
+     * @param client                Client
+     * @param infoSourceReference   Info source reference
+     * @param productCategories     Product categories
+     * @param modifyValues          Function called with modified info source reference and product categories
+     */
+    override fun assignProductCategoriesToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productCategories: List<ProductCategory>,
+                                                              modifyValues: (InfoSourceReference, List<ProductCategory>) -> Unit) {
+
+        // Check for empty fields
+        Assert.isTrue(
+                productCategories.size > 0,
+                "Product categories must be provided")
+
+        // Validate ownership to info channel
+        Assert.isTrue(
+                infoChannelService.isClientMemberOfInfoChannel(client, infoSourceReference.infoChannel),
+                "Client not member of info channel")
+
+        // Assign product categories to info source reference
+        infoSourceReference.productCategories.addAll(productCategories)
+        for (productCategory in productCategories) {
+            productCategory.infoSourceReferences.add(infoSourceReference)
+        }
+
+        // Save it all
+        val modifiedInfoSourceReference = infoSourceReferenceRepository.save(infoSourceReference)
+        val modifiedProductCategories: MutableList<ProductCategory> = ArrayList()
+        for (productCategory in productCategories) {
+            modifiedProductCategories.add(productCategoryRepository.save(productCategory))
+        }
+
+        modifyValues(modifiedInfoSourceReference, modifiedProductCategories)
+    }
+
+    /**
+     * Assigns product labels to an info source reference.
+     *
+     * @param client                Client
+     * @param infoSourceReference   Info source reference
+     * @param productLabels         Product labels
+     * @param modifyValues          Function called with modified info source reference and product labels
+     */
+    override fun assignProductLabelsToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productLabels: List<ProductLabel>,
+                                                          modifyValues: (InfoSourceReference, List<ProductLabel>) -> Unit) {
+
+        // Check for empty fields
+        Assert.isTrue(
+                productLabels.size > 0,
+                "Product labels must be provided")
+
+        // Validate ownership to info channel
+        Assert.isTrue(
+                infoChannelService.isClientMemberOfInfoChannel(client, infoSourceReference.infoChannel),
+                "Client not member of info channel")
+
+        // Assign product labels to info source reference
+        infoSourceReference.productLabels.addAll(productLabels)
+        for (productLabel in productLabels) {
+            productLabel.infoSourceReferences.add(infoSourceReference)
+        }
+
+        // Save it all
+        val modifiedInfoSourceReference = infoSourceReferenceRepository.save(infoSourceReference)
+        val modifiedProductLabels: MutableList<ProductLabel> = ArrayList()
+        for (productLabel in productLabels) {
+            modifiedProductLabels.add(productLabelRepository.save(productLabel))
+        }
+
+        modifyValues(modifiedInfoSourceReference, modifiedProductLabels)
     }
 
     /**

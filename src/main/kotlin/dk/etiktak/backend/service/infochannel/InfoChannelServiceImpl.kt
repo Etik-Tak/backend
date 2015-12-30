@@ -97,4 +97,20 @@ class InfoChannelServiceImpl @Autowired constructor(
 
         return modifiedInfoChannel
     }
+
+    /**
+     * Checks whether the given client is member of the given info channel.
+     *
+     * @param client        Client
+     * @param infoChannel   Info channel
+     * @return              True, if client is member of info channel, else false
+     */
+    override fun isClientMemberOfInfoChannel(client: Client, infoChannel: InfoChannel): Boolean {
+        for (infoChannelClient in infoChannel.infoChannelClients) {
+            if (infoChannelClient.client.uuid.equals(client.uuid)) {
+                return true
+            }
+        }
+        return false
+    }
 }

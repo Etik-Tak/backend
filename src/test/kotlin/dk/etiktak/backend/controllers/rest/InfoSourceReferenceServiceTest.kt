@@ -74,14 +74,14 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
                         .param("infoSourceUuid", infoSource1.uuid)
                         .param("url", "http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")
                         .param("title", "Fødevarestyrelsen: Spis ikke for meget mørk chokolade")
-                        .param("summaryMarkdown", "Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3."))
+                        .param("summary", "Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3."))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
                 .andExpect(jsonPath("$.infoSourceReference.url", `is`("http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")))
                 .andExpect(jsonPath("$.infoSourceReference.title", `is`("Fødevarestyrelsen: Spis ikke for meget mørk chokolade")))
-                .andExpect(jsonPath("$.infoSourceReference.summaryMarkdown", `is`("Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3.")))
+                .andExpect(jsonPath("$.infoSourceReference.summary", `is`("Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3.")))
     }
 
     /**
@@ -97,7 +97,7 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
                         .param("infoSourceUuid", infoSource1.uuid)
                         .param("url", "http://politiken.dk/forbrugogliv/forbrug/tjekmad/ECE2981742/eksperter-advarer-glutenfri-foedevarer-er-slet-ikke-sunde/")
                         .param("title", "Eksperter advarer: Glutenfri fødevarer er slet ikke sunde")
-                        .param("summaryMarkdown", "Glutenfri fødevarer opfattes som sunde, men er ofte det modsatte, lyder det fra eksperter."))
+                        .param("summary", "Glutenfri fødevarer opfattes som sunde, men er ofte det modsatte, lyder det fra eksperter."))
                 .andExpect(status().`is`(400))
     }
 }

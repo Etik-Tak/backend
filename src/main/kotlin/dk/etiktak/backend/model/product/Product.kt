@@ -32,6 +32,7 @@ package dk.etiktak.backend.model.product
 import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonifyRule
 import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -94,6 +95,9 @@ class Product constructor() : BaseModel() {
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
     var creator: Client = Client()
+
+    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
+    var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
 
     @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
