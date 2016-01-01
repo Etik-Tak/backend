@@ -34,13 +34,13 @@
 package dk.etiktak.backend.model.user
 
 import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonifyRule
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
 @Entity(name = "sms_verifications")
-@Jsonifier(jsonKey = "smsVerification")
+@Jsonifier(key = "smsVerification")
 class SmsVerification {
 
     enum class SmsVerificationStatus {
@@ -61,19 +61,19 @@ class SmsVerification {
     @Column(name = "smsChallengeHash", nullable = false)
     var smsChallengeHash: String? = null
 
-    @Jsonifier(jsonKey = "challenge", rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(key = "challenge", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "clientChallenge", nullable = false)
     var clientChallenge: String? = null
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "status", nullable = false)
     var status: SmsVerificationStatus = SmsVerificationStatus.UNKNOWN
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

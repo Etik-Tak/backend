@@ -29,6 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
@@ -71,7 +72,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
                 infoSource?.let {
                     val infoSourceReference = infoSourceReferenceService.createInfoSourceReference(
                             client, infoChannel, infoSource, url, title, summary)
-                    return okMap().addEntity(infoSourceReference)
+                    return okMap().addEntity(infoSourceReference, JsonFilter.CREATE)
                 }
             }
         }
@@ -98,7 +99,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
                         client,
                         infoSourceReference,
                         products)
-                return okMap().addEntity(infoSourceReference)
+                return okMap().addEntity(infoSourceReference, JsonFilter.CREATE)
             }
         }
         return notFoundMap()
@@ -124,7 +125,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
                         client,
                         infoSourceReference,
                         productCategories)
-                return okMap().addEntity(infoSourceReference)
+                return okMap().addEntity(infoSourceReference, JsonFilter.CREATE)
             }
         }
         return notFoundMap()
@@ -150,7 +151,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
                         client,
                         infoSourceReference,
                         productLabels)
-                return okMap().addEntity(infoSourceReference)
+                return okMap().addEntity(infoSourceReference, JsonFilter.CREATE)
             }
         }
         return notFoundMap()

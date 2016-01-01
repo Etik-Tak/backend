@@ -30,7 +30,7 @@
 package dk.etiktak.backend.model.product
 
 import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonifyRule
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.user.Client
@@ -39,7 +39,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "product_categories")
-@Jsonifier(jsonKey = "productCategory")
+@Jsonifier(key = "productCategory")
 class ProductCategory constructor() : BaseModel() {
 
     @Id
@@ -47,16 +47,15 @@ class ProductCategory constructor() : BaseModel() {
     @Column(name = "product_category_id")
     var id: Long = 0
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
     var creator: Client = Client()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "name")
     var name: String = ""
 
@@ -66,11 +65,11 @@ class ProductCategory constructor() : BaseModel() {
     @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

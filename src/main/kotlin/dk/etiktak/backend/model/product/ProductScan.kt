@@ -30,7 +30,7 @@
 package dk.etiktak.backend.model.product
 
 import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonifyRule
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
@@ -38,7 +38,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "product_scans")
-@Jsonifier(jsonKey = "productScan")
+@Jsonifier(key = "productScan")
 class ProductScan constructor() : BaseModel() {
 
     @Id
@@ -46,7 +46,7 @@ class ProductScan constructor() : BaseModel() {
     @Column(name = "product_scan_id")
     var id: Long = 0
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
@@ -54,25 +54,25 @@ class ProductScan constructor() : BaseModel() {
     @JoinColumn(name = "client_id")
     var client: Client = Client()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "product_id")
     var product: Product = Product()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "timestamp", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var timestamp: Date = Date()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @OneToOne(cascade = arrayOf(CascadeType.ALL))
     var location: Location? = null
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

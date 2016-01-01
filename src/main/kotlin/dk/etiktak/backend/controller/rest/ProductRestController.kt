@@ -29,6 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
@@ -62,7 +63,7 @@ class ProductRestController @Autowired constructor(
             product = productService.getProductByBarcode(barcode!!)
         }
         product?.let {
-            return okMap().addEntity(product)
+            return okMap().addEntity(product, JsonFilter.RETRIEVE)
         }
         return notFoundMap()
     }
@@ -109,7 +110,7 @@ class ProductRestController @Autowired constructor(
                     name,
                     productCategories,
                     productLabels)
-            return okMap().addEntity(product)
+            return okMap().addEntity(product, JsonFilter.CREATE)
         }
         return notFoundMap()
     }

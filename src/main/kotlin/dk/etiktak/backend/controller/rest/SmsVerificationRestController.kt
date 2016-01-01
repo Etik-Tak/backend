@@ -29,6 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.service.client.SmsVerificationService
 import org.springframework.beans.factory.annotation.Autowired
@@ -50,7 +51,7 @@ class SmsVerificationRestController @Autowired constructor(
             @RequestParam mobileNumber: String,
             @RequestParam password: String): HashMap<String, Any> {
         val smsVerification = smsVerificationService.requestSmsChallenge(clientUuid, mobileNumber, password)
-        return okMap().addEntity(smsVerification)
+        return okMap().addEntity(smsVerification, JsonFilter.CREATE)
     }
 
     @RequestMapping(value = "/request/recovery/", method = arrayOf(RequestMethod.POST))
@@ -59,7 +60,7 @@ class SmsVerificationRestController @Autowired constructor(
             @RequestParam mobileNumber: String,
             @RequestParam password: String): HashMap<String, Any> {
         val smsVerification = smsVerificationService.requestRecoverySmsChallenge(mobileNumber, password)
-        return okMap().addEntity(smsVerification)
+        return okMap().addEntity(smsVerification, JsonFilter.CREATE)
     }
 
     @RequestMapping(value = "/verify/", method = arrayOf(RequestMethod.POST))
@@ -69,6 +70,6 @@ class SmsVerificationRestController @Autowired constructor(
                            @RequestParam smsChallenge: String,
                            @RequestParam clientChallenge: String): HashMap<String, Any> {
         val client = smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge)
-        return okMap().addEntity(client)
+        return okMap().addEntity(client, JsonFilter.CREATE)
     }
 }

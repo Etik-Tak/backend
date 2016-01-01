@@ -29,6 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
@@ -52,7 +53,7 @@ class InfoChannelRestController @Autowired constructor(
         val client = clientService.getByUuid(clientUuid)
         client?.let {
             val infoChannel = infoChannelService.createInfoChannel(client, name)
-            return okMap().addEntity(infoChannel)
+            return okMap().addEntity(infoChannel, JsonFilter.CREATE)
         }
         return notFoundMap()
     }

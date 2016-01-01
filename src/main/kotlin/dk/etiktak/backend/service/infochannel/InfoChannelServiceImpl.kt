@@ -80,6 +80,7 @@ class InfoChannelServiceImpl @Autowired constructor(
 
         // Create info channel client
         val infoChannelClient = InfoChannelClient()
+        infoChannelClient.uuid = CryptoUtil().uuid()
         infoChannelClient.client = client
         infoChannelClient.infoChannel = infoChannel
         infoChannelClient.infoChannelRoles.add(AclRole.OWNER)

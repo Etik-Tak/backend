@@ -29,6 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductCategoryService
@@ -51,7 +52,7 @@ class ProductLabelRestController @Autowired constructor(
             @RequestParam uuid: String): HashMap<String, Any> {
         val productLabel = productLabelService.getProductLabelByUuid(uuid)
         productLabel?.let {
-            return okMap().addEntity(productLabel)
+            return okMap().addEntity(productLabel, JsonFilter.RETRIEVE)
         }
         return notFoundMap()
     }
@@ -63,7 +64,7 @@ class ProductLabelRestController @Autowired constructor(
         val client = clientService.getByUuid(clientUuid)
         client?.let {
             val productLabel = productLabelService.createProductLabel(client, name)
-            return okMap().addEntity(productLabel)
+            return okMap().addEntity(productLabel, JsonFilter.CREATE)
         }
         return notFoundMap()
     }

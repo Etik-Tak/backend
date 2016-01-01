@@ -30,7 +30,7 @@
 package dk.etiktak.backend.model.product
 
 import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonifyRule
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.user.Client
@@ -40,7 +40,7 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "products")
-@Jsonifier(jsonKey = "product")
+@Jsonifier(key = "product")
 class Product constructor() : BaseModel() {
 
     enum class BarcodeType {
@@ -53,19 +53,19 @@ class Product constructor() : BaseModel() {
     @Column(name = "product_id")
     var id: Long = 0
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "barcode", unique = true)
     var barcode: String = ""
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "barcode_type")
     var barcodeType: BarcodeType = BarcodeType.EAN13
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "name")
     var name: String = ""
 
@@ -73,7 +73,7 @@ class Product constructor() : BaseModel() {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
 
-    @Jsonifier(jsonKey = "categories", rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(key = "categories", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name="product_productCategory",
@@ -82,7 +82,7 @@ class Product constructor() : BaseModel() {
     @Column(name = "product_categories")
     var productCategories: MutableSet<ProductCategory> = HashSet()
 
-    @Jsonifier(jsonKey = "labels", rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(key = "labels", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name="product_productLabel",
@@ -91,7 +91,6 @@ class Product constructor() : BaseModel() {
     @Column(name = "product_labels")
     var productLabels: MutableSet<ProductLabel> = HashSet()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
     var creator: Client = Client()
@@ -99,11 +98,11 @@ class Product constructor() : BaseModel() {
     @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

@@ -29,6 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.controller.rest.json.addEntity
 import dk.etiktak.backend.service.client.ClientService
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,6 +48,6 @@ class ClientRestController @Autowired constructor(
     fun create(): HashMap<String, Any> {
         val client = clientService.createClient()
         return okMap()
-                .addEntity(client)
+                .addEntity(client, JsonFilter.CREATE)
     }
 }

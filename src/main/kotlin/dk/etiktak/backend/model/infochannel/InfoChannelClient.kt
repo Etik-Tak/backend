@@ -30,7 +30,7 @@
 package dk.etiktak.backend.model.infochannel
 
 import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonifyRule
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.acl.AclRole
 import dk.etiktak.backend.model.user.Client
@@ -39,7 +39,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "info_channel_clients")
-@Jsonifier(jsonKey = "infoChannelClient")
+@Jsonifier(key = "infoChannelClient")
 class InfoChannelClient constructor() : BaseModel() {
 
     @Id
@@ -47,25 +47,29 @@ class InfoChannelClient constructor() : BaseModel() {
     @Column(name = "info_channel_user_id")
     var id: Long = 0
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
+    @Column(name = "uuid", nullable = false, unique = true)
+    var uuid: String = ""
+
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
     var client: Client = Client()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_channel_id")
     var infoChannel: InfoChannel = InfoChannel()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.NORMAL))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @ElementCollection
     var infoChannelRoles: MutableSet<AclRole> = HashSet()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(rules = arrayOf(JsonifyRule.COMPLETE))
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

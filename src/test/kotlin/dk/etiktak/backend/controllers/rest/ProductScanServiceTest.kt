@@ -134,10 +134,6 @@ class ProductScanServiceTest : BaseRestTest() {
                 .andExpect(jsonPath("$.productScan.uuid", `is`(productScan.uuid)))
                 .andExpect(jsonPath("$.productScan.location.latitude", `is`(location1.latitude)))
                 .andExpect(jsonPath("$.productScan.location.longitude", `is`(location1.longitude)))
-                .andExpect(jsonPath("$.productScan.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.productScan.product.name", `is`(product1.name)))
-                .andExpect(jsonPath("$.productScan.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.productScan.product.barcodeType", `is`(product1.barcodeType.name)))
     }
 
     /**

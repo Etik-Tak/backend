@@ -29,7 +29,6 @@
 
 package dk.etiktak.backend.controller.rest.json
 
-import dk.etiktak.backend.util.asList
 import org.slf4j.LoggerFactory
 import org.springframework.util.StringUtils
 import java.lang.reflect.Field
@@ -41,19 +40,17 @@ private val annotationCache: MutableMap<String, List<Field>> = HashMap()
 
 
 
-enum class JsonifyRule() {
-    COMPLETE,
-    NORMAL,
-    THIN
+enum class JsonFilter() {
+    RETRIEVE,
+    CREATE
 }
 
 @Target(AnnotationTarget.FIELD, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 public annotation class Jsonifier(
-        val jsonKey: String = "",
-        val rules: Array<JsonifyRule> = arrayOf(),
-        val simpleListFieldName: String = "",
-        val extractFieldNames: Array<String> = arrayOf()
+        val key: String = "",
+        val filter: Array<JsonFilter> = arrayOf(),
+        val extractFieldFromReference: String = ""
 )
 
 
@@ -71,53 +68,49 @@ fun HashMap<String, Any>.addMessage(message: String) : HashMap<String, Any> {
 /**
  * Converts the given entity to json.
  *
- * @param entity  Entity to map
- * @return        Self with entity mapped
+ * @param entity   Entity to map
+ * @param filter   Filter to match
+ * @return         Self with entity mapped
  */
-fun HashMap<String, Any>.addEntity(entity: Any?): HashMap<String, Any> {
-    return addEntity(entity, rule = JsonifyRule.NORMAL, deep = true)
+fun HashMap<String, Any>.addEntity(entity: Any?, filter: JsonFilter): HashMap<String, Any> {
+    return addEntity(parentEntities = ArrayList(), entity = entity, filter = filter)
 }
 
 /**
  * Converts the given entity to json.
  *
- * @param entity  Entity to map
- * @param rule    Rule to match
- * @return        Self with entity mapped
+ * @param parentEntities  Parent entities (used to avoid cycles)
+ * @param entity   Entity to map
+ * @param filter   Filter to match
+ * @return         Self with entity mapped
  */
-fun HashMap<String, Any>.addEntity(entity: Any?, rule: JsonifyRule): HashMap<String, Any> {
-    return addEntity(entity, rule, deep = true)
+fun HashMap<String, Any>.addEntity(parentEntities: MutableList<Any>, entity: Any?, filter: JsonFilter): HashMap<String, Any> {
+    return addEntity(parentEntities = parentEntities, entity = entity, fields = annotatedFields(entity), filter = filter)
 }
 
 /**
  * Converts the given entity to json.
  *
- * @param entity  Entity to map
- * @param rule    Rule to match
- * @param deep    If true, follow lists recursively
- * @return        Self with entity mapped
+ * @param parentEntities  Parent entities (used to avoid cycles)
+ * @param entity          Entity to map
+ * @param fields          Fields to map
+ * @param filter          Filter to match
+ * @return                Self with entity mapped
  */
-fun HashMap<String, Any>.addEntity(entity: Any?, rule: JsonifyRule, deep: Boolean): HashMap<String, Any> {
-    return addEntity(entity, fields = annotatedFields(entity), rule = rule, deep = deep)
-}
-
-/**
- * Converts the given entity to json.
- *
- * @param entity  Entity to map
- * @param fields  Fields to map
- * @param rule    Rule to match
- * @param deep    If true, follow lists recursively
- * @return        Self with entity mapped
- */
-fun HashMap<String, Any>.addEntity(entity: Any?, fields: List<Field>, rule: JsonifyRule, deep: Boolean): HashMap<String, Any> {
+fun HashMap<String, Any>.addEntity(parentEntities: MutableList<Any>, entity: Any?, fields: List<Field>, filter: JsonFilter): HashMap<String, Any> {
     if (entity == null) {
         return this
     }
 
+    // Avoid cycles
+    if (parentEntities.contains(entity)) {
+        return this
+    }
+    parentEntities.add(entity)
+
     val entityMap = HashMap<String, Any>()
     for (field in fields) {
-        entityMap.addEntity(entity, field, rule, deep)
+        entityMap.addEntity(parentEntities, entity, field, filter)
     }
 
     val jsonKey = jsonKeyFromEntity(entity)
@@ -129,41 +122,38 @@ fun HashMap<String, Any>.addEntity(entity: Any?, fields: List<Field>, rule: Json
 /**
  * Converts the given entity to json.
  *
- * @param entity  Entity to map
- * @param field   Field to map
- * @param rule    Rule to match
- * @param deep    If true, follow lists recursively
- * @return        Self with entity mapped
+ * @param parentEntities  Parent entities (used to avoid cycles)
+ * @param entity          Entity to map
+ * @param field           Field to map
+ * @param filter          Filter to match
+ * @param deep            If true, follow lists recursively
+ * @return                Self with entity mapped
  */
-fun HashMap<String, Any>.addEntity(entity: Any, field: Field, rule: JsonifyRule, deep: Boolean): HashMap<String, Any> {
+fun HashMap<String, Any>.addEntity(parentEntities: MutableList<Any>, entity: Any, field: Field, filter: JsonFilter): HashMap<String, Any> {
     val annotation = field.getAnnotation(Jsonifier::class.java)
 
-    if (!annotation.rules.contains(rule)) {
+    if (!annotation.filter.contains(filter)) {
         return this
     }
 
-    val jsonKey = if (!StringUtils.isEmpty(annotation.jsonKey)) annotation.jsonKey else field.name
+    val jsonKey = if (!StringUtils.isEmpty(annotation.key)) annotation.key else field.name
 
     if (field.type == List::class.java || field.type == Set::class.java) {
-        if (deep) {
-            field.isAccessible = true
-            val entries = ArrayList<Any>()
-            if (field.type == List::class.java) {
-                entries.addAll(field.get(entity) as List<Any>)
-            }
-            if (field.type == Set::class.java) {
-                entries.addAll(field.get(entity) as Set<Any>)
-            }
-            if (!StringUtils.isEmpty(annotation.simpleListFieldName)) {
-                this[jsonKey] = extractSimpleListFromFieldName(entries, annotation.simpleListFieldName)
-            /*} else if (!StringUtils.isEmpty(annotation.extractFieldNames)) {
-                    this[jsonKey] = extractListFromFieldNames(entries, annotation.extractFieldNames)*/
-            } else {
-                this[jsonKey] = entityList(entries, rule, deep)
-            }
+        field.isAccessible = true
+        val entries = ArrayList<Any>()
+        if (field.type == List::class.java) {
+            entries.addAll(field.get(entity) as List<Any>)
+        }
+        if (field.type == Set::class.java) {
+            entries.addAll(field.get(entity) as Set<Any>)
+        }
+        if (!StringUtils.isEmpty(annotation.extractFieldFromReference)) {
+            this[jsonKey] = extractSimpleListFromFieldName(entries, annotation.extractFieldFromReference)
+        } else {
+            this[jsonKey] = entityList(parentEntities, entries, filter)
         }
     } else {
-        this.addEntity(entity, field, jsonKey, rule, deep)
+        this.addEntity(parentEntities, entity, field, jsonKey, filter)
     }
     return this
 }
@@ -171,19 +161,19 @@ fun HashMap<String, Any>.addEntity(entity: Any, field: Field, rule: JsonifyRule,
 /**
  * Converts the given entity to json.
  *
- * @param entity  Entity to map
- * @param field   Field to map
- * @param jsonKey Key to map to
- * @param rule      Rule to match
- * @param deep      If true, follow lists recursively
- * @return        Self with entity mapped
+ * @param entity          Entity to map
+ * @param parentEntities  Parent entities (used to avoid cycles)
+ * @param field           Field to map
+ * @param jsonKey         Key to map to
+ * @param filter          Filter to match
+ * @return                Self with entity mapped
  */
-fun HashMap<String, Any>.addEntity(entity: Any, field: Field, jsonKey: String, rule: JsonifyRule, deep: Boolean): HashMap<String, Any> {
+fun HashMap<String, Any>.addEntity(parentEntities: MutableList<Any>, entity: Any, field: Field, jsonKey: String, filter: JsonFilter): HashMap<String, Any> {
     field.isAccessible = true
     val value = field.get(entity)
     value?.let {
         if (value.javaClass.getAnnotation(Jsonifier::class.java) != null) {
-            addEntity(value, rule, deep)
+            addEntity(parentEntities, value, filter)
         } else {
             this[jsonKey] = value
         }
@@ -194,15 +184,16 @@ fun HashMap<String, Any>.addEntity(entity: Any, field: Field, jsonKey: String, r
 /**
  * Converts and returns a list of mapped entities.
  *
- * @param entities  Entity list to map
- * @param rule      Rule to match
- * @param deep      If true, follow lists recursively
- * @return          List of mapped entities
+ * @param parentEntities  Parent entities (used to avoid cycles)
+ * @param entities        Entity list to map
+ * @param filter          Filter to match
+ * @param deep            If true, follow lists recursively
+ * @return                List of mapped entities
  */
-fun entityList(entities: List<Any>, rule: JsonifyRule, deep: Boolean): List<Any> {
+fun entityList(parentEntities: MutableList<Any>, entities: List<Any>, filter: JsonFilter): List<Any> {
     val result: MutableList<Any> = ArrayList()
     for (entity in entities) {
-        result.add(HashMap<String, Any>().addEntity(entity, rule, deep))
+        result.add(HashMap<String, Any>().addEntity(parentEntities, entity, filter))
     }
     return result
 }
@@ -271,5 +262,5 @@ private fun annotatedFields(entity: Any?): List<Field> {
  */
 fun jsonKeyFromEntity(entity: Any): String {
     val annotation = entity.javaClass.getAnnotation(Jsonifier::class.java)
-    return if (annotation != null && !StringUtils.isEmpty(annotation.jsonKey)) annotation.jsonKey else entity.javaClass.canonicalName
+    return if (annotation != null && !StringUtils.isEmpty(annotation.key)) annotation.key else entity.javaClass.canonicalName
 }
