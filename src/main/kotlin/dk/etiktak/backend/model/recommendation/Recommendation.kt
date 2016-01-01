@@ -24,34 +24,33 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product.
+ * Represents a recommendation.
  */
 
-package dk.etiktak.backend.model.product
+package dk.etiktak.backend.model.recommendation
 
 import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
-import dk.etiktak.backend.model.recommendation.ProductRecommendation
-import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-@Entity(name = "products")
-@Jsonifier(key = "product")
-class Product constructor() : BaseModel() {
+enum class RecommendationScore {
+    THUMBS_UP,
+    NEUTRAL,
+    THUMBS_DOWN
+}
 
-    enum class BarcodeType {
-        EAN13,
-        UPC
-    }
+@Entity(name = "recommendations")
+@Jsonifier(key = "recommendation")
+open class Recommendation constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_id")
+    @Column(name = "recommendation_id")
     var id: Long = 0
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
@@ -59,48 +58,12 @@ class Product constructor() : BaseModel() {
     var uuid: String = ""
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
-    @Column(name = "barcode", unique = true)
-    var barcode: String = ""
+    @Column(name = "summary")
+    var summary: String = ""
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
-    @Column(name = "barcode_type")
-    var barcodeType: BarcodeType = BarcodeType.EAN13
-
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
-    @Column(name = "name")
-    var name: String = ""
-
-    @NotNull
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    var productScans: MutableList<ProductScan> = ArrayList()
-
-    @Jsonifier(key = "categories", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name="product_productCategory",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
-    @Column(name = "product_categories")
-    var productCategories: MutableSet<ProductCategory> = HashSet()
-
-    @Jsonifier(key = "labels", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name="product_productLabel",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_label_id", referencedColumnName="product_label_id")))
-    @Column(name = "product_labels")
-    var productLabels: MutableSet<ProductLabel> = HashSet()
-
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    var recommendations: MutableList<ProductRecommendation> = ArrayList()
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var creator: Client = Client()
-
-    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
-    var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
+    @Column(name = "score")
+    var score: RecommendationScore = RecommendationScore.NEUTRAL
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

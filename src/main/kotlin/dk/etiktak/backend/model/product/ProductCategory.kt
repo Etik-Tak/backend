@@ -33,6 +33,7 @@ import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
+import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -64,6 +65,9 @@ class ProductCategory constructor() : BaseModel() {
 
     @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
+
+    @OneToMany(mappedBy = "productCategory", fetch = FetchType.LAZY)
+    var recommendations: MutableList<ProductCategoryRecommendation> = ArrayList()
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
