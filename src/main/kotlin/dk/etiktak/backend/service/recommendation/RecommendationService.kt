@@ -23,14 +23,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.recommendation
+package dk.etiktak.backend.service.recommendation
 
+import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
+import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
 import dk.etiktak.backend.model.recommendation.ProductRecommendation
-import org.springframework.data.repository.PagingAndSortingRepository
-import org.springframework.stereotype.Repository
 
-@Repository
-interface ProductRecommendationRepository : PagingAndSortingRepository<ProductRecommendation, Long> {
-    fun findByUuid(uuid: String): ProductRecommendation?
-    fun findByProductUuid(uuid: String): List<ProductRecommendation>
+interface RecommendationService {
+
+    fun getProductRecommendationByUuid(uuid: String): ProductRecommendation?
+    fun getProductRecommendationByProductUuid(uuid: String): List<ProductRecommendation>
+
+    fun getProductCategoryRecommendationByUuid(uuid: String): ProductCategoryRecommendation?
+    fun getProductCategoryRecommendationByProductUuid(uuid: String): List<ProductCategoryRecommendation>
+
+    fun getProductLabelRecommendationByUuid(uuid: String): ProductLabelRecommendation?
+    fun getProductLabelRecommendationByProductUuid(uuid: String): List<ProductLabelRecommendation>
 }
