@@ -25,37 +25,11 @@
 
 package dk.etiktak.backend.service.recommendation
 
-import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
-import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
-import dk.etiktak.backend.model.recommendation.ProductRecommendation
 import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
 
 interface RecommendationService {
 
-    fun getRecommendations(client: Client): List<Recommendation>
-    fun getProductRecommendations(client: Client): List<ProductRecommendation>
-    fun getProductCategoryRecommendations(client: Client): List<ProductCategoryRecommendation>
-    fun getProductLabelRecommendations(client: Client): List<ProductLabelRecommendation>
-
-    fun getRecommendations(infoChannel: InfoChannel): List<Recommendation>
-    fun getProductRecommendations(infoChannel: InfoChannel): List<ProductRecommendation>
-    fun getProductCategoryRecommendations(infoChannel: InfoChannel): List<ProductCategoryRecommendation>
-    fun getProductLabelRecommendations(infoChannel: InfoChannel): List<ProductLabelRecommendation>
-
-    fun getRecommendations(infoChannels: List<InfoChannel>): List<Recommendation>
-    fun getProductRecommendations(infoChannels: List<InfoChannel>): List<ProductRecommendation>
-    fun getProductCategoryRecommendations(infoChannels: List<InfoChannel>): List<ProductCategoryRecommendation>
-    fun getProductLabelRecommendations(infoChannels: List<InfoChannel>): List<ProductLabelRecommendation>
-
-    fun getProductRecommendationByUuid(uuid: String): ProductRecommendation?
-    fun getProductRecommendationByProduct(product: Product): List<ProductRecommendation>
-
-    fun getProductCategoryRecommendationByUuid(uuid: String): ProductCategoryRecommendation?
-    fun getProductCategoryRecommendationByProduct(product: Product): List<ProductCategoryRecommendation>
-
-    fun getProductLabelRecommendationByUuid(uuid: String): ProductLabelRecommendation?
-    fun getProductLabelRecommendationByProduct(product: Product): List<ProductLabelRecommendation>
+    fun getRecommendations(client: Client, product: Product): List<Recommendation>
 }
