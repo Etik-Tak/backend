@@ -75,7 +75,7 @@ class Product constructor() : BaseModel() {
     var productScans: MutableList<ProductScan> = ArrayList()
 
     @Jsonifier(key = "categories", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="product_productCategory",
             joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
@@ -84,7 +84,7 @@ class Product constructor() : BaseModel() {
     var productCategories: MutableSet<ProductCategory> = HashSet()
 
     @Jsonifier(key = "labels", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="product_productLabel",
             joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),

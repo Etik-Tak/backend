@@ -43,6 +43,7 @@ import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductScanRepository
+import dk.etiktak.backend.repository.recommendation.RecommendationRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository
@@ -71,8 +72,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextS
 import java.util.*
 
 open class BaseRestTest {
-
-
 
     fun serviceEndpoint(): String {
         return "/service/"
@@ -166,6 +165,9 @@ open class BaseRestTest {
     val infoSourceReferenceService: InfoSourceReferenceService? = null
 
     @Autowired
+    val recommendationRepository: RecommendationRepository? = null
+
+    @Autowired
     val clientService: ClientService? = null
 
     @get:Rule
@@ -188,6 +190,8 @@ open class BaseRestTest {
 
 
     fun cleanRepository() {
+        recommendationRepository!!.deleteAll()
+
         infoSourceUrlPrefixRepository!!.deleteAll()
         infoSourceReferenceRepository!!.deleteAll()
         infoSourceRepository!!.deleteAll()

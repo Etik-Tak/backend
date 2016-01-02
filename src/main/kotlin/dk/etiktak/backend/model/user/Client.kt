@@ -35,6 +35,7 @@ package dk.etiktak.backend.model.user
 
 import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonFilter
+import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
@@ -72,6 +73,10 @@ class Client constructor() {
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
+
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
+    var followingInfoChannels: MutableList<InfoChannelClient> = ArrayList()
 
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()

@@ -37,11 +37,13 @@ import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
+import org.junit.Assert
+import org.springframework.transaction.annotation.Transactional
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class InfoChannelServiceTest : BaseRestTest() {
+open class InfoChannelServiceTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
         return super.serviceEndpoint() + "infochannel/" + postfix
@@ -53,13 +55,16 @@ class InfoChannelServiceTest : BaseRestTest() {
 
         client1 = createAndSaveClient()
         client2 = createAndSaveClient()
+
+        infoChannel1 = createAndSaveInfoChannel(client1)
+        infoChannel2 = createAndSaveInfoChannel(client2)
     }
 
     /**
      * Test that we can create an info channel.
      */
     @Test
-    fun createClient() {
+    fun createInfoChannel() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
                         .param("clientUuid", client1.uuid)
@@ -69,5 +74,51 @@ class InfoChannelServiceTest : BaseRestTest() {
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.infoChannel.uuid", Matchers.notNullValue()))
                 .andExpect(jsonPath("$.infoChannel.name", `is`("Test Info Channel 1")))
+    }
+
+    /**
+     * Test that we can follow an info channel.
+     */
+    @Test
+    @Transactional
+    fun followInfoChannel() {
+        mockMvc().perform(
+                post(serviceEndpoint("follow/"))
+                        .param("clientUuid", client1.uuid)
+                        .param("infoChannelUuid", infoChannel1.uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+
+        Assert.assertEquals(
+                1,
+                infoChannelService!!.getInfoChannelByUuid(infoChannel1.uuid)!!.followers.size
+        )
+
+        mockMvc().perform(
+                post(serviceEndpoint("follow/"))
+                        .param("clientUuid", client1.uuid)
+                        .param("infoChannelUuid", infoChannel2.uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+
+        Assert.assertEquals(
+                1,
+                infoChannelService.getInfoChannelByUuid(infoChannel2.uuid)!!.followers.size
+        )
+
+        mockMvc().perform(
+                post(serviceEndpoint("follow/"))
+                        .param("clientUuid", client2.uuid)
+                        .param("infoChannelUuid", infoChannel2.uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+
+        Assert.assertEquals(
+                2,
+                infoChannelService.getInfoChannelByUuid(infoChannel2.uuid)!!.followers.size
+        )
     }
 }

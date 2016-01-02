@@ -58,16 +58,11 @@ class InfoSourceServiceImpl @Autowired constructor(
      * Creates an info source.
      *
      * @param client         Creator
-     * @param urlPrefexes    Url prefixes of info source
+     * @param urlPrefixes    Url prefixes of info source
      * @param friendlyName   Name of info source
      * @return               Created info source
      */
     override fun createInfoSource(client: Client, urlPrefixes: List<String>, friendlyName: String): InfoSource {
-
-        // Check for empty fields
-        Assert.notNull(
-                client,
-                "Client must be provided")
 
         // Validate url prefix
         for (urlPrefix in urlPrefixes) {

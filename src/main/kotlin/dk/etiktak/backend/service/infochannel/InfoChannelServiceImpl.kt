@@ -36,7 +36,6 @@ import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import org.springframework.util.Assert
 
 @Service
 class InfoChannelServiceImpl @Autowired constructor(
@@ -65,12 +64,6 @@ class InfoChannelServiceImpl @Autowired constructor(
      * @return              Created info channel
      */
     override fun createInfoChannel(client: Client, name: String, modifyValues: (Client) -> Unit): InfoChannel {
-
-        // Check for empty fields
-        Assert.notNull(
-                client,
-                "Client must be provided")
-
         logger.info("Creating new info channel with name: $name")
 
         // Create info channel
@@ -97,6 +90,34 @@ class InfoChannelServiceImpl @Autowired constructor(
         modifyValues(modifiedClient)
 
         return modifiedInfoChannel
+    }
+
+    /**
+     * Marks the client as following the given info channel.
+     *
+     * @param client       Client
+     * @param infoChannel  Info channel
+     * @param modifyValues  Function called with modified client and info channel
+     */
+    override fun followInfoChannel(client: Client, infoChannel: InfoChannel, modifyValues: (Client, InfoChannel) -> Unit) {
+
+        // Create info channel client
+        val infoChannelClient = InfoChannelClient()
+        infoChannelClient.uuid = CryptoUtil().uuid()
+        infoChannelClient.client = client
+        infoChannelClient.infoChannel = infoChannel
+        infoChannelClient.infoChannelRoles.add(AclRole.FOLLOWER)
+
+        // Glue them together
+        infoChannel.followers.add(infoChannelClient)
+        client.followingInfoChannels.add(infoChannelClient)
+
+        // Save them all
+        val modifiedClient = clientRepository.save(client)
+        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        infoChannelClientRepository.save(infoChannelClient)
+
+        modifyValues(modifiedClient, modifiedInfoChannel)
     }
 
     /**

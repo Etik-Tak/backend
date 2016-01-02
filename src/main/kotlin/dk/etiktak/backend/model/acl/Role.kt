@@ -29,7 +29,8 @@
 
 package dk.etiktak.backend.model.acl
 
-enum class AclRole(val order: Int) {
-    USER(0),
-    OWNER(100)
+enum class AclRole {
+    MEMBER,
+    FOLLOWER,
+    OWNER
 }
