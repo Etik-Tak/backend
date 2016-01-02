@@ -50,22 +50,19 @@ class ProductLabelRestController @Autowired constructor(
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProductLabel(
             @RequestParam uuid: String): HashMap<String, Any> {
-        val productLabel = productLabelService.getProductLabelByUuid(uuid)
-        productLabel?.let {
-            return okMap().addEntity(productLabel, JsonFilter.RETRIEVE)
-        }
-        return notFoundMap()
+        val productLabel = productLabelService.getProductLabelByUuid(uuid) ?: return notFoundMap()
+
+        return okMap().addEntity(productLabel, JsonFilter.RETRIEVE)
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProductLabel(
             @RequestParam clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid)
-        client?.let {
-            val productLabel = productLabelService.createProductLabel(client, name)
-            return okMap().addEntity(productLabel, JsonFilter.CREATE)
-        }
-        return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+
+        val productLabel = productLabelService.createProductLabel(client, name)
+
+        return okMap().addEntity(productLabel, JsonFilter.CREATE)
     }
 }
