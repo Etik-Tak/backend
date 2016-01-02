@@ -47,7 +47,6 @@ class ClientRestController @Autowired constructor(
     @Throws(Exception::class)
     fun create(): HashMap<String, Any> {
         val client = clientService.createClient()
-        return okMap()
-                .addEntity(client, JsonFilter.CREATE)
+        return okMap().addEntity(client, JsonFilter.CREATE)
     }
 }

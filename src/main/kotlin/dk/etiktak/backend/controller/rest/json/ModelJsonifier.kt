@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.util.StringUtils
 import java.lang.reflect.Field
 import java.util.*
+import javax.persistence.Entity
 
 private val logger = LoggerFactory.getLogger("Jsonifier")
 
@@ -231,20 +232,24 @@ private fun annotatedFields(entity: Any?): List<Field> {
 
         // Check if cached
         val fields = annotationCache[entity.javaClass.name]
-        if (fields != null) {
+        fields?.let {
             return fields
         }
-
-        logger.info("Scanning for JSON annotations on entity: " + entity.javaClass.canonicalName)
 
         // Scan entity for @Jsonifier fields
         val annotatedFields: MutableList<Field> = ArrayList()
 
-        for (field in entity.javaClass.declaredFields) {
-            if (field.isAnnotationPresent(Jsonifier::class.java)) {
-                logger.info("Found field: " + field.name)
-                annotatedFields.add(field)
+        var currentEntity: Class<in Any> = entity.javaClass
+        while (isEntityClass(currentEntity)) {
+            logger.info("Scanning for JSON annotations on entity: " + currentEntity.canonicalName)
+
+            for (field in currentEntity.declaredFields) {
+                if (field.isAnnotationPresent(Jsonifier::class.java)) {
+                    logger.info("Found field: " + field.name)
+                    annotatedFields.add(field)
+                }
             }
+            currentEntity = currentEntity.superclass
         }
 
         // Cache fields
@@ -252,6 +257,17 @@ private fun annotatedFields(entity: Any?): List<Field> {
 
         return annotatedFields
     })
+}
+
+/**
+ * Returns whether or not the given object if an entity.
+ *
+ * @param obj  Object
+ * @return     True, if given object is an instance of a entity class, or else false
+ *
+ */
+fun isEntityClass(obj: Class<in Any>): Boolean {
+    return obj.isAnnotationPresent(Entity::class.java)
 }
 
 /**

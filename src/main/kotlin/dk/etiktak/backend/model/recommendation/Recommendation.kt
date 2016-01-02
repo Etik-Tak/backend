@@ -47,6 +47,10 @@ enum class RecommendationScore {
 }
 
 @Entity(name = "recommendations")
+@Table(uniqueConstraints = arrayOf(
+        UniqueConstraint(columnNames = arrayOf("product_id", "info_channel_id")),
+        UniqueConstraint(columnNames = arrayOf("product_category_id", "info_channel_id")),
+        UniqueConstraint(columnNames = arrayOf("product_label_id", "info_channel_id"))))
 @Jsonifier(key = "recommendation")
 open class Recommendation constructor() : BaseModel() {
 

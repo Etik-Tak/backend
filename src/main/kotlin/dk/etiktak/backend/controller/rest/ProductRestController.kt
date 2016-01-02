@@ -53,16 +53,14 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProduct(
-            @RequestParam(required = false) uuid: String?,
-            @RequestParam(required = false) barcode: String?): HashMap<String, Any> {
-        var product: Product? = null
-        if (!StringUtils.isEmpty(uuid)) {
-            product = productService.getProductByUuid(uuid!!)
+            @RequestParam(required = false) uuid: String? = null,
+            @RequestParam(required = false) barcode: String? = null): HashMap<String, Any> {
+        uuid?.let {
+            val product = productService.getProductByUuid(uuid) ?: return notFoundMap()
+            return okMap().addEntity(product, JsonFilter.RETRIEVE)
         }
-        if (!StringUtils.isEmpty(barcode)) {
-            product = productService.getProductByBarcode(barcode!!)
-        }
-        product?.let {
+        barcode?.let {
+            val product = productService.getProductByBarcode(barcode) ?: return notFoundMap()
             return okMap().addEntity(product, JsonFilter.RETRIEVE)
         }
         return notFoundMap()
@@ -72,46 +70,40 @@ class ProductRestController @Autowired constructor(
     fun createProduct(
             @RequestParam clientUuid: String,
             @RequestParam name: String,
-            @RequestParam(required = false) barcode: String?,
-            @RequestParam(required = false) barcodeType: String?,
-            @RequestParam(required = false) categoryUuidList: List<String>?,
-            @RequestParam(required = false) labelUuidList: List<String>?): HashMap<String, Any> {
+            @RequestParam(required = false) barcode: String? = null,
+            @RequestParam(required = false) barcodeType: String? = null,
+            @RequestParam(required = false) categoryUuidList: List<String>? = null,
+            @RequestParam(required = false) labelUuidList: List<String>? = null): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid)
-        client?.let {
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
 
-            // List of product categories
-            val productCategories = ArrayList<ProductCategory>()
-            categoryUuidList?.let {
-                for (productCategoryUuid in categoryUuidList) {
-                    val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid)
-                    productCategory?.let {
-                        productCategories.add(productCategory)
-                    }
-                }
+        // List of product categories
+        val productCategories = ArrayList<ProductCategory>()
+        categoryUuidList?.let {
+            for (productCategoryUuid in categoryUuidList) {
+                val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: continue
+                productCategories.add(productCategory)
             }
-
-            // List of product labels
-            val productLabels = ArrayList<ProductLabel>()
-            labelUuidList?.let {
-                for (productLabelUuid in labelUuidList) {
-                    val productLabel = productLabelService.getProductLabelByUuid(productLabelUuid)
-                    productLabel?.let {
-                        productLabels.add(productLabel)
-                    }
-                }
-            }
-
-            // Create product
-            val product = productService.createProduct(
-                    client,
-                    barcode,
-                    if (barcodeType != null) Product.BarcodeType.valueOf(barcodeType) else null,
-                    name,
-                    productCategories,
-                    productLabels)
-            return okMap().addEntity(product, JsonFilter.CREATE)
         }
-        return notFoundMap()
+
+        // List of product labels
+        val productLabels = ArrayList<ProductLabel>()
+        labelUuidList?.let {
+            for (productLabelUuid in labelUuidList) {
+                val productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: continue
+                productLabels.add(productLabel)
+            }
+        }
+
+        // Create product
+        val product = productService.createProduct(
+                client,
+                barcode,
+                if (barcodeType != null) Product.BarcodeType.valueOf(barcodeType) else null,
+                name,
+                productCategories,
+                productLabels)
+
+        return okMap().addEntity(product, JsonFilter.CREATE)
     }
 }

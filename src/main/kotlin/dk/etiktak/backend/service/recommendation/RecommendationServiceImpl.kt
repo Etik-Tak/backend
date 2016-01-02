@@ -37,6 +37,7 @@ import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRe
 import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.infochannel.InfoChannelService
+import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -186,6 +187,7 @@ class RecommendationServiceImpl @Autowired constructor(
     private fun setupRecommendation(client: Client, infoChannel: InfoChannel, recommendation: Recommendation,
                                     summary: String, score: RecommendationScore) {
 
+        recommendation.uuid = CryptoUtil().uuid()
         recommendation.summary = summary
         recommendation.score = score
 

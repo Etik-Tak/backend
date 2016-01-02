@@ -50,26 +50,22 @@ class InfoChannelRestController @Autowired constructor(
     fun createInfoChannel(
             @RequestParam clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid)
-        client?.let {
-            val infoChannel = infoChannelService.createInfoChannel(client, name)
-            return okMap().addEntity(infoChannel, JsonFilter.CREATE)
-        }
-        return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+
+        val infoChannel = infoChannelService.createInfoChannel(client, name)
+
+        return okMap().addEntity(infoChannel, JsonFilter.CREATE)
     }
 
     @RequestMapping(value = "/follow/", method = arrayOf(RequestMethod.POST))
     fun followInfoChannel(
             @RequestParam clientUuid: String,
             @RequestParam infoChannelUuid: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid)
-        client?.let {
-            val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid)
-            infoChannel?.let {
-                infoChannelService.followInfoChannel(client, infoChannel)
-                return okMap()
-            }
-        }
-        return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+        val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid) ?: return notFoundMap()
+
+        infoChannelService.followInfoChannel(client, infoChannel)
+
+        return okMap()
     }
 }

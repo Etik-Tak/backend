@@ -53,21 +53,18 @@ class ProductScanRestController @Autowired constructor(
     fun scanProduct(
             @RequestParam barcode: String,
             @RequestParam clientUuid: String,
-            @RequestParam(required = false) latitude: String?,
-            @RequestParam(required = false) longitude: String?): HashMap<String, Any> {
-        val product = productService.getProductByBarcode(barcode)
-        product?.let {
-            val client = clientService.getByUuid(clientUuid)
-            client?.let {
-                var location: Location? = null
-                if (!StringUtils.isEmpty(latitude) && !StringUtils.isEmpty(longitude)) {
-                    location = Location(latitude!!.toDouble(), longitude!!.toDouble())
-                }
-                val productScan = productService.scanProduct(barcode, client, location)
-                return okMap().addEntity(productScan, JsonFilter.RETRIEVE)
-            }
+            @RequestParam(required = false) latitude: String? = null,
+            @RequestParam(required = false) longitude: String? = null): HashMap<String, Any> {
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+
+        var location: Location? = null
+        if (latitude != null && longitude != null) {
+            location = Location(latitude.toDouble(), longitude.toDouble())
         }
-        return notFoundMap()
+
+        val productScan = productService.scanProduct(barcode, client, location)
+
+        return okMap().addEntity(productScan, JsonFilter.RETRIEVE)
     }
 
     @RequestMapping(value = "/assign/location/", method = arrayOf(RequestMethod.POST))
@@ -76,16 +73,13 @@ class ProductScanRestController @Autowired constructor(
             @RequestParam productScanUuid: String,
             @RequestParam latitude: String,
             @RequestParam longitude: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid)
-        client?.let {
-            val productScan = productService.getProductScanByUuid(productScanUuid)
-            productScan?.let {
-                val location = Location(latitude.toDouble(), longitude.toDouble())
-                var resultProductScan: ProductScan? = null
-                productService.assignLocationToProductScan(client, productScan, location, {scan -> resultProductScan = scan})
-                return okMap().addEntity(resultProductScan, JsonFilter.CREATE)
-            }
-        }
-        return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+        var productScan = productService.getProductScanByUuid(productScanUuid) ?: return notFoundMap()
+
+        val location = Location(latitude.toDouble(), longitude.toDouble())
+
+        productService.assignLocationToProductScan(client, productScan, location, {scan -> productScan = scan})
+
+        return okMap().addEntity(productScan, JsonFilter.CREATE)
     }
 }

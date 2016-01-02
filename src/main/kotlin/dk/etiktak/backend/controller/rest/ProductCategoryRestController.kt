@@ -49,22 +49,19 @@ class ProductCategoryRestController @Autowired constructor(
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProductCategory(
             @RequestParam uuid: String): HashMap<String, Any> {
-        val productCategory = productCategoryService.getProductCategoryByUuid(uuid)
-        productCategory?.let {
-            return okMap().addEntity(productCategory, JsonFilter.RETRIEVE)
-        }
-        return notFoundMap()
+        val productCategory = productCategoryService.getProductCategoryByUuid(uuid) ?: return notFoundMap()
+
+        return okMap().addEntity(productCategory, JsonFilter.RETRIEVE)
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProductCategory(
             @RequestParam clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid)
-        client?.let {
-            val productCategory = productCategoryService.createProductCategory(client, name, {})
-            return okMap().addEntity(productCategory, JsonFilter.CREATE)
-        }
-        return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+
+        val productCategory = productCategoryService.createProductCategory(client, name, {})
+
+        return okMap().addEntity(productCategory, JsonFilter.CREATE)
     }
 }

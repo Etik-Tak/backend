@@ -43,6 +43,9 @@ import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductScanRepository
+import dk.etiktak.backend.repository.recommendation.ProductCategoryRecommendationRepository
+import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRepository
+import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.RecommendationRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
@@ -168,6 +171,15 @@ open class BaseRestTest {
     val recommendationRepository: RecommendationRepository? = null
 
     @Autowired
+    val productRecommendationRepository: ProductRecommendationRepository? = null
+
+    @Autowired
+    val productCategoryRecommendationRepository: ProductCategoryRecommendationRepository? = null
+
+    @Autowired
+    val productLabelRecommendationRepository: ProductLabelRecommendationRepository? = null
+
+    @Autowired
     val clientService: ClientService? = null
 
     @get:Rule
@@ -191,6 +203,9 @@ open class BaseRestTest {
 
     fun cleanRepository() {
         recommendationRepository!!.deleteAll()
+        productRecommendationRepository!!.deleteAll()
+        productCategoryRecommendationRepository!!.deleteAll()
+        productLabelRecommendationRepository!!.deleteAll()
 
         infoSourceUrlPrefixRepository!!.deleteAll()
         infoSourceReferenceRepository!!.deleteAll()
