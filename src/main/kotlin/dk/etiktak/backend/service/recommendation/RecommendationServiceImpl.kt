@@ -25,53 +25,124 @@
 
 package dk.etiktak.backend.service.recommendation
 
+import dk.etiktak.backend.model.infochannel.InfoChannel
+import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
 import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
 import dk.etiktak.backend.model.recommendation.ProductRecommendation
-import dk.etiktak.backend.repository.product.ProductCategoryRepository
-import dk.etiktak.backend.repository.product.ProductLabelRepository
-import dk.etiktak.backend.repository.product.ProductRepository
+import dk.etiktak.backend.model.recommendation.Recommendation
+import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.recommendation.ProductCategoryRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
-import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.repository.recommendation.RecommendationRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class RecommendationServiceImpl @Autowired constructor(
+        private val recommendationRepository: RecommendationRepository,
         private val productRecommendationRepository: ProductRecommendationRepository,
         private val productCategoryRecommendationRepository: ProductCategoryRecommendationRepository,
-        private val productLabelRecommendationRepository: ProductLabelRecommendationRepository,
-        private val productRepository: ProductRepository,
-        private val clientRepository: ClientRepository,
-        private val productCategoryRepository: ProductCategoryRepository,
-        private val productLabelRepository: ProductLabelRepository) : RecommendationService {
+        private val productLabelRecommendationRepository: ProductLabelRecommendationRepository) : RecommendationService {
 
     private val logger = LoggerFactory.getLogger(RecommendationServiceImpl::class.java)
+
+    override fun getRecommendations(client: Client): List<Recommendation> {
+        return recommendationRepository.findByInfoChannelUuidIn(infoChannelUuidsFromClient(client))
+    }
+
+    override fun getProductRecommendations(client: Client): List<ProductRecommendation> {
+        return productRecommendationRepository.findByInfoChannelUuidIn(infoChannelUuidsFromClient(client))
+    }
+
+    override fun getProductCategoryRecommendations(client: Client): List<ProductCategoryRecommendation> {
+        return productCategoryRecommendationRepository.findByInfoChannelUuidIn(infoChannelUuidsFromClient(client))
+    }
+
+    override fun getProductLabelRecommendations(client: Client): List<ProductLabelRecommendation> {
+        return productLabelRecommendationRepository.findByInfoChannelUuidIn(infoChannelUuidsFromClient(client))
+    }
+
+
+
+    override fun getRecommendations(infoChannel: InfoChannel): List<Recommendation> {
+        return recommendationRepository.findByInfoChannelUuid(infoChannel.uuid)
+    }
+
+    override fun getProductRecommendations(infoChannel: InfoChannel): List<ProductRecommendation> {
+        return productRecommendationRepository.findByInfoChannelUuid(infoChannel.uuid)
+    }
+
+    override fun getProductCategoryRecommendations(infoChannel: InfoChannel): List<ProductCategoryRecommendation> {
+        return productCategoryRecommendationRepository.findByInfoChannelUuid(infoChannel.uuid)
+    }
+
+    override fun getProductLabelRecommendations(infoChannel: InfoChannel): List<ProductLabelRecommendation> {
+        return productLabelRecommendationRepository.findByInfoChannelUuid(infoChannel.uuid)
+    }
+
+
+
+    override fun getRecommendations(infoChannels: List<InfoChannel>): List<Recommendation> {
+        return recommendationRepository.findByInfoChannelUuidIn(infoChannelListToUuidList(infoChannels))
+    }
+
+    override fun getProductRecommendations(infoChannels: List<InfoChannel>): List<ProductRecommendation> {
+        return productRecommendationRepository.findByInfoChannelUuidIn(infoChannelListToUuidList(infoChannels))
+    }
+
+    override fun getProductCategoryRecommendations(infoChannels: List<InfoChannel>): List<ProductCategoryRecommendation> {
+        return productCategoryRecommendationRepository.findByInfoChannelUuidIn(infoChannelListToUuidList(infoChannels))
+    }
+
+    override fun getProductLabelRecommendations(infoChannels: List<InfoChannel>): List<ProductLabelRecommendation> {
+        return productLabelRecommendationRepository.findByInfoChannelUuidIn(infoChannelListToUuidList(infoChannels))
+    }
+
+
 
     override fun getProductRecommendationByUuid(uuid: String): ProductRecommendation? {
         return productRecommendationRepository.findByUuid(uuid)
     }
 
-    override fun getProductRecommendationByProductUuid(uuid: String): List<ProductRecommendation> {
-        return productRecommendationRepository.findByProductUuid(uuid)
+    override fun getProductRecommendationByProduct(product: Product): List<ProductRecommendation> {
+        return productRecommendationRepository.findByProductUuid(product.uuid)
     }
 
     override fun getProductCategoryRecommendationByUuid(uuid: String): ProductCategoryRecommendation? {
         return productCategoryRecommendationRepository.findByUuid(uuid)
     }
 
-    override fun getProductCategoryRecommendationByProductUuid(uuid: String): List<ProductCategoryRecommendation> {
-        return productCategoryRecommendationRepository.findByProductCategoryUuid(uuid)
+    override fun getProductCategoryRecommendationByProduct(product: Product): List<ProductCategoryRecommendation> {
+        return productCategoryRecommendationRepository.findByProductCategoryUuid(product.uuid)
     }
 
     override fun getProductLabelRecommendationByUuid(uuid: String): ProductLabelRecommendation? {
         return productLabelRecommendationRepository.findByUuid(uuid)
     }
 
-    override fun getProductLabelRecommendationByProductUuid(uuid: String): List<ProductLabelRecommendation> {
-        return productLabelRecommendationRepository.findByProductLabelUuid(uuid)
+    override fun getProductLabelRecommendationByProduct(product: Product): List<ProductLabelRecommendation> {
+        return productLabelRecommendationRepository.findByProductLabelUuid(product.uuid)
+    }
+
+
+
+    private fun infoChannelUuidsFromClient(client: Client): List<String> {
+        val infoChannelUuids: MutableList<String> = ArrayList()
+        for (infoChannelClient in client.infoChannelClients) {
+            infoChannelUuids.add(infoChannelClient.infoChannel.uuid)
+        }
+        return infoChannelUuids
+    }
+
+    private fun infoChannelListToUuidList(infoChannels: List<InfoChannel>): List<String> {
+        val infoChannelUuids: MutableList<String> = ArrayList()
+        for (infoChannel in infoChannels) {
+            infoChannelUuids.add(infoChannel.uuid)
+        }
+        return infoChannelUuids
     }
 }

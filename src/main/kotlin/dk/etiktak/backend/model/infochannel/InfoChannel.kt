@@ -33,6 +33,7 @@ import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
+import dk.etiktak.backend.model.recommendation.Recommendation
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -59,6 +60,10 @@ class InfoChannel constructor() : BaseModel() {
     @NotNull
     @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
     var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
+
+    @NotNull
+    @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
+    var recommendations: MutableList<Recommendation> = ArrayList()
 
     @NotNull
     @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)

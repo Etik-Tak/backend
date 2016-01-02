@@ -32,4 +32,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface RecommendationRepository : PagingAndSortingRepository<Recommendation, Long> {
     fun findByUuid(uuid: String): Recommendation?
+    fun findByInfoChannelUuid(uuid: String): List<Recommendation>
+    fun findByInfoChannelUuidIn(uuid: List<String>): List<Recommendation>
 }

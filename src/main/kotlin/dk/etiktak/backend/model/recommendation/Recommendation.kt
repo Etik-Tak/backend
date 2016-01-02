@@ -32,6 +32,7 @@ package dk.etiktak.backend.model.recommendation
 import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -64,6 +65,11 @@ open class Recommendation constructor() : BaseModel() {
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "score")
     var score: RecommendationScore = RecommendationScore.NEUTRAL
+
+    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "info_channel_id")
+    var infoChannel: InfoChannel = InfoChannel()
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
