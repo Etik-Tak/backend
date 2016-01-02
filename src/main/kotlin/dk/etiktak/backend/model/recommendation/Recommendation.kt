@@ -34,6 +34,7 @@ import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
+import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -57,6 +58,10 @@ open class Recommendation constructor() : BaseModel() {
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var creator: Client = Client()
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "summary")

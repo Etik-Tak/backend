@@ -29,21 +29,28 @@ import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
-import dk.etiktak.backend.model.recommendation.Recommendation
+import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.recommendation.ProductCategoryRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
+import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.infochannel.InfoChannelService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.util.Assert
 import java.util.*
 
 @Service
 class RecommendationServiceImpl @Autowired constructor(
         private val productRecommendationRepository: ProductRecommendationRepository,
         private val productCategoryRecommendationRepository: ProductCategoryRecommendationRepository,
-        private val productLabelRecommendationRepository: ProductLabelRecommendationRepository) : RecommendationService {
+        private val productLabelRecommendationRepository: ProductLabelRecommendationRepository,
+        private val infoChannelService: InfoChannelService,
+        private val clientRepository: ClientRepository,
+        private val infoChannelRepository: InfoChannelRepository) : RecommendationService {
 
     private val logger = LoggerFactory.getLogger(RecommendationServiceImpl::class.java)
 
@@ -69,6 +76,125 @@ class RecommendationServiceImpl @Autowired constructor(
     }
 
 
+    /**
+     * Create product recommendation.
+     *
+     * @param client         Client
+     * @param infoChannel    Info channel
+     * @param summary        Summary
+     * @param score          Score
+     * @param product        Product
+     * @param modifyValues   Function called with modified client and info channel
+     * @return               Created recommendation
+     */
+    override fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, product: Product,
+                                      modifyValues: (Client, InfoChannel) -> Unit): Recommendation {
+
+        // Security checks
+        Assert.isTrue(
+                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
+                "Client not member of info channel with UUID: ${infoChannel.uuid}")
+
+        // Create recommendation
+        val recommendation = ProductRecommendation()
+        recommendation.product = product
+
+        setupRecommendation(client, infoChannel, recommendation, summary, score)
+
+        // Save it all
+        val modifiedClient = clientRepository.save(client)
+        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        val modifiedRecommandation = productRecommendationRepository.save(recommendation)
+
+        modifyValues(modifiedClient, modifiedInfoChannel)
+
+        return modifiedRecommandation
+    }
+
+    /**
+     * Create product category recommendation.
+     *
+     * @param client           Client
+     * @param infoChannel      Info channel
+     * @param summary          Summary
+     * @param score            Score
+     * @param productCategory  Product category
+     * @param modifyValues     Function called with modified client and info channel
+     * @return                 Created recommendation
+     */
+    override fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductCategory,
+                                      modifyValues: (Client, InfoChannel) -> Unit): Recommendation {
+
+        // Security checks
+        Assert.isTrue(
+                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
+                "Client not member of info channel with UUID: ${infoChannel.uuid}")
+
+        // Create recommendation
+        val recommendation = ProductCategoryRecommendation()
+        recommendation.productCategory = productCategory
+
+        setupRecommendation(client, infoChannel, recommendation, summary, score)
+
+        // Save it all
+        val modifiedClient = clientRepository.save(client)
+        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        val modifiedRecommandation = productCategoryRecommendationRepository.save(recommendation)
+
+        modifyValues(modifiedClient, modifiedInfoChannel)
+
+        return modifiedRecommandation
+    }
+
+    /**
+     * Create product label recommendation.
+     *
+     * @param client           Client
+     * @param infoChannel      Info channel
+     * @param summary          Summary
+     * @param score            Score
+     * @param productLabel     Product label
+     * @param modifyValues     Function called with modified client and info channel
+     * @return                 Created recommendation
+     */
+    override fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productLabel: ProductLabel,
+                                      modifyValues: (Client, InfoChannel) -> Unit): Recommendation {
+
+        // Security checks
+        Assert.isTrue(
+                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
+                "Client not member of info channel with UUID: ${infoChannel.uuid}")
+
+        // Create recommendation
+        val recommendation = ProductLabelRecommendation()
+        recommendation.productLabel = productLabel
+
+        setupRecommendation(client, infoChannel, recommendation, summary, score)
+
+        // Save it all
+        val modifiedClient = clientRepository.save(client)
+        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        val modifiedRecommandation = productLabelRecommendationRepository.save(recommendation)
+
+        modifyValues(modifiedClient, modifiedInfoChannel)
+
+        return modifiedRecommandation
+    }
+
+
+
+    private fun setupRecommendation(client: Client, infoChannel: InfoChannel, recommendation: Recommendation,
+                                    summary: String, score: RecommendationScore) {
+
+        recommendation.summary = summary
+        recommendation.score = score
+
+        recommendation.creator = client
+        client.recommendations.add(recommendation)
+
+        recommendation.infoChannel = infoChannel
+        infoChannel.recommendations.add(recommendation)
+    }
 
     private fun infoChannelsFromClient(client: Client): List<InfoChannel> {
         val infoChannels: MutableList<InfoChannel> = ArrayList()

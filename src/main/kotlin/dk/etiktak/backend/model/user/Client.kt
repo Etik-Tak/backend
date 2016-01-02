@@ -42,6 +42,7 @@ import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.product.ProductScan
+import dk.etiktak.backend.model.recommendation.Recommendation
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -92,6 +93,10 @@ class Client constructor() {
     @NotNull
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     var products: MutableList<Product> = ArrayList()
+
+    @NotNull
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    var recommendations: MutableList<Recommendation> = ArrayList()
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

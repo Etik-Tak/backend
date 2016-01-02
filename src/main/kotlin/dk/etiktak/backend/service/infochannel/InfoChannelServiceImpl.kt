@@ -95,8 +95,8 @@ class InfoChannelServiceImpl @Autowired constructor(
     /**
      * Marks the client as following the given info channel.
      *
-     * @param client       Client
-     * @param infoChannel  Info channel
+     * @param client        Client
+     * @param infoChannel   Info channel
      * @param modifyValues  Function called with modified client and info channel
      */
     override fun followInfoChannel(client: Client, infoChannel: InfoChannel, modifyValues: (Client, InfoChannel) -> Unit) {

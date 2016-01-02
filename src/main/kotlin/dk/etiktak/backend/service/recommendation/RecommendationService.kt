@@ -25,11 +25,24 @@
 
 package dk.etiktak.backend.service.recommendation
 
+import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.recommendation.Recommendation
+import dk.etiktak.backend.model.recommendation.RecommendationScore
 import dk.etiktak.backend.model.user.Client
 
 interface RecommendationService {
 
     fun getRecommendations(client: Client, product: Product): List<Recommendation>
+
+    fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, product: Product,
+                             modifyValues: (Client, InfoChannel) -> Unit = {client, infoChannel -> Unit}): Recommendation
+
+    fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductCategory,
+                             modifyValues: (Client, InfoChannel) -> Unit = {client, infoChannel -> Unit}): Recommendation
+
+    fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productLabel: ProductLabel,
+                             modifyValues: (Client, InfoChannel) -> Unit = {client, infoChannel -> Unit}): Recommendation
 }
