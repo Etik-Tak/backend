@@ -301,6 +301,6 @@ class ProductServiceImpl @Autowired constructor(
 
         modifyValues(modifiedProduct, modifiedClient, modifiedLocation)
 
-        return productScan
+        return modifiedProductScan
     }
 }
