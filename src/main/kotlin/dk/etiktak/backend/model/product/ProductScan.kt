@@ -54,25 +54,20 @@ class ProductScan constructor() : BaseModel() {
     @JoinColumn(name = "client_id")
     var client: Client = Client()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "product_id")
     var product: Product = Product()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "timestamp", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var timestamp: Date = Date()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @OneToOne(cascade = arrayOf(CascadeType.ALL))
     var location: Location? = null
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

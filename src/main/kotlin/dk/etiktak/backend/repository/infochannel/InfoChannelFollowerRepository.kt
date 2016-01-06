@@ -23,26 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.service.security
+package dk.etiktak.backend.repository.infochannel
 
-import dk.etiktak.backend.model.user.Client
-import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
+import dk.etiktak.backend.model.infochannel.InfoChannelFollower
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-@Service
-@Transactional
-class SecurityServiceImpl : SecurityService {
+@Repository
+interface InfoChannelFollowerRepository : PagingAndSortingRepository<InfoChannelFollower, Long> {
 
-    private val logger = LoggerFactory.getLogger(SecurityServiceImpl::class.java)
-
-    override fun assertCreatorOrAdmin(callingClient: Client, creatorClient: Client) {
-
-        // Check if same client
-        if (callingClient.uuid.equals(creatorClient.uuid)) {
-            return
-        }
-
-        throw RuntimeException("Client with UUID: ${callingClient.uuid} not owner of object. Owner is client with UUID: ${creatorClient.uuid}")
-    }
+    fun findByClientUuidAndInfoChannelUuid(clientUuid: String, infoChannelUuid: String): InfoChannelFollower?
 }

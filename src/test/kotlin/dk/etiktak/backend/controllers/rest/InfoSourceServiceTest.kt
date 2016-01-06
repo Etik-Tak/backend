@@ -53,8 +53,8 @@ open class InfoSourceServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1 = createAndSaveClient()
-        client2 = createAndSaveClient()
+        client1Uuid = createAndSaveClient()
+        client2Uuid = createAndSaveClient()
     }
 
     /**
@@ -64,9 +64,8 @@ open class InfoSourceServiceTest : BaseRestTest() {
     fun createInfoSource() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
-                        .param("clientUuid", client1.uuid)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("[\"http://dr.dk\", \"https://dr.dk\", \"http://www.dr.dk\", \"https://www.dr.dk\"]")
+                        .param("clientUuid", client1Uuid)
+                        .param("urlPrefixList", "http://dr.dk, https://dr.dk, http://www.dr.dk, https://www.dr.dk")
                         .param("friendlyName", "Test Info Source 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

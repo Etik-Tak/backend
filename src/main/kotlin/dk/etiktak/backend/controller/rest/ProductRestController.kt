@@ -66,7 +66,7 @@ class ProductRestController @Autowired constructor(
         return notFoundMap()
     }
 
-    @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.GET))
+    @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProduct(
             @RequestParam clientUuid: String,
             @RequestParam name: String,
@@ -105,5 +105,33 @@ class ProductRestController @Autowired constructor(
                 productLabels)
 
         return okMap().addEntity(product, JsonFilter.CREATE)
+    }
+
+    @RequestMapping(value = "/assign/category/", method = arrayOf(RequestMethod.POST))
+    fun assignCategoryToProduct(
+            @RequestParam clientUuid: String,
+            @RequestParam productUuid: String,
+            @RequestParam categoryUuid: String): HashMap<String, Any> {
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap()
+        val productCategory = productCategoryService.getProductCategoryByUuid(categoryUuid) ?: return notFoundMap()
+
+        productService.assignCategoryToProduct(client, product, productCategory)
+
+        return okMap()
+    }
+
+    @RequestMapping(value = "/assign/label/", method = arrayOf(RequestMethod.POST))
+    fun assignLabelToProduct(
+            @RequestParam clientUuid: String,
+            @RequestParam productUuid: String,
+            @RequestParam labelUuid: String): HashMap<String, Any> {
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap()
+        val productLabel = productLabelService.getProductLabelByUuid(labelUuid) ?: return notFoundMap()
+
+        productService.assignLabelToProduct(client, product, productLabel)
+
+        return okMap()
     }
 }

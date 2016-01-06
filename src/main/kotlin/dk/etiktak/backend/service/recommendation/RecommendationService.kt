@@ -38,11 +38,11 @@ interface RecommendationService {
     fun getRecommendations(client: Client, product: Product): List<Recommendation>
 
     fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, product: Product,
-                             modifyValues: (Client, InfoChannel) -> Unit = {client, infoChannel -> Unit}): Recommendation
+                             modifyValues: (Client, InfoChannel, Product) -> Unit = {client, infoChannel, product -> Unit}): Recommendation
 
     fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductCategory,
-                             modifyValues: (Client, InfoChannel) -> Unit = {client, infoChannel -> Unit}): Recommendation
+                             modifyValues: (Client, InfoChannel, ProductCategory) -> Unit = {client, infoChannel, productCategory -> Unit}): Recommendation
 
     fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productLabel: ProductLabel,
-                             modifyValues: (Client, InfoChannel) -> Unit = {client, infoChannel -> Unit}): Recommendation
+                             modifyValues: (Client, InfoChannel, ProductLabel) -> Unit = {client, infoChannel, productLabel -> Unit}): Recommendation
 }

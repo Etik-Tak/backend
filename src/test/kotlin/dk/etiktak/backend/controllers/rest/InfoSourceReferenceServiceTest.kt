@@ -55,26 +55,23 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1 = createAndSaveClient()
-        client2 = createAndSaveClient()
+        client1Uuid = createAndSaveClient()
+        client2Uuid = createAndSaveClient()
 
-        infoSource1 = createAndSaveInfoSource(client1, listOf("http://dr.dk", "http://www.dr.dk"))
-        infoSource2 = createAndSaveInfoSource(client2, listOf("http://information.dk"))
+        infoSource1Uuid = createAndSaveInfoSource(client1Uuid, listOf("http://dr.dk", "http://www.dr.dk"))
+        infoSource2Uuid = createAndSaveInfoSource(client2Uuid, listOf("http://information.dk"))
 
-        infoChannel1 = createAndSaveInfoChannel(client1)
-        infoChannel2 = createAndSaveInfoChannel(client2)
+        infoChannel1Uuid = createAndSaveInfoChannel(client1Uuid)
+        infoChannel2Uuid = createAndSaveInfoChannel(client2Uuid)
 
-        product1 = createAndSaveProduct(client1, "12345678", Product.BarcodeType.EAN13)
-        product2 = createAndSaveProduct(client2, "87654321", Product.BarcodeType.EAN13)
+        product1Uuid = createAndSaveProduct(client1Uuid, "12345678", Product.BarcodeType.EAN13)
+        product2Uuid = createAndSaveProduct(client2Uuid, "87654321", Product.BarcodeType.EAN13)
 
-        productCategory1 = createAndSaveProductCategory(client1, product1, modifyValues = {product -> product1 = product})
-        productCategory2 = createAndSaveProductCategory(client2, product2, modifyValues = {product -> product2 = product})
+        productCategory1Uuid = createAndSaveProductCategory(client1Uuid, product1Uuid)
+        productCategory2Uuid = createAndSaveProductCategory(client2Uuid, product2Uuid)
 
-        productLabel1 = createAndSaveProductLabel(client1, product1, modifyValues = {product -> product1 = product})
-        productLabel2 = createAndSaveProductLabel(client2, product2, modifyValues = {product -> product2 = product})
-
-        infoSourceReference1 = createAndSaveInfoSourceReference(client1, infoChannel1, infoSource1, "http://dr.dk/somenews")
-        infoSourceReference2 = createAndSaveInfoSourceReference(client2, infoChannel2, infoSource2, "http://information.dk/somenews")
+        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, product1Uuid)
+        productLabel2Uuid = createAndSaveProductLabel(client2Uuid, product2Uuid)
     }
 
     /**
@@ -84,9 +81,9 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
     fun createInfoSourceReference() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
-                        .param("infoSourceUuid", infoSource1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
+                        .param("infoSourceUuid", infoSource1Uuid)
                         .param("url", "http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")
                         .param("title", "Fødevarestyrelsen: Spis ikke for meget mørk chokolade")
                         .param("summary", "Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3."))
@@ -107,9 +104,9 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
-                        .param("infoSourceUuid", infoSource1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
+                        .param("infoSourceUuid", infoSource1Uuid)
                         .param("url", "http://politiken.dk/forbrugogliv/forbrug/tjekmad/ECE2981742/eksperter-advarer-glutenfri-foedevarer-er-slet-ikke-sunde/")
                         .param("title", "Eksperter advarer: Glutenfri fødevarer er slet ikke sunde")
                         .param("summary", "Glutenfri fødevarer opfattes som sunde, men er ofte det modsatte, lyder det fra eksperter."))
@@ -121,11 +118,13 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
      */
     @Test
     fun assignProductsToExistingInfoSourceReference() {
+        infoSourceReference1Uuid = createAndSaveInfoSourceReference(client1Uuid, infoChannel1Uuid, infoSource1Uuid, "http://dr.dk/somenews")
+
         mockMvc().perform(
                 post(serviceEndpoint("assign/products/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoSourceReferenceUuid", infoSourceReference1.uuid)
-                        .param("productUuids", "${product1.uuid}, ${product2.uuid}"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoSourceReferenceUuid", infoSourceReference1Uuid)
+                        .param("productUuids", "${product1Uuid}, ${product2Uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -137,11 +136,13 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
      */
     @Test
     fun assignProductCategoriesToExistingInfoSourceReference() {
+        infoSourceReference1Uuid = createAndSaveInfoSourceReference(client1Uuid, infoChannel1Uuid, infoSource1Uuid, "http://dr.dk/somenews")
+
         mockMvc().perform(
                 post(serviceEndpoint("assign/categories/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoSourceReferenceUuid", infoSourceReference1.uuid)
-                        .param("productCategoryUuids", "${productCategory1.uuid}, ${productCategory2.uuid}"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoSourceReferenceUuid", infoSourceReference1Uuid)
+                        .param("productCategoryUuids", "${productCategory1Uuid}, ${productCategory2Uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -155,11 +156,13 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
      */
     @Test
     fun assignProductLabelsToExistingInfoSourceReference() {
+        infoSourceReference1Uuid = createAndSaveInfoSourceReference(client1Uuid, infoChannel1Uuid, infoSource1Uuid, "http://dr.dk/somenews")
+
         mockMvc().perform(
                 post(serviceEndpoint("assign/labels/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoSourceReferenceUuid", infoSourceReference1.uuid)
-                        .param("productLabelUuids", "${productLabel1.uuid}, ${productLabel2.uuid}"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoSourceReferenceUuid", infoSourceReference1Uuid)
+                        .param("productLabelUuids", "${productLabel1Uuid}, ${productLabel2Uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))

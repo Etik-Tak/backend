@@ -44,11 +44,13 @@ import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
 import org.springframework.util.StringUtils
 import java.util.*
 
 @Service
+@Transactional
 class InfoSourceReferenceServiceImpl @Autowired constructor(
         private val infoChannelService: InfoChannelService,
         private val infoSourceReferenceRepository: InfoSourceReferenceRepository,

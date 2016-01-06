@@ -46,7 +46,8 @@ class Product constructor() : BaseModel() {
 
     enum class BarcodeType {
         EAN13,
-        UPC
+        UPC,
+        UNKNOWN
     }
 
     @Id
@@ -59,7 +60,7 @@ class Product constructor() : BaseModel() {
     var uuid: String = ""
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
-    @Column(name = "barcode", unique = true)
+    @Column(name = "barcode")
     var barcode: String = ""
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))

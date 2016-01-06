@@ -33,8 +33,10 @@ import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional
 class ProductCategoryServiceImpl @Autowired constructor(
         private val productCategoryRepository: ProductCategoryRepository,
         private val clientRepository: ClientRepository) : ProductCategoryService {

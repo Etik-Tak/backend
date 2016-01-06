@@ -67,6 +67,20 @@ fun HashMap<String, Any>.addMessage(message: String) : HashMap<String, Any> {
 }
 
 /**
+ * Adds a map to the the hash map.
+ *
+ * @param key   Key
+ * @param map   Optional map
+ * @return      Self with map added
+ */
+fun HashMap<String, Any>.addMap(key: String, map: Map<String, Any>?) : HashMap<String, Any> {
+    map?.let {
+        this[key] = map
+    }
+    return this
+}
+
+/**
  * Converts the given entity to json.
  *
  * @param entity   Entity to map
@@ -240,7 +254,7 @@ private fun annotatedFields(entity: Any?): List<Field> {
         val annotatedFields: MutableList<Field> = ArrayList()
 
         var currentEntity: Class<in Any> = entity.javaClass
-        while (isEntityClass(currentEntity)) {
+        while (isEntityClass(currentEntity) || currentEntity == entity.javaClass) {
             logger.info("Scanning for JSON annotations on entity: " + currentEntity.canonicalName)
 
             for (field in currentEntity.declaredFields) {

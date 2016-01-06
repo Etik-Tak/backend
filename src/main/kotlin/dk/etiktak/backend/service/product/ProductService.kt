@@ -25,9 +25,23 @@
 
 package dk.etiktak.backend.service.product
 
+import dk.etiktak.backend.controller.rest.json.Jsonifier
+import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.product.*
+import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
 import java.util.*
+
+@Jsonifier(key = "productScanResult")
+data class ProductScanResult(
+        @Jsonifier(key = "productScan", filter = arrayOf(JsonFilter.RETRIEVE))
+        val productScan: ProductScan,
+
+        @Jsonifier(key = "product", filter = arrayOf(JsonFilter.RETRIEVE))
+        val product: Product,
+
+        @Jsonifier(key = "recommendations", filter = arrayOf(JsonFilter.RETRIEVE))
+        val recommendations: List<Recommendation>)
 
 interface ProductService {
 
@@ -45,6 +59,6 @@ interface ProductService {
     fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory, modifyValues: (Product, ProductCategory) -> Unit = {product, productCategory -> Unit})
     fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel, modifyValues: (Product, ProductLabel) -> Unit = {product, productLabel -> Unit})
 
-    fun scanProduct(barcode: String, client: Client, location: Location?): ProductScan?
+    fun scanProduct(barcode: String, client: Client, location: Location?): ProductScanResult?
     fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?, modifyValues: (ProductScan) -> Unit = {})
 }

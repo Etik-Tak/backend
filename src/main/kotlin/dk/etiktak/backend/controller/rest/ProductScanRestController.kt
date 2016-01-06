@@ -62,9 +62,9 @@ class ProductScanRestController @Autowired constructor(
             location = Location(latitude.toDouble(), longitude.toDouble())
         }
 
-        val productScan = productService.scanProduct(barcode, client, location)
+        val productScanResult = productService.scanProduct(barcode, client, location)
 
-        return okMap().addEntity(productScan, JsonFilter.RETRIEVE)
+        return okMap().addEntity(productScanResult, JsonFilter.RETRIEVE)
     }
 
     @RequestMapping(value = "/assign/location/", method = arrayOf(RequestMethod.POST))

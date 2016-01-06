@@ -58,20 +58,20 @@ class RecommendationServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1 = createAndSaveClient()
-        client2 = createAndSaveClient()
+        client1Uuid = createAndSaveClient()
+        client2Uuid = createAndSaveClient()
 
-        infoChannel1 = createAndSaveInfoChannel(client1)
-        infoChannel2 = createAndSaveInfoChannel(client2)
+        infoChannel1Uuid = createAndSaveInfoChannel(client1Uuid)
+        infoChannel2Uuid = createAndSaveInfoChannel(client2Uuid)
 
-        product1 = createAndSaveProduct(client1, "12345678", Product.BarcodeType.EAN13)
-        product2 = createAndSaveProduct(client2, "87654321", Product.BarcodeType.EAN13)
+        product1Uuid = createAndSaveProduct(client1Uuid, "12345678a", Product.BarcodeType.EAN13)
+        product2Uuid = createAndSaveProduct(client2Uuid, "12345678b", Product.BarcodeType.EAN13)
 
-        productCategory1 = createAndSaveProductCategory(client1, product1, {product -> product1 = product})
-        productCategory2 = createAndSaveProductCategory(client2, product2, {product -> product2 = product})
+        productCategory1Uuid = createAndSaveProductCategory(client1Uuid, product1Uuid)
+        productCategory2Uuid = createAndSaveProductCategory(client2Uuid, product2Uuid)
 
-        productLabel1 = createAndSaveProductLabel(client1, product1, {product -> product1 = product})
-        productLabel2 = createAndSaveProductLabel(client2, product2, {product -> product2 = product})
+        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, product1Uuid)
+        productLabel2Uuid = createAndSaveProductLabel(client2Uuid, product2Uuid)
     }
 
     /**
@@ -81,11 +81,11 @@ class RecommendationServiceTest : BaseRestTest() {
     fun createProductRecommendation() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test product 1")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productUuid", product1.uuid))
+                        .param("productUuid", product1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -95,11 +95,11 @@ class RecommendationServiceTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test product 2")
                         .param("score", RecommendationScore.THUMBS_DOWN.name)
-                        .param("productUuid", product2.uuid))
+                        .param("productUuid", product2Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -113,11 +113,11 @@ class RecommendationServiceTest : BaseRestTest() {
                 recommendations.collectionSizeOrDefault(0))
 
         Assert.assertEquals(
-                product1.uuid,
+                product1Uuid,
                 (recommendations.first() as ProductRecommendation).product.uuid)
 
         Assert.assertEquals(
-                product2.uuid,
+                product2Uuid,
                 (recommendations.last() as ProductRecommendation).product.uuid)
     }
 
@@ -128,11 +128,11 @@ class RecommendationServiceTest : BaseRestTest() {
     fun createProductCategoryRecommendation() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category 1")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productCategoryUuid", productCategory1.uuid))
+                        .param("productCategoryUuid", productCategory1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -142,11 +142,11 @@ class RecommendationServiceTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category 2")
                         .param("score", RecommendationScore.THUMBS_DOWN.name)
-                        .param("productCategoryUuid", productCategory2.uuid))
+                        .param("productCategoryUuid", productCategory2Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -160,11 +160,11 @@ class RecommendationServiceTest : BaseRestTest() {
                 recommendations.collectionSizeOrDefault(0))
 
         Assert.assertEquals(
-                productCategory1.uuid,
+                productCategory1Uuid,
                 (recommendations.first() as ProductCategoryRecommendation).productCategory.uuid)
 
         Assert.assertEquals(
-                productCategory2.uuid,
+                productCategory2Uuid,
                 (recommendations.last() as ProductCategoryRecommendation).productCategory.uuid)
     }
 
@@ -175,11 +175,11 @@ class RecommendationServiceTest : BaseRestTest() {
     fun createProductLabelRecommendation() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label 1")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productLabelUuid", productLabel1.uuid))
+                        .param("productLabelUuid", productLabel1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -189,11 +189,11 @@ class RecommendationServiceTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label 2")
                         .param("score", RecommendationScore.THUMBS_DOWN.name)
-                        .param("productLabelUuid", productLabel2.uuid))
+                        .param("productLabelUuid", productLabel2Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -207,11 +207,11 @@ class RecommendationServiceTest : BaseRestTest() {
                 recommendations.collectionSizeOrDefault(0))
 
         Assert.assertEquals(
-                productLabel1.uuid,
+                productLabel1Uuid,
                 (recommendations.first() as ProductLabelRecommendation).productLabel.uuid)
 
         Assert.assertEquals(
-                productLabel2.uuid,
+                productLabel2Uuid,
                 (recommendations.last() as ProductLabelRecommendation).productLabel.uuid)
     }
 
@@ -222,21 +222,21 @@ class RecommendationServiceTest : BaseRestTest() {
     fun cannotCreateSeveralRecommendationsForSameProductAndInfoChannel() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productUuid", product1.uuid))
+                        .param("productUuid", product1Uuid))
                 .andExpect(status().isOk)
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productUuid", product1.uuid))
+                        .param("productUuid", product1Uuid))
     }
 
     /**
@@ -246,21 +246,21 @@ class RecommendationServiceTest : BaseRestTest() {
     fun cannotCreateSeveralRecommendationsForSameProductCategoryAndInfoChannel() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productCategoryUuid", productCategory1.uuid))
+                        .param("productCategoryUuid", productCategory1Uuid))
                 .andExpect(status().isOk)
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productCategoryUuid", productCategory1.uuid))
+                        .param("productCategoryUuid", productCategory1Uuid))
     }
 
     /**
@@ -270,20 +270,20 @@ class RecommendationServiceTest : BaseRestTest() {
     fun cannotCreateSeveralRecommendationsForSameProductLabelAndInfoChannel() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productLabelUuid", productLabel1.uuid))
+                        .param("productLabelUuid", productLabel1Uuid))
                 .andExpect(status().isOk)
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productLabelUuid", productLabel1.uuid))
+                        .param("productLabelUuid", productLabel1Uuid))
     }
 }

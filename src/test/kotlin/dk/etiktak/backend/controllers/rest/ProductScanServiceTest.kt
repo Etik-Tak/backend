@@ -27,10 +27,9 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
-import dk.etiktak.backend.model.product.Location
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductScan
-import dk.etiktak.backend.model.user.Client
+import org.hamcrest.Matchers.*
 
 import org.junit.Before
 import org.junit.Test
@@ -42,14 +41,11 @@ import org.springframework.util.Assert
 import org.springframework.web.util.NestedServletException
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.notNullValue
-import org.hamcrest.Matchers.nullValue
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class ProductScanServiceTest : BaseRestTest() {
+open class ProductScanServiceTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
         return super.serviceEndpoint() + "product/scan/" + postfix
@@ -59,16 +55,32 @@ class ProductScanServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1 = createAndSaveClient()
+        client1Uuid = createAndSaveClient()
+        client2Uuid = createAndSaveClient()
 
-        product1 = createAndSaveProduct(client1, "123456789a", Product.BarcodeType.EAN13)
-        product2 = createAndSaveProduct(client1, "123456789b", Product.BarcodeType.UPC)
+        product1Uuid = createAndSaveProduct(client1Uuid, "12345678a", Product.BarcodeType.EAN13)
+        product2Uuid = createAndSaveProduct(client2Uuid, "12345678b", Product.BarcodeType.UPC)
 
-        client1 = createAndSaveClient()
-        client2 = createAndSaveClient()
+        productCategory1Uuid = createAndSaveProductCategory(client1Uuid, "Test category 1", product1Uuid)
+        productCategory2Uuid = createAndSaveProductCategory(client2Uuid, "Test category 2", product2Uuid)
 
-        location1 = createAndSaveLocation()
-        location2 = createAndSaveLocation()
+        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, "Test label 1", product1Uuid)
+        productLabel2Uuid = createAndSaveProductLabel(client2Uuid, "Test label 2", product2Uuid)
+
+        location1 = TestLocation(56.0, 60.0)
+        location2 = TestLocation(56.1, 60.1)
+
+        infoChannel1Uuid = createAndSaveInfoChannel(client1Uuid)
+        infoChannel2Uuid = createAndSaveInfoChannel(client2Uuid)
+
+        productRecommendation1Uuid = createAndSaveProductRecommendation(client1Uuid, infoChannel1Uuid, product1Uuid)
+        productRecommendation2Uuid = createAndSaveProductRecommendation(client2Uuid, infoChannel2Uuid, product2Uuid)
+
+        productCategoryRecommendation1Uuid = createAndSaveProductCategoryRecommendation(client1Uuid, infoChannel1Uuid, productCategory1Uuid)
+        productCategoryRecommendation2Uuid = createAndSaveProductCategoryRecommendation(client2Uuid, infoChannel2Uuid, productCategory2Uuid)
+
+        productLabelRecommendation1Uuid = createAndSaveProductLabelRecommendation(client1Uuid, infoChannel1Uuid, productLabel1Uuid)
+        productLabelRecommendation2Uuid = createAndSaveProductLabelRecommendation(client2Uuid, infoChannel2Uuid, productLabel2Uuid)
     }
 
     /**
@@ -78,20 +90,20 @@ class ProductScanServiceTest : BaseRestTest() {
     fun scanProductWithLocation() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
-                        .param("barcode", product1.barcode)
-                        .param("clientUuid", client1.uuid)
+                        .param("barcode", "12345678a")
+                        .param("clientUuid", client1Uuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.productScan.uuid", notNullValue()))
-                .andExpect(jsonPath("$.productScan.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.productScan.product.name", `is`(product1.name)))
-                .andExpect(jsonPath("$.productScan.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.productScan.product.barcodeType", `is`(product1.barcodeType.name)))
+                .andExpect(jsonPath("$.productScanResult.product.uuid", `is`(product1Uuid)))
+                .andExpect(jsonPath("$.productScanResult.product.name", `is`("Test product")))
+                .andExpect(jsonPath("$.productScanResult.product.barcode", `is`("12345678a")))
+                .andExpect(jsonPath("$.productScanResult.product.barcodeType", `is`(Product.BarcodeType.EAN13.name)))
+                .andExpect(jsonPath("$.productScanResult.recommendations", hasSize<Any>(3)))
 
-        validateProductScan(product1, client1, location1)
+        validateProductScan(product1Uuid, client1Uuid, location1)
     }
 
     /**
@@ -101,18 +113,17 @@ class ProductScanServiceTest : BaseRestTest() {
     fun scanProductWithoutLocation() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
-                        .param("barcode", product1.barcode)
-                        .param("clientUuid", client1.uuid))
+                        .param("barcode", "12345678a")
+                        .param("clientUuid", client1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.productScan.uuid", notNullValue()))
-                .andExpect(jsonPath("$.productScan.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.productScan.product.name", `is`(product1.name)))
-                .andExpect(jsonPath("$.productScan.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.productScan.product.barcodeType", `is`(product1.barcodeType.name)))
+                .andExpect(jsonPath("$.productScanResult.product.uuid", `is`(product1Uuid)))
+                .andExpect(jsonPath("$.productScanResult.product.name", `is`("Test product")))
+                .andExpect(jsonPath("$.productScanResult.product.barcode", `is`("12345678a")))
+                .andExpect(jsonPath("$.productScanResult.product.barcodeType", `is`(Product.BarcodeType.EAN13.name)))
 
-        validateProductScan(product1, client1)
+        validateProductScan(product1Uuid, client1Uuid)
     }
 
     /**
@@ -120,20 +131,28 @@ class ProductScanServiceTest : BaseRestTest() {
      */
     @Test
     fun assignLocationToProductScan() {
-        val productScan = scanProduct()
+        val productScanUuid = scanProduct()
 
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("productScanUuid", productScan.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("productScanUuid", productScanUuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.productScan.uuid", `is`(productScan.uuid)))
-                .andExpect(jsonPath("$.productScan.location.latitude", `is`(location1.latitude)))
-                .andExpect(jsonPath("$.productScan.location.longitude", `is`(location1.longitude)))
+                .andExpect(jsonPath("$.productScan.uuid", `is`(productScanUuid)))
+
+        val location = productScanRepository!!.findAll()!!.first()!!.location!!
+        Assert.isTrue(
+                location.latitude == location1.latitude,
+                "Expected latitude ${location1.latitude} but got ${location.latitude}"
+        )
+        Assert.isTrue(
+                location.longitude == location1.longitude,
+                "Expected longitude ${location1.longitude} but got ${location.longitude}"
+        )
     }
 
     /**
@@ -141,13 +160,13 @@ class ProductScanServiceTest : BaseRestTest() {
      */
     @Test
     fun cannotAssignLocationToProductScanWithLocationAlreadyAssigned() {
-        val productScan = scanProduct()
+        val productScanUuid = scanProduct()
 
         // Assign first location
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("productScanUuid", productScan.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("productScanUuid", productScanUuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
                 .andExpect(status().isOk)
@@ -156,8 +175,8 @@ class ProductScanServiceTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("productScanUuid", productScan.uuid)
+                        .param("clientUuid", client1Uuid)
+                        .param("productScanUuid", productScanUuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
     }
@@ -167,47 +186,43 @@ class ProductScanServiceTest : BaseRestTest() {
      */
     @Test
     fun cannotAssignEmptyLocationToProductScanWithLocationAlreadyAssigned() {
-        val productScan = scanProduct()
+        val productScanUuid = scanProduct()
 
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("productScanUuid", productScan.uuid))
+                        .param("clientUuid", client1Uuid)
+                        .param("productScanUuid", productScanUuid))
                 .andExpect(status().`is`(400))
     }
 
 
-    private fun scanProduct(): ProductScan {
-        mockMvc().perform(
-                post(serviceEndpoint(""))
-                        .param("barcode", product1.barcode)
-                        .param("clientUuid", client1.uuid))
-                .andExpect(jsonPath("$.productScan.uuid", notNullValue()))
-                .andExpect(jsonPath("$.productScan.location", nullValue()))
-
-        val productScans = productScanRepository!!.findByProductUuid(product1.uuid)
-        return productScans[0]
+    private fun scanProduct(): String {
+        return postAndExtract(serviceEndpoint(""),
+                hashMapOf(
+                        "barcode" to "12345678a",
+                        "clientUuid" to client1Uuid),
+                "$.productScanResult.productScan.uuid")
     }
 
-    private fun validateProductScan(product: Product, client: Client) {
-        validateProductScan(product, client, null)
+    private fun validateProductScan(productUuid: String, clientUuid: String) {
+        validateProductScan(productUuid, clientUuid, null)
     }
 
-    private fun validateProductScan(product: Product, client: Client, location: Location?) {
-        val productScansFromProduct = productScanRepository!!.findByProductUuid(product.uuid)
-        Assert.notEmpty(productScansFromProduct, "Did not find product scan for product with uuid: " + product.uuid)
-        Assert.isTrue(productScansFromProduct.size == 1, "More than one product scan found for product with uuid: " + product.uuid)
-        validateProductScan(productScansFromProduct[0], product, client, location)
+    private fun validateProductScan(productUuid: String, clientUuid: String, location: TestLocation?) {
+        val productScansFromProduct = productScanRepository!!.findByProductUuid(productUuid)
+        Assert.notEmpty(productScansFromProduct, "Did not find product scan for product with uuid: " + productUuid)
+        Assert.isTrue(productScansFromProduct.size == 1, "More than one product scan found for product with uuid: " + productUuid)
+        validateProductScan(productScansFromProduct[0], productUuid, clientUuid, location)
 
-        val productScansFromClient = productScanRepository.findByClientUuid(client.uuid)
-        Assert.notEmpty(productScansFromClient, "Did not find product scan for client with uuid: " + client.uuid)
-        Assert.isTrue(productScansFromClient.size == 1, "More than one product scan found for client with uuid: " + client.uuid)
-        validateProductScan(productScansFromClient[0], product, client, location)
+        val productScansFromClient = productScanRepository.findByClientUuid(clientUuid)
+        Assert.notEmpty(productScansFromClient, "Did not find product scan for client with uuid: " + clientUuid)
+        Assert.isTrue(productScansFromClient.size == 1, "More than one product scan found for client with uuid: " + clientUuid)
+        validateProductScan(productScansFromClient[0], productUuid, clientUuid, location)
     }
 
-    private fun validateProductScan(productScan: ProductScan, product: Product, client: Client, location: Location?) {
-        Assert.isTrue(productScan.product.uuid == product.uuid, "Product scan's product was not the product expected!")
-        Assert.isTrue(productScan.client.uuid == client.uuid, "Product scan's client was not the client expected!")
+    private fun validateProductScan(productScan: ProductScan, productUuid: String, clientUuid: String, location: TestLocation?) {
+        Assert.isTrue(productScan.product.uuid == productUuid, "Product scan's product was not the product expected!")
+        Assert.isTrue(productScan.client.uuid == clientUuid, "Product scan's client was not the client expected!")
         if (location != null && productScan.location != null) {
             Assert.isTrue(productScan.location!!.latitude == location.latitude, "Latitude for product scan not correct")
             Assert.isTrue(productScan.location!!.longitude == location.longitude, "Longitude for product scan not correct")

@@ -52,11 +52,8 @@ class ProductCategoryServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1 = createAndSaveClient()
-        client2 = createAndSaveClient()
-
-        productCategory1 = createAndSaveProductCategory(client1)
-        productCategory2 = createAndSaveProductCategory(client2)
+        client1Uuid = createAndSaveClient()
+        client2Uuid = createAndSaveClient()
     }
 
     /**
@@ -66,7 +63,7 @@ class ProductCategoryServiceTest : BaseRestTest() {
     fun createProductCategory() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
+                        .param("clientUuid", client1Uuid)
                         .param("name", "Chokolade"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -80,13 +77,15 @@ class ProductCategoryServiceTest : BaseRestTest() {
      */
     @Test
     fun retrieveProductCategory() {
+        productCategory1Uuid = createAndSaveProductCategory(client1Uuid, "Pandekager")
+
         mockMvc().perform(
                 get(serviceEndpoint("/"))
-                        .param("uuid", productCategory1.uuid))
+                        .param("uuid", productCategory1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.productCategory.uuid", `is`(productCategory1.uuid)))
-                .andExpect(jsonPath("$.productCategory.name", `is`(productCategory1.name)))
+                .andExpect(jsonPath("$.productCategory.uuid", `is`(productCategory1Uuid)))
+                .andExpect(jsonPath("$.productCategory.name", `is`("Pandekager")))
     }
 }

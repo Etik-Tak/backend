@@ -32,6 +32,9 @@ import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
+import dk.etiktak.backend.repository.product.ProductCategoryRepository
+import dk.etiktak.backend.repository.product.ProductLabelRepository
+import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.recommendation.ProductCategoryRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
@@ -41,14 +44,19 @@ import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
 import java.util.*
 
 @Service
+@Transactional
 class RecommendationServiceImpl @Autowired constructor(
         private val productRecommendationRepository: ProductRecommendationRepository,
         private val productCategoryRecommendationRepository: ProductCategoryRecommendationRepository,
         private val productLabelRecommendationRepository: ProductLabelRecommendationRepository,
+        private val productRepository: ProductRepository,
+        private val productCategoryRepository: ProductCategoryRepository,
+        private val productLabelRepository: ProductLabelRepository,
         private val infoChannelService: InfoChannelService,
         private val clientRepository: ClientRepository,
         private val infoChannelRepository: InfoChannelRepository) : RecommendationService {
@@ -56,7 +64,7 @@ class RecommendationServiceImpl @Autowired constructor(
     private val logger = LoggerFactory.getLogger(RecommendationServiceImpl::class.java)
 
     override fun getRecommendations(client: Client, product: Product): List<Recommendation> {
-        return getRecommendations(infoChannelsFromClient(client), product)
+        return getRecommendations(followedInfoChannelsFromClient(client), product)
     }
 
     fun getRecommendations(infoChannels: List<InfoChannel>, product: Product): List<Recommendation> {
@@ -89,7 +97,7 @@ class RecommendationServiceImpl @Autowired constructor(
      * @return               Created recommendation
      */
     override fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, product: Product,
-                                      modifyValues: (Client, InfoChannel) -> Unit): Recommendation {
+                                      modifyValues: (Client, InfoChannel, Product) -> Unit): Recommendation {
 
         // Security checks
         Assert.isTrue(
@@ -102,12 +110,15 @@ class RecommendationServiceImpl @Autowired constructor(
 
         setupRecommendation(client, infoChannel, recommendation, summary, score)
 
+        product.recommendations.add(recommendation)
+
         // Save it all
         val modifiedClient = clientRepository.save(client)
         val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        val modifiedProduct = productRepository.save(product)
         val modifiedRecommandation = productRecommendationRepository.save(recommendation)
 
-        modifyValues(modifiedClient, modifiedInfoChannel)
+        modifyValues(modifiedClient, modifiedInfoChannel, modifiedProduct)
 
         return modifiedRecommandation
     }
@@ -124,7 +135,7 @@ class RecommendationServiceImpl @Autowired constructor(
      * @return                 Created recommendation
      */
     override fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductCategory,
-                                      modifyValues: (Client, InfoChannel) -> Unit): Recommendation {
+                                      modifyValues: (Client, InfoChannel, ProductCategory) -> Unit): Recommendation {
 
         // Security checks
         Assert.isTrue(
@@ -137,12 +148,15 @@ class RecommendationServiceImpl @Autowired constructor(
 
         setupRecommendation(client, infoChannel, recommendation, summary, score)
 
+        productCategory.recommendations.add(recommendation)
+
         // Save it all
         val modifiedClient = clientRepository.save(client)
         val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        val modifiedProductCategory = productCategoryRepository.save(productCategory)
         val modifiedRecommandation = productCategoryRecommendationRepository.save(recommendation)
 
-        modifyValues(modifiedClient, modifiedInfoChannel)
+        modifyValues(modifiedClient, modifiedInfoChannel, modifiedProductCategory)
 
         return modifiedRecommandation
     }
@@ -159,7 +173,7 @@ class RecommendationServiceImpl @Autowired constructor(
      * @return                 Created recommendation
      */
     override fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productLabel: ProductLabel,
-                                      modifyValues: (Client, InfoChannel) -> Unit): Recommendation {
+                                      modifyValues: (Client, InfoChannel, ProductLabel) -> Unit): Recommendation {
 
         // Security checks
         Assert.isTrue(
@@ -172,12 +186,15 @@ class RecommendationServiceImpl @Autowired constructor(
 
         setupRecommendation(client, infoChannel, recommendation, summary, score)
 
+        productLabel.recommendations.add(recommendation)
+
         // Save it all
         val modifiedClient = clientRepository.save(client)
         val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        val modifiedProductLabel = productLabelRepository.save(productLabel)
         val modifiedRecommandation = productLabelRecommendationRepository.save(recommendation)
 
-        modifyValues(modifiedClient, modifiedInfoChannel)
+        modifyValues(modifiedClient, modifiedInfoChannel, modifiedProductLabel)
 
         return modifiedRecommandation
     }
@@ -198,10 +215,15 @@ class RecommendationServiceImpl @Autowired constructor(
         infoChannel.recommendations.add(recommendation)
     }
 
-    private fun infoChannelsFromClient(client: Client): List<InfoChannel> {
+    private fun followedInfoChannelsFromClient(client: Client): List<InfoChannel> {
         val infoChannels: MutableList<InfoChannel> = ArrayList()
-        for (infoChannelClient in client.infoChannelClients) {
-            infoChannels.add(infoChannelClient.infoChannel)
+        /*for (infoChannelClient in client.infoChannelClients) {
+            if (infoChannelClient.roles.contains(AclRole.FOLLOWER)) {
+                infoChannels.add(infoChannelClient.infoChannel)
+            }
+        }*/
+        for (infoChannelFollower in client.followingInfoChannels) {
+            infoChannels.add(infoChannelFollower.infoChannel)
         }
         return infoChannels
     }

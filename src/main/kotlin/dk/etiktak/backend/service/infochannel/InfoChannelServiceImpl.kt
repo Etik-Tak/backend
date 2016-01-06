@@ -28,20 +28,25 @@ package dk.etiktak.backend.service.infochannel
 import dk.etiktak.backend.model.acl.AclRole
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
+import dk.etiktak.backend.model.infochannel.InfoChannelFollower
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
+import dk.etiktak.backend.repository.infochannel.InfoChannelFollowerRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional
 class InfoChannelServiceImpl @Autowired constructor(
         private val clientRepository: ClientRepository,
         private val infoChannelRepository: InfoChannelRepository,
-        private val infoChannelClientRepository: InfoChannelClientRepository) : InfoChannelService {
+        private val infoChannelClientRepository: InfoChannelClientRepository,
+        private val infoChannelFollowerRepository: InfoChannelFollowerRepository) : InfoChannelService {
 
     private val logger = LoggerFactory.getLogger(InfoChannelServiceImpl::class.java)
 
@@ -76,16 +81,22 @@ class InfoChannelServiceImpl @Autowired constructor(
         infoChannelClient.uuid = CryptoUtil().uuid()
         infoChannelClient.client = client
         infoChannelClient.infoChannel = infoChannel
-        infoChannelClient.infoChannelRoles.add(AclRole.OWNER)
+        infoChannelClient.roles.add(AclRole.OWNER)
 
         // Glue them together
         infoChannel.infoChannelClients.add(infoChannelClient)
         client.infoChannelClients.add(infoChannelClient)
 
         // Save them all
-        val modifiedClient = clientRepository.save(client)
-        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
-        infoChannelClientRepository.save(infoChannelClient)
+        var modifiedClient = clientRepository.save(client)
+        var modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        val modifiedInfoChannelClient = infoChannelClientRepository.save(infoChannelClient)
+
+        modifiedClient = clientRepository.findByUuid(modifiedClient.uuid)
+
+        // Follow ones own info channel
+        followInfoChannel(modifiedClient, modifiedInfoChannel,
+                modifyValues = {client, infoChannel -> modifiedClient = client; modifiedInfoChannel = infoChannel})
 
         modifyValues(modifiedClient)
 
@@ -102,20 +113,19 @@ class InfoChannelServiceImpl @Autowired constructor(
     override fun followInfoChannel(client: Client, infoChannel: InfoChannel, modifyValues: (Client, InfoChannel) -> Unit) {
 
         // Create info channel client
-        val infoChannelClient = InfoChannelClient()
-        infoChannelClient.uuid = CryptoUtil().uuid()
-        infoChannelClient.client = client
-        infoChannelClient.infoChannel = infoChannel
-        infoChannelClient.infoChannelRoles.add(AclRole.FOLLOWER)
+        val infoChannelFollower = InfoChannelFollower()
+        infoChannelFollower.uuid = CryptoUtil().uuid()
+        infoChannelFollower.client = client
+        infoChannelFollower.infoChannel = infoChannel
 
         // Glue them together
-        infoChannel.followers.add(infoChannelClient)
-        client.followingInfoChannels.add(infoChannelClient)
+        infoChannel.followers.add(infoChannelFollower)
+        client.followingInfoChannels.add(infoChannelFollower)
 
         // Save them all
         val modifiedClient = clientRepository.save(client)
         val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
-        infoChannelClientRepository.save(infoChannelClient)
+        infoChannelFollowerRepository.save(infoChannelFollower)
 
         modifyValues(modifiedClient, modifiedInfoChannel)
     }

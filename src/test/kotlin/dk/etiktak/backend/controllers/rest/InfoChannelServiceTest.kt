@@ -53,11 +53,8 @@ open class InfoChannelServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1 = createAndSaveClient()
-        client2 = createAndSaveClient()
-
-        infoChannel1 = createAndSaveInfoChannel(client1)
-        infoChannel2 = createAndSaveInfoChannel(client2)
+        client1Uuid = createAndSaveClient()
+        client2Uuid = createAndSaveClient()
     }
 
     /**
@@ -67,7 +64,7 @@ open class InfoChannelServiceTest : BaseRestTest() {
     fun createInfoChannel() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
-                        .param("clientUuid", client1.uuid)
+                        .param("clientUuid", client1Uuid)
                         .param("name", "Test Info Channel 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -82,43 +79,46 @@ open class InfoChannelServiceTest : BaseRestTest() {
     @Test
     @Transactional
     fun followInfoChannel() {
-        mockMvc().perform(
-                post(serviceEndpoint("follow/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel1.uuid))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+        // TODO! Fix test! Make not transactional!
+
+        // Create info channels
+        infoChannel1Uuid = createAndSaveInfoChannel(client1Uuid)
+        infoChannel2Uuid = createAndSaveInfoChannel(client2Uuid)
+
+        // Verify clients are automatically following their own created info channel
+        Assert.assertEquals(
+                1,
+                infoChannelRepository!!.findByUuid(infoChannel1Uuid)!!.followers.size)
 
         Assert.assertEquals(
                 1,
-                infoChannelService!!.getInfoChannelByUuid(infoChannel1.uuid)!!.followers.size
-        )
+                infoChannelRepository.findByUuid(infoChannel2Uuid)!!.followers.size)
 
+        // Test follow others info channel
         mockMvc().perform(
                 post(serviceEndpoint("follow/"))
-                        .param("clientUuid", client1.uuid)
-                        .param("infoChannelUuid", infoChannel2.uuid))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-
-        Assert.assertEquals(
-                1,
-                infoChannelService.getInfoChannelByUuid(infoChannel2.uuid)!!.followers.size
-        )
-
-        mockMvc().perform(
-                post(serviceEndpoint("follow/"))
-                        .param("clientUuid", client2.uuid)
-                        .param("infoChannelUuid", infoChannel2.uuid))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel2Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
 
         Assert.assertEquals(
                 2,
-                infoChannelService.getInfoChannelByUuid(infoChannel2.uuid)!!.followers.size
+                infoChannelRepository.findByUuid(infoChannel2Uuid)!!.followers.size
+        )
+
+        mockMvc().perform(
+                post(serviceEndpoint("follow/"))
+                        .param("clientUuid", client2Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+
+        Assert.assertEquals(
+                2,
+                infoChannelRepository.findByUuid(infoChannel1Uuid)!!.followers.size
         )
     }
 }

@@ -24,7 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a specific list of roles for a client in relationship to a info channel.
+ * Represents a specific list of roles for a client follower in relationship to a info channel.
  */
 
 package dk.etiktak.backend.model.infochannel
@@ -38,9 +38,9 @@ import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
-@Entity(name = "info_channel_clients")
-@Jsonifier(key = "infoChannelClient")
-class InfoChannelClient constructor() : BaseModel() {
+@Entity(name = "info_channel_followers")
+@Jsonifier(key = "infoChannelFollower")
+class InfoChannelFollower constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -60,10 +60,6 @@ class InfoChannelClient constructor() : BaseModel() {
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_channel_id")
     var infoChannel: InfoChannel = InfoChannel()
-
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
-    @ElementCollection
-    var roles: MutableSet<AclRole> = HashSet()
 
     @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

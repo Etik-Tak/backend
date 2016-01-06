@@ -46,6 +46,14 @@ class InfoChannelRestController @Autowired constructor(
         private val infoChannelService: InfoChannelService,
         private val clientService: ClientService) : BaseRestController() {
 
+    @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
+    fun createInfoChannel(
+            @RequestParam uuid: String): HashMap<String, Any> {
+        val infoChannel = infoChannelService.getInfoChannelByUuid(uuid)
+
+        return okMap().addEntity(infoChannel, JsonFilter.CREATE)
+    }
+
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoChannel(
             @RequestParam clientUuid: String,

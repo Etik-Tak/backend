@@ -64,7 +64,7 @@ class InfoChannel constructor() : BaseModel() {
 
     @NotNull
     @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
-    var followers: MutableList<InfoChannelClient> = ArrayList()
+    var followers: MutableList<InfoChannelFollower> = ArrayList()
 
     @NotNull
     @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)

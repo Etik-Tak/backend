@@ -25,15 +25,11 @@
 
 package dk.etiktak.backend.controllers.rest
 
-import dk.etiktak.backend.model.infochannel.InfoChannel
-import dk.etiktak.backend.model.infosource.InfoSource
-import dk.etiktak.backend.model.infosource.InfoSourceReference
-import dk.etiktak.backend.model.product.Location
+import com.jayway.jsonpath.JsonPath
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductCategory
-import dk.etiktak.backend.model.product.ProductLabel
-import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.model.recommendation.RecommendationScore
 import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
+import dk.etiktak.backend.repository.infochannel.InfoChannelFollowerRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
@@ -50,15 +46,6 @@ import dk.etiktak.backend.repository.recommendation.RecommendationRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository
-import dk.etiktak.backend.service.client.ClientService
-import dk.etiktak.backend.service.infochannel.InfoChannelService
-import dk.etiktak.backend.service.infosource.InfoSourceReferenceService
-import dk.etiktak.backend.service.infosource.InfoSourceService
-import dk.etiktak.backend.service.product.ProductCategoryService
-import dk.etiktak.backend.service.product.ProductLabelService
-import dk.etiktak.backend.service.product.ProductService
-import dk.etiktak.backend.util.CryptoUtil
-import dk.etiktak.backend.util.getWithScale
 import org.junit.After
 import org.junit.Assert
 import org.junit.Rule
@@ -68,11 +55,15 @@ import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.web.context.WebApplicationContext
 import java.nio.charset.Charset
 
 import org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup
-import java.util.*
+
+data class TestLocation(val latitude: Double, val longitude: Double)
 
 open class BaseRestTest {
 
@@ -82,29 +73,38 @@ open class BaseRestTest {
 
 
 
-    var product1: Product = Product()
-    var product2: Product = Product()
+    var client1Uuid = ""
+    var client2Uuid = ""
 
-    var productCategory1: ProductCategory = ProductCategory()
-    var productCategory2: ProductCategory = ProductCategory()
+    var product1Uuid = ""
+    var product2Uuid = ""
 
-    var productLabel1: ProductLabel = ProductLabel()
-    var productLabel2: ProductLabel = ProductLabel()
+    var productCategory1Uuid = ""
+    var productCategory2Uuid = ""
 
-    var client1: Client = Client()
-    var client2: Client = Client()
+    var productLabel1Uuid = ""
+    var productLabel2Uuid = ""
 
-    var infoSource1: InfoSource = InfoSource()
-    var infoSource2: InfoSource = InfoSource()
+    var infoSource1Uuid = ""
+    var infoSource2Uuid = ""
 
-    var infoSourceReference1: InfoSourceReference = InfoSourceReference()
-    var infoSourceReference2: InfoSourceReference = InfoSourceReference()
+    var infoSourceReference1Uuid = ""
+    var infoSourceReference2Uuid = ""
 
-    var infoChannel1: InfoChannel = InfoChannel()
-    var infoChannel2: InfoChannel = InfoChannel()
+    var infoChannel1Uuid = ""
+    var infoChannel2Uuid = ""
 
-    var location1: Location = Location()
-    var location2: Location = Location()
+    var location1: TestLocation = TestLocation(0.0, 0.0)
+    var location2: TestLocation = TestLocation(0.0, 0.0)
+
+    var productRecommendation1Uuid = ""
+    var productRecommendation2Uuid = ""
+
+    var productCategoryRecommendation1Uuid = ""
+    var productCategoryRecommendation2Uuid = ""
+
+    var productLabelRecommendation1Uuid = ""
+    var productLabelRecommendation2Uuid = ""
 
     var smsChallenge: String = ""
 
@@ -138,6 +138,9 @@ open class BaseRestTest {
     val infoChannelRepository: InfoChannelRepository? = null
 
     @Autowired
+    val infoChannelFollowerRepository: InfoChannelFollowerRepository? = null
+
+    @Autowired
     val infoChannelClientRepository: InfoChannelClientRepository? = null
 
     @Autowired
@@ -150,24 +153,6 @@ open class BaseRestTest {
     val infoSourceReferenceRepository: InfoSourceReferenceRepository? = null
 
     @Autowired
-    val productService: ProductService? = null
-
-    @Autowired
-    val productCategoryService: ProductCategoryService? = null
-
-    @Autowired
-    val productLabelService: ProductLabelService? = null
-
-    @Autowired
-    val infoChannelService: InfoChannelService? = null
-
-    @Autowired
-    val infoSourceService: InfoSourceService? = null
-
-    @Autowired
-    val infoSourceReferenceService: InfoSourceReferenceService? = null
-
-    @Autowired
     val recommendationRepository: RecommendationRepository? = null
 
     @Autowired
@@ -178,9 +163,6 @@ open class BaseRestTest {
 
     @Autowired
     val productLabelRecommendationRepository: ProductLabelRecommendationRepository? = null
-
-    @Autowired
-    val clientService: ClientService? = null
 
     @get:Rule
     public val exception = ExpectedException.none()
@@ -211,6 +193,7 @@ open class BaseRestTest {
         infoSourceReferenceRepository!!.deleteAll()
         infoSourceRepository!!.deleteAll()
 
+        infoChannelFollowerRepository!!.deleteAll()
         infoChannelClientRepository!!.deleteAll()
         infoChannelRepository!!.deleteAll()
 
@@ -226,56 +209,150 @@ open class BaseRestTest {
         smsVerificationRepository!!.deleteAll()
     }
 
-    fun createAndSaveProduct(creator: Client, barcode: String, barcodeType: Product.BarcodeType): Product {
-        return productService!!.createProduct(creator, barcode, barcodeType, CryptoUtil().uuid(), ArrayList())
+    fun createAndSaveProduct(clientUuid: String, barcode: String, barcodeType: Product.BarcodeType, name: String = "Test product"): String {
+        return postAndExtract(ProductServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "name" to name,
+                        "barcode" to barcode,
+                        "barcodeType" to barcodeType.name),
+                "$.product.uuid")
     }
 
-    fun createAndSaveProductCategory(creator: Client, product: Product? = null, modifyValues: (Product) -> Unit = {}): ProductCategory {
-        val productCategory = productCategoryService!!.createProductCategory(creator, CryptoUtil().uuid(), {})
-        product?.let {
-            productService!!.assignCategoryToProduct(product.creator, product, productCategory, {product, productCategory -> modifyValues(product)})
+    fun createAndSaveProductCategory(clientUuid: String, name: String, productUuid: String? = null): String {
+        val categoryUuid = postAndExtract(ProductCategoryServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "name" to name),
+                "$.productCategory.uuid")
+
+        productUuid?.let {
+            postAndExtract(ProductServiceTest().serviceEndpoint("assign/category/"),
+                    hashMapOf(
+                            "clientUuid" to clientUuid,
+                            "productUuid" to productUuid,
+                            "categoryUuid" to categoryUuid),
+                    "$.message")
         }
-        return productCategory
+
+        return categoryUuid
     }
 
-    fun createAndSaveProductLabel(creator: Client, product: Product? = null, modifyValues: (Product) -> Unit = {}): ProductLabel {
-        val productLabel = productLabelService!!.createProductLabel(creator, CryptoUtil().uuid())
-        product?.let {
-            productService!!.assignLabelToProduct(product.creator, product, productLabel, {product, productLabel -> modifyValues(product)})
+    fun createAndSaveProductLabel(clientUuid: String, name: String, productUuid: String? = null): String {
+        val labelUuid = postAndExtract(ProductLabelServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "name" to name),
+                "$.productLabel.uuid")
+
+        productUuid?.let {
+            postAndExtract(ProductServiceTest().serviceEndpoint("assign/label/"),
+                    hashMapOf(
+                            "clientUuid" to clientUuid,
+                            "productUuid" to productUuid,
+                            "labelUuid" to labelUuid),
+                    "$.message")
         }
-        return productLabel
+
+        return labelUuid
     }
 
-    fun createAndSaveInfoChannel(client: Client): InfoChannel {
-        return infoChannelService!!.createInfoChannel(client, CryptoUtil().uuid())
+    fun createAndSaveInfoChannel(clientUuid: String, name: String = "Test info channel"): String {
+        return postAndExtract(InfoChannelServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "name" to name),
+                "$.infoChannel.uuid")
     }
 
-    fun createAndSaveInfoSource(client: Client, urlPrefixes: List<String>): InfoSource {
-        return infoSourceService!!.createInfoSource(client, urlPrefixes, CryptoUtil().uuid())
+    fun createAndSaveInfoSource(clientUuid: String, urlPrefixes: List<String>): String {
+        var prefixString = ""
+        var delimiter = ""
+        for (urlPrefix in urlPrefixes) {
+            prefixString += delimiter
+            prefixString += urlPrefix
+            delimiter = ","
+        }
+        return postAndExtract(InfoSourceServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "friendlyName" to "Test info source",
+                        "urlPrefixList" to prefixString),
+                "$.infoSource.uuid")
     }
 
-    fun createAndSaveInfoSourceReference(client: Client, infoChannel: InfoChannel, infoSource: InfoSource, url: String): InfoSourceReference {
-        return infoSourceReferenceService!!.createInfoSourceReference(
-                client,
-                infoChannel,
-                infoSource,
-                url,
-                "Some title",
-                "Some summary.")
-
+    fun createAndSaveInfoSourceReference(clientUuid: String, infoChannelUuid: String, infoSourceUuid: String, url: String): String {
+        return postAndExtract(InfoSourceReferenceServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "infoChannelUuid" to infoChannelUuid,
+                        "infoSourceUuid" to infoSourceUuid,
+                        "url" to url,
+                        "title" to "Some title",
+                        "summary" to "Some summary"),
+                "$.infoSourceReference.uuid")
     }
 
-    fun createAndSaveClient(): Client {
-        return clientService!!.createClient();
+    fun createAndSaveProductRecommendation(clientUuid: String, infoChannelUuid: String, productUuid: String): String {
+        return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "infoChannelUuid" to infoChannelUuid,
+                        "productUuid" to productUuid,
+                        "score" to RecommendationScore.THUMBS_UP.name,
+                        "summary" to "Some summary"),
+                "$.recommendation.uuid")
     }
 
-    fun createAndSaveLocation(): Location {
-        val location = Location()
-        location.latitude = Math.random().getWithScale(6)
-        location.longitude = Math.random().getWithScale(6)
-        locationRepository!!.save(location)
-        return location
+    fun createAndSaveProductCategoryRecommendation(clientUuid: String, infoChannelUuid: String, productCategoryUuid: String): String {
+        return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "infoChannelUuid" to infoChannelUuid,
+                        "productCategoryUuid" to productCategoryUuid,
+                        "score" to RecommendationScore.THUMBS_UP.name,
+                        "summary" to "Some summary"),
+                "$.recommendation.uuid")
     }
+
+    fun createAndSaveProductLabelRecommendation(clientUuid: String, infoChannelUuid: String, productLabelUuid: String): String {
+        return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "infoChannelUuid" to infoChannelUuid,
+                        "productLabelUuid" to productLabelUuid,
+                        "score" to RecommendationScore.THUMBS_UP.name,
+                        "summary" to "Some summary"),
+                "$.recommendation.uuid")
+    }
+
+    fun createAndSaveClient(): String {
+        return postAndExtract(ClientServiceTest().serviceEndpoint("create/"),
+                hashMapOf(),
+                "$.client.uuid")
+    }
+
+    fun createLocation(latitude: Double, longitude: Double): TestLocation {
+        return TestLocation(latitude, longitude)
+    }
+
+    fun postAndExtract(url: String, params: Map<String, String>, jsonKey: String): String {
+        return callAndExtract(post(url), params, jsonKey)
+    }
+
+    fun getAndExtract(url: String, params: Map<String, String>, jsonKey: String): String {
+        return callAndExtract(get(url), params, jsonKey)
+    }
+
+    fun callAndExtract(requestBuilder: MockHttpServletRequestBuilder, params: Map<String, String>, jsonKey: String): String {
+        for ((key, value) in params) {
+            requestBuilder.param(key, value)
+        }
+        val result = mockMvc().perform(requestBuilder).andReturn()
+        val json = result.response.contentAsString
+        return JsonPath.read(json, jsonKey)
+    }
+
 
 
 

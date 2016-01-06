@@ -33,18 +33,22 @@ import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductScanRepository
 import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.recommendation.RecommendationService
 import dk.etiktak.backend.service.security.SecurityService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
 import org.springframework.util.StringUtils
 import java.util.*
 
 @Service
+@Transactional
 class ProductServiceImpl @Autowired constructor(
         private val productRepository: ProductRepository,
+        private val recommendationService: RecommendationService,
         private val productScanRepository: ProductScanRepository,
         private val clientRepository: ClientRepository,
         private val locationRepository: LocationRepository,
@@ -128,8 +132,8 @@ class ProductServiceImpl @Autowired constructor(
         var modifiedProduct = productRepository.save(product)
 
         // Assign barcode
-        if (barcode != null && barcodeType != null) {
-            assignBarcodeToProduct(client, product, barcode, barcodeType, {product -> modifiedProduct = product})
+        if (barcode != null) {
+            assignBarcodeToProduct(modifiedClient, modifiedProduct, barcode, barcodeType ?: Product.BarcodeType.UNKNOWN, { product -> modifiedProduct = product})
         }
 
         modifyValues(modifiedClient, modifiedProductCategories, modifiedProductLabels)
@@ -209,7 +213,7 @@ class ProductServiceImpl @Autowired constructor(
      * @param location    Optional location
      * @return            Created product scan entry (which contains the actual product)
      */
-    override fun scanProduct(barcode: String, client: Client, location: Location?): ProductScan? {
+    override fun scanProduct(barcode: String, client: Client, location: Location?): ProductScanResult? {
 
         // Check for empty fields
         Assert.isTrue(
@@ -220,13 +224,19 @@ class ProductServiceImpl @Autowired constructor(
                 client,
                 "Client must be provided")
 
+        // Find product
+        var product = getProductByBarcode(barcode) ?: return null
+
         // Create product scan
-        val product = getProductByBarcode(barcode)
-        if (product != null) {
-            return createProductScan(product, client, location)
-        } else {
-            return null
-        }
+        var modifiedProduct = product
+        var modifiedClient = client
+
+        val productScan = createProductScan(product, client, location, modifyValues = {product, client, location -> modifiedProduct = product; modifiedClient = client})
+
+        // Retrieve recommendations
+        val recommendations = recommendationService.getRecommendations(modifiedClient, modifiedProduct)
+
+        return ProductScanResult(productScan, modifiedProduct, recommendations)
     }
 
     /**
@@ -258,12 +268,14 @@ class ProductServiceImpl @Autowired constructor(
     /**
      * Creates a product scan, glues it together with product and client, and saves it all.
      *
-     * @param product     Product
-     * @param client      Client
-     * @param location    Optional location
-     * @return            Product scan
+     * @param product        Product
+     * @param client         Client
+     * @param location       Optional location
+     * @param modifyValues   Function called with modified product, client and location
+     * @return               Product scan
      */
-    private fun createProductScan(product: Product, client: Client, location: Location?): ProductScan {
+    private fun createProductScan(product: Product, client: Client, location: Location?,
+                                  modifyValues: (Product, Client, Location?) -> Unit = {product, client, location -> Unit}): ProductScan {
 
         // Create product scan
         val productScan = ProductScan()
@@ -279,12 +291,15 @@ class ProductServiceImpl @Autowired constructor(
         product.productScans.add(productScan)
 
         // Save if all
+        var modifiedLocation: Location? = null
         if (location != null) {
-            locationRepository.save(location)
+            modifiedLocation = locationRepository.save(location)
         }
-        productScanRepository.save(productScan)
-        productRepository.save(product)
-        clientRepository.save(client)
+        val modifiedProductScan = productScanRepository.save(productScan)
+        val modifiedProduct = productRepository.save(product)
+        val modifiedClient = clientRepository.save(client)
+
+        modifyValues(modifiedProduct, modifiedClient, modifiedLocation)
 
         return productScan
     }

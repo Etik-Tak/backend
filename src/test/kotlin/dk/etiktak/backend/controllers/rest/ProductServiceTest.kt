@@ -36,6 +36,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
 @RunWith(SpringJUnit4ClassRunner::class)
@@ -51,16 +52,17 @@ class ProductServiceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1 = createAndSaveClient()
+        client1Uuid = createAndSaveClient()
+        client2Uuid = createAndSaveClient()
 
-        product1 = createAndSaveProduct(client1, "123456789a", Product.BarcodeType.EAN13)
-        product2 = createAndSaveProduct(client2, "123456789b", Product.BarcodeType.UPC)
+        product1Uuid = createAndSaveProduct(client1Uuid, "12345678a", Product.BarcodeType.EAN13)
+        product2Uuid = createAndSaveProduct(client2Uuid, "12345678b", Product.BarcodeType.UPC)
 
-        productCategory1 = createAndSaveProductCategory(client1, product1, {product -> product1 = product})
-        productCategory2 = createAndSaveProductCategory(client2, product1, {product -> product1 = product})
+        productCategory1Uuid = createAndSaveProductCategory(client1Uuid, "Product category 1", product1Uuid)
+        productCategory2Uuid = createAndSaveProductCategory(client1Uuid, "Product category 2", product1Uuid)
 
-        productLabel1 = createAndSaveProductLabel(client1, product1, {product -> product1 = product})
-        productLabel2 = createAndSaveProductLabel(client2, product1, {product -> product1 = product})
+        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, "Product label 1", product1Uuid)
+        productLabel2Uuid = createAndSaveProductLabel(client1Uuid, "Product label 2", product1Uuid)
     }
 
     /**
@@ -70,13 +72,13 @@ class ProductServiceTest : BaseRestTest() {
     fun retrieveProductByUuid() {
         mockMvc().perform(
                 get(serviceEndpoint(""))
-                        .param("uuid", product1.uuid))
+                        .param("uuid", product1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product1.barcodeType.name)))
+                .andExpect(jsonPath("$.product.uuid", `is`(product1Uuid)))
+                .andExpect(jsonPath("$.product.barcode", `is`("12345678a")))
+                .andExpect(jsonPath("$.product.barcodeType", `is`(Product.BarcodeType.EAN13.name)))
                 .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
                 .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
     }
@@ -88,13 +90,13 @@ class ProductServiceTest : BaseRestTest() {
     fun retrieveProductByEan13Barcode() {
         mockMvc().perform(
                 get(serviceEndpoint(""))
-                        .param("barcode", product1.barcode))
+                        .param("barcode", "12345678a"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1.uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product1.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product1.barcodeType.name)))
+                .andExpect(jsonPath("$.product.uuid", `is`(product1Uuid)))
+                .andExpect(jsonPath("$.product.barcode", `is`("12345678a")))
+                .andExpect(jsonPath("$.product.barcodeType", `is`(Product.BarcodeType.EAN13.name)))
     }
 
     /**
@@ -104,13 +106,13 @@ class ProductServiceTest : BaseRestTest() {
     fun retrieveProductByUPCBarcode() {
         mockMvc().perform(
                 get(serviceEndpoint("/"))
-                        .param("barcode", product2.barcode))
+                        .param("barcode", "12345678b"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product2.uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`(product2.barcode)))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(product2.barcodeType.name)))
+                .andExpect(jsonPath("$.product.uuid", `is`(product2Uuid)))
+                .andExpect(jsonPath("$.product.barcode", `is`("12345678b")))
+                .andExpect(jsonPath("$.product.barcodeType", `is`(Product.BarcodeType.UPC.name)))
     }
 
     /**
@@ -119,13 +121,13 @@ class ProductServiceTest : BaseRestTest() {
     @Test
     fun createProduct() {
         mockMvc().perform(
-                get(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
                         .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
-                        .param("categoryUuidList", "${productCategory1.uuid}, ${productCategory2.uuid}")
-                        .param("labelUuidList", "${productLabel1.uuid}, ${productLabel2.uuid}"))
+                        .param("categoryUuidList", "${productCategory1Uuid}, ${productCategory2Uuid}")
+                        .param("labelUuidList", "${productLabel1Uuid}, ${productLabel2Uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -142,11 +144,11 @@ class ProductServiceTest : BaseRestTest() {
     @Test
     fun createProductWithoutBarcode() {
         mockMvc().perform(
-                get(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
                         .param("name", "Coca Cola")
-                        .param("categoryUuidList", "${productCategory1.uuid}, ${productCategory2.uuid}")
-                        .param("labelUuidList", "${productLabel1.uuid}, ${productLabel2.uuid}"))
+                        .param("categoryUuidList", "${productCategory1Uuid}, ${productCategory2Uuid}")
+                        .param("labelUuidList", "${productLabel1Uuid}, ${productLabel2Uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -162,12 +164,12 @@ class ProductServiceTest : BaseRestTest() {
     @Test
     fun createProductWithoutCategories() {
         mockMvc().perform(
-                get(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
                         .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
-                        .param("labelUuidList", "${productLabel1.uuid}, ${productLabel2.uuid}"))
+                        .param("labelUuidList", "${productLabel1Uuid}, ${productLabel2Uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
@@ -184,12 +186,12 @@ class ProductServiceTest : BaseRestTest() {
     @Test
     fun createProductWithoutLabels() {
         mockMvc().perform(
-                get(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1.uuid)
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
                         .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
-                        .param("categoryUuidList", "${productCategory1.uuid}, ${productCategory2.uuid}"))
+                        .param("categoryUuidList", "${productCategory1Uuid}, ${productCategory2Uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
