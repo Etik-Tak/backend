@@ -29,8 +29,6 @@
 
 package dk.etiktak.backend.model.product
 
-import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
@@ -38,7 +36,6 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "product_scans")
-@Jsonifier(key = "productScan")
 class ProductScan constructor() : BaseModel() {
 
     @Id
@@ -46,7 +43,6 @@ class ProductScan constructor() : BaseModel() {
     @Column(name = "product_scan_id")
     var id: Long = 0
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 

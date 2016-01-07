@@ -29,16 +29,12 @@
 
 package dk.etiktak.backend.model.recommendation
 
-import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infochannel.InfoChannel
-import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 
 enum class RecommendationScore {
     THUMBS_UP,
@@ -51,7 +47,6 @@ enum class RecommendationScore {
         UniqueConstraint(columnNames = arrayOf("product_id", "info_channel_id")),
         UniqueConstraint(columnNames = arrayOf("product_category_id", "info_channel_id")),
         UniqueConstraint(columnNames = arrayOf("product_label_id", "info_channel_id"))))
-@Jsonifier(key = "recommendation")
 open class Recommendation constructor() : BaseModel() {
 
     @Id
@@ -59,7 +54,6 @@ open class Recommendation constructor() : BaseModel() {
     @Column(name = "recommendation_id")
     var id: Long = 0
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
@@ -67,24 +61,19 @@ open class Recommendation constructor() : BaseModel() {
     @JoinColumn(name = "client_id")
     var creator: Client = Client()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "summary")
     var summary: String = ""
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "score")
     var score: RecommendationScore = RecommendationScore.NEUTRAL
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_channel_id")
     var infoChannel: InfoChannel = InfoChannel()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

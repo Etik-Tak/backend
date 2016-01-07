@@ -29,14 +29,14 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.JsonFilter
-import dk.etiktak.backend.controller.rest.json.addEntity
+import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.product.Location
-import dk.etiktak.backend.model.product.ProductScan
+import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
+import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
+import dk.etiktak.backend.model.recommendation.ProductRecommendation
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
@@ -62,9 +62,28 @@ class ProductScanRestController @Autowired constructor(
             location = Location(latitude.toDouble(), longitude.toDouble())
         }
 
-        val productScanResult = productService.scanProduct(barcode, client, location)
+        val productScanResult = productService.scanProduct(barcode, client, location) ?: return notFoundMap()
 
-        return okMap().addEntity(productScanResult, JsonFilter.RETRIEVE)
+        return okMap()
+                .add("scan", hashMapOf<String, Any>()
+                        .add("uuid", productScanResult.productScan.uuid)
+                        .add("product", hashMapOf<String, Any>()
+                                .add("uuid", productScanResult.product.uuid)
+                                .add("name", productScanResult.product.name)
+                                .add("categories", arrayListOf<Any>().add(productScanResult.product.productCategories, { category -> hashMapOf<String, Any>()
+                                        .add("uuid", category.uuid)
+                                        .add("name", category.name) }))
+                                .add("labels", arrayListOf<Any>().add(productScanResult.product.productLabels, { label -> hashMapOf<String, Any>()
+                                        .add("uuid", label.uuid)
+                                        .add("name", label.name) })))
+                        .add("recommendations", arrayListOf<Any>().add(productScanResult.recommendations, { recommendation -> hashMapOf<String, Any>()
+                                .add("uuid", recommendation.uuid)
+                                .add("summary", recommendation.summary)
+                                .add("score", recommendation.score.name)
+                                .add("product", if (recommendation.javaClass == ProductRecommendation::class.java) (recommendation as ProductRecommendation).product.uuid else null)
+                                .add("productCategory", if (recommendation.javaClass == ProductCategoryRecommendation::class.java) (recommendation as ProductCategoryRecommendation).productCategory.uuid else null)
+                                .add("productLabel", if (recommendation.javaClass == ProductLabelRecommendation::class.java) (recommendation as ProductLabelRecommendation).productLabel.uuid else null) }))
+                )
     }
 
     @RequestMapping(value = "/assign/location/", method = arrayOf(RequestMethod.POST))
@@ -80,6 +99,9 @@ class ProductScanRestController @Autowired constructor(
 
         productService.assignLocationToProductScan(client, productScan, location, {scan -> productScan = scan})
 
-        return okMap().addEntity(productScan, JsonFilter.CREATE)
+        return okMap()
+                .add("scan", hashMapOf<String, Any>()
+                        .add("uuid", productScan.uuid)
+                )
     }
 }

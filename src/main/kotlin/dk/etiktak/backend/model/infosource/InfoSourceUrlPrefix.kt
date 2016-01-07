@@ -29,15 +29,12 @@
 
 package dk.etiktak.backend.model.infosource
 
-import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
 @Entity(name = "info_source_url_prefixes")
-@Jsonifier(key = "infoSourceUrlPrefix")
 class InfoSourceUrlPrefix constructor() : BaseModel() {
 
     @Id
@@ -45,11 +42,9 @@ class InfoSourceUrlPrefix constructor() : BaseModel() {
     @Column(name = "infosourceurlprefix_id")
     var id: Long = 0
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "url_prefix", unique = true)
     var urlPrefix: String = ""
 
@@ -57,11 +52,9 @@ class InfoSourceUrlPrefix constructor() : BaseModel() {
     @JoinColumn(name = "infosource_id")
     var infoSource: InfoSource = InfoSource()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

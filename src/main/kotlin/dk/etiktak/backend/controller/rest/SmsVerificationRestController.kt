@@ -29,8 +29,8 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.JsonFilter
-import dk.etiktak.backend.controller.rest.json.addEntity
+import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.user.SmsVerification
 import dk.etiktak.backend.service.client.SmsVerificationService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -51,7 +51,7 @@ class SmsVerificationRestController @Autowired constructor(
             @RequestParam mobileNumber: String,
             @RequestParam password: String): HashMap<String, Any> {
         val smsVerification = smsVerificationService.requestSmsChallenge(clientUuid, mobileNumber, password)
-        return okMap().addEntity(smsVerification, JsonFilter.CREATE)
+        return smsVerificationOkMap(smsVerification)
     }
 
     @RequestMapping(value = "/request/recovery/", method = arrayOf(RequestMethod.POST))
@@ -60,7 +60,7 @@ class SmsVerificationRestController @Autowired constructor(
             @RequestParam mobileNumber: String,
             @RequestParam password: String): HashMap<String, Any> {
         val smsVerification = smsVerificationService.requestRecoverySmsChallenge(mobileNumber, password)
-        return okMap().addEntity(smsVerification, JsonFilter.CREATE)
+        return smsVerificationOkMap(smsVerification)
     }
 
     @RequestMapping(value = "/verify/", method = arrayOf(RequestMethod.POST))
@@ -70,6 +70,15 @@ class SmsVerificationRestController @Autowired constructor(
                            @RequestParam smsChallenge: String,
                            @RequestParam clientChallenge: String): HashMap<String, Any> {
         val client = smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge)
-        return okMap().addEntity(client, JsonFilter.CREATE)
+        return okMap()
     }
+
+
+    fun smsVerificationOkMap(smsVerification: SmsVerification): HashMap<String, Any> {
+        return okMap()
+                .add("smsVerification", hashMapOf<String, Any>()
+                        .add("challenge", smsVerification.clientChallenge)
+                        .add("status", smsVerification.status.name))
+    }
+
 }

@@ -29,8 +29,6 @@
 
 package dk.etiktak.backend.model.infosource
 
-import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -38,7 +36,6 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "info_sources")
-@Jsonifier(key = "infoSource")
 class InfoSource constructor() : BaseModel() {
 
     @Id
@@ -46,15 +43,12 @@ class InfoSource constructor() : BaseModel() {
     @Column(name = "infosource_id")
     var id: Long = 0
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "friendly_name")
     var friendlyName: String = ""
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE), extractFieldFromReference = "urlPrefix")
     @NotNull
     @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)
     var urlPrefixes: MutableList<InfoSourceUrlPrefix> = ArrayList()
@@ -63,11 +57,9 @@ class InfoSource constructor() : BaseModel() {
     @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

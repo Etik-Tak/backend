@@ -33,9 +33,6 @@
 
 package dk.etiktak.backend.model.user
 
-import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonFilter
-import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infochannel.InfoChannelFollower
 import dk.etiktak.backend.model.infosource.InfoSourceReference
@@ -50,7 +47,6 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "clients")
-@Jsonifier(key = "client")
 class Client constructor() {
 
     @Id
@@ -58,14 +54,12 @@ class Client constructor() {
     @Column(name = "client_id")
     var id: Long = 0
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
     @Column(name = "mobileNumberHash_passwordHash_hashed", nullable = true, unique = true)
     var mobileNumberHashPasswordHashHashed: String? = null
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @Column(name = "verified", nullable = false)
     var verified: Boolean = false
 
@@ -76,7 +70,6 @@ class Client constructor() {
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var infoChannelClients: MutableList<InfoChannelClient> = ArrayList()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var followingInfoChannels: MutableList<InfoChannelFollower> = ArrayList()
 
@@ -99,11 +92,9 @@ class Client constructor() {
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     var recommendations: MutableList<Recommendation> = ArrayList()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

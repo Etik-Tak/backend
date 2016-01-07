@@ -90,7 +90,7 @@ class InfoChannelServiceImpl @Autowired constructor(
         // Save them all
         var modifiedClient = clientRepository.save(client)
         var modifiedInfoChannel = infoChannelRepository.save(infoChannel)
-        val modifiedInfoChannelClient = infoChannelClientRepository.save(infoChannelClient)
+        infoChannelClientRepository.save(infoChannelClient)
 
         modifiedClient = clientRepository.findByUuid(modifiedClient.uuid)
 

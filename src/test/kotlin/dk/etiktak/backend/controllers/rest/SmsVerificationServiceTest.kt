@@ -202,7 +202,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.client.uuid", `is`(client1Uuid)))
     }
 
     /**
@@ -350,7 +349,6 @@ class SmsVerificationServiceTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.client.uuid", `is`(client1Uuid)))
     }
 
     /**

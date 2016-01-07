@@ -29,8 +29,6 @@
 
 package dk.etiktak.backend.model.product
 
-import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
@@ -40,7 +38,6 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "product_labels")
-@Jsonifier(key = "productLabel")
 class ProductLabel constructor() : BaseModel() {
 
     @Id
@@ -48,16 +45,13 @@ class ProductLabel constructor() : BaseModel() {
     @Column(name = "product_label_id")
     var id: Long = 0
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
     var creator: Client = Client()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "name")
     var name: String = ""
 
@@ -70,11 +64,9 @@ class ProductLabel constructor() : BaseModel() {
     @OneToMany(mappedBy = "productLabel", fetch = FetchType.LAZY)
     var recommendations: MutableList<ProductLabelRecommendation> = ArrayList()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

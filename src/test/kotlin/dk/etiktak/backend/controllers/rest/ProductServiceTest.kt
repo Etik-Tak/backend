@@ -55,8 +55,8 @@ class ProductServiceTest : BaseRestTest() {
         client1Uuid = createAndSaveClient()
         client2Uuid = createAndSaveClient()
 
-        product1Uuid = createAndSaveProduct(client1Uuid, "12345678a", Product.BarcodeType.EAN13)
-        product2Uuid = createAndSaveProduct(client2Uuid, "12345678b", Product.BarcodeType.UPC)
+        product1Uuid = createAndSaveProduct(client1Uuid, "12345678a", Product.BarcodeType.EAN13, "Test product 1")
+        product2Uuid = createAndSaveProduct(client2Uuid, "12345678b", Product.BarcodeType.UPC, "Test product 2")
 
         productCategory1Uuid = createAndSaveProductCategory(client1Uuid, "Product category 1", product1Uuid)
         productCategory2Uuid = createAndSaveProductCategory(client1Uuid, "Product category 2", product1Uuid)
@@ -77,10 +77,9 @@ class ProductServiceTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.product.uuid", `is`(product1Uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`("12345678a")))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(Product.BarcodeType.EAN13.name)))
-                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
+                .andExpect(jsonPath("$.product.name", `is`("Test product 1")))
                 .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
+                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
     }
 
     /**
@@ -95,8 +94,9 @@ class ProductServiceTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.product.uuid", `is`(product1Uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`("12345678a")))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(Product.BarcodeType.EAN13.name)))
+                .andExpect(jsonPath("$.product.name", `is`("Test product 1")))
+                .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
+                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
     }
 
     /**
@@ -111,8 +111,9 @@ class ProductServiceTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.product.uuid", `is`(product2Uuid)))
-                .andExpect(jsonPath("$.product.barcode", `is`("12345678b")))
-                .andExpect(jsonPath("$.product.barcodeType", `is`(Product.BarcodeType.UPC.name)))
+                .andExpect(jsonPath("$.product.name", `is`("Test product 2")))
+                .andExpect(jsonPath("$.product.categories", hasSize<Any>(0)))
+                .andExpect(jsonPath("$.product.labels", hasSize<Any>(0)))
     }
 
     /**
@@ -132,8 +133,6 @@ class ProductServiceTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
-                .andExpect(jsonPath("$.product.barcode", `is`("12345678")))
-                .andExpect(jsonPath("$.product.barcodeType", `is`("EAN13")))
                 .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
                 .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
     }
@@ -153,8 +152,6 @@ class ProductServiceTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
-                .andExpect(jsonPath("$.product.barcode", isEmptyOrNullString()))
-                .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
                 .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
     }
 
@@ -174,8 +171,6 @@ class ProductServiceTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
-                .andExpect(jsonPath("$.product.barcode", `is`("12345678")))
-                .andExpect(jsonPath("$.product.barcodeType", `is`("EAN13")))
                 .andExpect(jsonPath("$.product.categories", hasSize<Any>(0)))
                 .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
     }
@@ -196,8 +191,6 @@ class ProductServiceTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
-                .andExpect(jsonPath("$.product.barcode", `is`("12345678")))
-                .andExpect(jsonPath("$.product.barcodeType", `is`("EAN13")))
                 .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
                 .andExpect(jsonPath("$.product.labels", hasSize<Any>(0)))
     }

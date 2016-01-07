@@ -29,8 +29,6 @@
 
 package dk.etiktak.backend.model.infosource
 
-import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Product
@@ -43,7 +41,6 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "info_source_reference")
-@Jsonifier(key = "infoSourceReference")
 class InfoSourceReference constructor() : BaseModel() {
 
     @Id
@@ -51,19 +48,15 @@ class InfoSourceReference constructor() : BaseModel() {
     @Column(name = "info_source_reference_id")
     var id: Long = 0
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "url")
     var url: String = ""
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "title")
     var title: String = ""
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "summary")
     var summary: String = ""
 
@@ -71,17 +64,14 @@ class InfoSourceReference constructor() : BaseModel() {
     @JoinColumn(name = "client_id")
     var creator: Client = Client()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_channel_id")
     var infoChannel: InfoChannel = InfoChannel()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_source_id")
     var infoSource: InfoSource = InfoSource()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="infoSourceReference_product",
@@ -90,7 +80,6 @@ class InfoSourceReference constructor() : BaseModel() {
     @Column(name = "products")
     var products: MutableSet<Product> = HashSet()
 
-    @Jsonifier(key = "categories", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="infoSourceReference_productCategory",
@@ -99,7 +88,6 @@ class InfoSourceReference constructor() : BaseModel() {
     @Column(name = "product_categories")
     var productCategories: MutableSet<ProductCategory> = HashSet()
 
-    @Jsonifier(key = "labels", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="infoSourceReference_productLabel",
@@ -108,11 +96,9 @@ class InfoSourceReference constructor() : BaseModel() {
     @Column(name = "product_labels")
     var productLabels: MutableSet<ProductLabel> = HashSet()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 

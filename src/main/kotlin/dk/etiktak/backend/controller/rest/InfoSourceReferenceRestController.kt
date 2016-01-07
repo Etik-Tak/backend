@@ -29,8 +29,8 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.JsonFilter
-import dk.etiktak.backend.controller.rest.json.addEntity
+import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
@@ -70,7 +70,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
 
         val infoSourceReference = infoSourceReferenceService.createInfoSourceReference(client, infoChannel, infoSource, url, title, summary)
 
-        return okMap().addEntity(infoSourceReference, JsonFilter.CREATE)
+        return infoSourceReferenceOkMap(infoSourceReference)
     }
 
     @RequestMapping(value = "/assign/products/", method = arrayOf(RequestMethod.POST))
@@ -92,7 +92,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
                 infoSourceReference,
                 products)
 
-        return okMap().addEntity(infoSourceReference, JsonFilter.CREATE)
+        return infoSourceReferenceOkMap(infoSourceReference)
     }
 
     @RequestMapping(value = "/assign/categories/", method = arrayOf(RequestMethod.POST))
@@ -114,7 +114,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
                 infoSourceReference,
                 productCategories)
 
-        return okMap().addEntity(infoSourceReference, JsonFilter.CREATE)
+        return infoSourceReferenceOkMap(infoSourceReference)
     }
 
     @RequestMapping(value = "/assign/labels/", method = arrayOf(RequestMethod.POST))
@@ -136,6 +136,21 @@ class InfoSourceReferenceRestController @Autowired constructor(
                 infoSourceReference,
                 productLabels)
 
-        return okMap().addEntity(infoSourceReference, JsonFilter.CREATE)
+        return infoSourceReferenceOkMap(infoSourceReference)
+    }
+
+    fun infoSourceReferenceOkMap(infoSourceReference: InfoSourceReference): HashMap<String, Any> {
+        return okMap()
+                .add("infoSourceReference", hashMapOf<String, Any>()
+                        .add("uuid", infoSourceReference.uuid)
+                        .add("url", infoSourceReference.url)
+                        .add("title", infoSourceReference.title)
+                        .add("summary", infoSourceReference.summary)
+                        .add("categories", arrayListOf<Any>().add(infoSourceReference.productCategories, { category -> hashMapOf<String, Any>()
+                                .add("uuid", category.uuid)
+                                .add("name", category.name) }))
+                        .add("labels", arrayListOf<Any>().add(infoSourceReference.productLabels, { label -> hashMapOf<String, Any>()
+                                .add("uuid", label.uuid)
+                                .add("name", label.name) })))
     }
 }

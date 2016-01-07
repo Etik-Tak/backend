@@ -29,10 +29,9 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.JsonFilter
-import dk.etiktak.backend.controller.rest.json.addEntity
+import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.service.client.ClientService
-import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -52,7 +51,7 @@ class ProductLabelRestController @Autowired constructor(
             @RequestParam uuid: String): HashMap<String, Any> {
         val productLabel = productLabelService.getProductLabelByUuid(uuid) ?: return notFoundMap()
 
-        return okMap().addEntity(productLabel, JsonFilter.RETRIEVE)
+        return productLabelOkMap(productLabel)
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
@@ -63,6 +62,13 @@ class ProductLabelRestController @Autowired constructor(
 
         val productLabel = productLabelService.createProductLabel(client, name)
 
-        return okMap().addEntity(productLabel, JsonFilter.CREATE)
+        return productLabelOkMap(productLabel)
+    }
+
+    fun productLabelOkMap(productLabel: ProductLabel): HashMap<String, Any> {
+        return okMap()
+                .add("productLabel", hashMapOf<String, Any>()
+                        .add("uuid", productLabel.uuid)
+                        .add("name", productLabel.name))
     }
 }

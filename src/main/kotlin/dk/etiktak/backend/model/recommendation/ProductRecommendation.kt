@@ -29,17 +29,13 @@
 
 package dk.etiktak.backend.model.recommendation
 
-import dk.etiktak.backend.controller.rest.json.JsonFilter
-import dk.etiktak.backend.controller.rest.json.Jsonifier
 import dk.etiktak.backend.model.product.Product
 import javax.persistence.*
 
 @Entity
 @DiscriminatorValue("Product")
-@Jsonifier(key = "recommendation")
 class ProductRecommendation : Recommendation() {
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @ManyToOne(optional = true)
     @JoinColumn(name = "product_id")
     var product: Product = Product()

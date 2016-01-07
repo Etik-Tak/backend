@@ -29,8 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.JsonFilter
-import dk.etiktak.backend.controller.rest.json.addEntity
+import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
@@ -39,7 +38,6 @@ import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
 import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -57,11 +55,11 @@ class ProductRestController @Autowired constructor(
             @RequestParam(required = false) barcode: String? = null): HashMap<String, Any> {
         uuid?.let {
             val product = productService.getProductByUuid(uuid) ?: return notFoundMap()
-            return okMap().addEntity(product, JsonFilter.RETRIEVE)
+            return productOkMap(product)
         }
         barcode?.let {
             val product = productService.getProductByBarcode(barcode) ?: return notFoundMap()
-            return okMap().addEntity(product, JsonFilter.RETRIEVE)
+            return productOkMap(product)
         }
         return notFoundMap()
     }
@@ -104,7 +102,7 @@ class ProductRestController @Autowired constructor(
                 productCategories,
                 productLabels)
 
-        return okMap().addEntity(product, JsonFilter.CREATE)
+        return productOkMap(product)
     }
 
     @RequestMapping(value = "/assign/category/", method = arrayOf(RequestMethod.POST))
@@ -133,5 +131,18 @@ class ProductRestController @Autowired constructor(
         productService.assignLabelToProduct(client, product, productLabel)
 
         return okMap()
+    }
+
+    fun productOkMap(product: Product): HashMap<String, Any> {
+        return okMap()
+                .add("product", hashMapOf<String, Any>()
+                        .add("uuid", product.uuid)
+                        .add("name", product.name)
+                        .add("categories", arrayListOf<Any>().add(product.productCategories, { category -> hashMapOf<String, Any>()
+                                .add("uuid", category.uuid)
+                                .add("name", category.name) }))
+                        .add("labels", arrayListOf<Any>().add(product.productLabels, { label -> hashMapOf<String, Any>()
+                                .add("uuid", label.uuid)
+                                .add("name", label.name) })))
     }
 }

@@ -29,8 +29,7 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.JsonFilter
-import dk.etiktak.backend.controller.rest.json.addEntity
+import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infosource.InfoSourceService
 import org.springframework.beans.factory.annotation.Autowired
@@ -52,6 +51,10 @@ class InfoSourceRestController @Autowired constructor(
 
         val infoSource = infoSourceService.createInfoSource(client, urlPrefixList, friendlyName)
 
-        return okMap().addEntity(infoSource, JsonFilter.CREATE)
+        return okMap()
+                .add("infoSource", hashMapOf<String, Any>()
+                        .add("uuid", infoSource.uuid)
+                        .add("friendlyName", infoSource.friendlyName)
+                        .add("urlPrefixes", arrayListOf<Any>().add(infoSource.urlPrefixes, { urlPrefix -> urlPrefix.urlPrefix })))
     }
 }

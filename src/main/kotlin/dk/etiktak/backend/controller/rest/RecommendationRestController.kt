@@ -29,8 +29,8 @@
 
 package dk.etiktak.backend.controller.rest
 
-import dk.etiktak.backend.controller.rest.json.JsonFilter
-import dk.etiktak.backend.controller.rest.json.addEntity
+import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.recommendation.RecommendationScore
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
@@ -65,7 +65,7 @@ class RecommendationRestController @Autowired constructor(
 
         val recommendations = recommendationService.getRecommendations(client, product)
 
-        return okMap().addEntity(recommendations, JsonFilter.RETRIEVE)
+        return recommendationsOkMap(recommendations)
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
@@ -87,23 +87,39 @@ class RecommendationRestController @Autowired constructor(
         productUuid?.let {
             val product = productService.getProductByUuid(productUuid) ?: return notFoundMap()
             val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, product)
-            return okMap().addEntity(recommendation, JsonFilter.CREATE)
+            return recommendationOkMap(recommendation)
         }
 
         // Create product category recommendation
         productCategoryUuid?.let {
             val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: return notFoundMap()
             val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productCategory)
-            return okMap().addEntity(recommendation, JsonFilter.CREATE)
+            return recommendationOkMap(recommendation)
         }
 
         // Create product label recommendation
         productLabelUuid?.let {
             val productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: return notFoundMap()
             val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productLabel)
-            return okMap().addEntity(recommendation, JsonFilter.CREATE)
+            return recommendationOkMap(recommendation)
         }
 
         return notFoundMap()
+    }
+
+    fun recommendationOkMap(recommendation: Recommendation): HashMap<String, Any> {
+        return okMap()
+                .add("recommendation", hashMapOf<String, Any>()
+                        .add("uuid", recommendation.uuid)
+                        .add("summary", recommendation.summary)
+                        .add("score", recommendation.score.name))
+    }
+
+    fun recommendationsOkMap(recommendations: List<Recommendation>): HashMap<String, Any> {
+        return okMap()
+                .add("recommendations", arrayListOf<Any>().add(recommendations, { recommendation -> hashMapOf<String, Any>()
+                        .add("uuid", recommendation.uuid)
+                        .add("summary", recommendation.summary)
+                        .add("score", recommendation.score.name) }))
     }
 }

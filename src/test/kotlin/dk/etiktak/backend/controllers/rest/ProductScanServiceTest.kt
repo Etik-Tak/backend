@@ -97,11 +97,12 @@ open class ProductScanServiceTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.productScanResult.product.uuid", `is`(product1Uuid)))
-                .andExpect(jsonPath("$.productScanResult.product.name", `is`("Test product")))
-                .andExpect(jsonPath("$.productScanResult.product.barcode", `is`("12345678a")))
-                .andExpect(jsonPath("$.productScanResult.product.barcodeType", `is`(Product.BarcodeType.EAN13.name)))
-                .andExpect(jsonPath("$.productScanResult.recommendations", hasSize<Any>(3)))
+                .andExpect(jsonPath("$.scan.uuid", notNullValue()))
+                .andExpect(jsonPath("$.scan.product.uuid", `is`(product1Uuid)))
+                .andExpect(jsonPath("$.scan.product.name", `is`("Test product")))
+                .andExpect(jsonPath("$.scan.product.categories", hasSize<Any>(1)))
+                .andExpect(jsonPath("$.scan.product.labels", hasSize<Any>(1)))
+                .andExpect(jsonPath("$.scan.recommendations", hasSize<Any>(3)))
 
         validateProductScan(product1Uuid, client1Uuid, location1)
     }
@@ -118,10 +119,8 @@ open class ProductScanServiceTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.productScanResult.product.uuid", `is`(product1Uuid)))
-                .andExpect(jsonPath("$.productScanResult.product.name", `is`("Test product")))
-                .andExpect(jsonPath("$.productScanResult.product.barcode", `is`("12345678a")))
-                .andExpect(jsonPath("$.productScanResult.product.barcodeType", `is`(Product.BarcodeType.EAN13.name)))
+                .andExpect(jsonPath("$.scan.product.uuid", `is`(product1Uuid)))
+                .andExpect(jsonPath("$.scan.product.name", `is`("Test product")))
 
         validateProductScan(product1Uuid, client1Uuid)
     }
@@ -142,7 +141,7 @@ open class ProductScanServiceTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
-                .andExpect(jsonPath("$.productScan.uuid", `is`(productScanUuid)))
+                .andExpect(jsonPath("$.scan.uuid", `is`(productScanUuid)))
 
         val location = productScanRepository!!.findAll()!!.first()!!.location!!
         Assert.isTrue(
@@ -201,7 +200,7 @@ open class ProductScanServiceTest : BaseRestTest() {
                 hashMapOf(
                         "barcode" to "12345678a",
                         "clientUuid" to client1Uuid),
-                "$.productScanResult.productScan.uuid")
+                "$.scan.uuid")
     }
 
     private fun validateProductScan(productUuid: String, clientUuid: String) {

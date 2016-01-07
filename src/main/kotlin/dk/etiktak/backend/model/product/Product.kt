@@ -29,8 +29,6 @@
 
 package dk.etiktak.backend.model.product
 
-import dk.etiktak.backend.controller.rest.json.Jsonifier
-import dk.etiktak.backend.controller.rest.json.JsonFilter
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.ProductRecommendation
@@ -41,7 +39,6 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "products")
-@Jsonifier(key = "product")
 class Product constructor() : BaseModel() {
 
     enum class BarcodeType {
@@ -55,19 +52,15 @@ class Product constructor() : BaseModel() {
     @Column(name = "product_id")
     var id: Long = 0
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "barcode")
     var barcode: String = ""
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "barcode_type")
     var barcodeType: BarcodeType = BarcodeType.EAN13
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @Column(name = "name")
     var name: String = ""
 
@@ -75,7 +68,6 @@ class Product constructor() : BaseModel() {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
 
-    @Jsonifier(key = "categories", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="product_productCategory",
@@ -84,7 +76,6 @@ class Product constructor() : BaseModel() {
     @Column(name = "product_categories")
     var productCategories: MutableSet<ProductCategory> = HashSet()
 
-    @Jsonifier(key = "labels", filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="product_productLabel",
@@ -103,11 +94,9 @@ class Product constructor() : BaseModel() {
     @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE, JsonFilter.CREATE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime: Date = Date()
 
-    @Jsonifier(filter = arrayOf(JsonFilter.RETRIEVE))
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var modificationTime: Date = Date()
 
