@@ -138,11 +138,11 @@ class ProductRestController @Autowired constructor(
                 .add("product", hashMapOf<String, Any>()
                         .add("uuid", product.uuid)
                         .add("name", product.name)
-                        .add("categories", arrayListOf<Any>().add(product.productCategories, { category -> hashMapOf<String, Any>()
+                        .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
                                 .add("uuid", category.uuid)
-                                .add("name", category.name) }))
-                        .add("labels", arrayListOf<Any>().add(product.productLabels, { label -> hashMapOf<String, Any>()
+                                .add("name", category.name) })
+                        .add("labels", product.productLabels, { label -> hashMapOf<String, Any>()
                                 .add("uuid", label.uuid)
-                                .add("name", label.name) })))
+                                .add("name", label.name) }))
     }
 }

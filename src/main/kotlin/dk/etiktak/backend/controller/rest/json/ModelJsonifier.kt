@@ -36,6 +36,7 @@ private val logger = LoggerFactory.getLogger("Jsonifier")
 
 /**
  * Adds a message to the hash map.
+ *
  * @param message  Message to add
  * @return         Self with message mapped
  */
@@ -44,6 +45,13 @@ fun HashMap<String, Any>.addMessage(message: String) : HashMap<String, Any> {
     return this
 }
 
+/**
+ * Adds an entity to the map. If entity is null the function is idempotence.
+ *
+ * @param jsonKey   Key to map entity to
+ * @param entity    Entity to map
+ * @return          Map with entity mapped
+ */
 fun <T> HashMap<String, T>.add(jsonKey: String, entity: T?) : HashMap<String, T> {
     entity?.let {
         this[jsonKey] = entity
@@ -51,11 +59,20 @@ fun <T> HashMap<String, T>.add(jsonKey: String, entity: T?) : HashMap<String, T>
     return this
 }
 
-fun <T, S> ArrayList<T>.add(entities: Collection<S>?, transformer: (S) -> T) : ArrayList<T> {
+/**
+ * Transforms and adds a list of entities to the list. If entities is null the function is idempotence.
+ *
+ * @param jsonKey   Key to map array to
+ * @param entity    Entity to map list to
+ * @return          Hash map with entity list mapped
+ */
+fun <T> HashMap<String, Any>.add(jsonKey: String, entities: Collection<T>?, transformer: (T) -> Any) : HashMap<String, Any> {
     entities?.let {
+        val list: MutableList<Any> = arrayListOf()
         for (entity in entities) {
-            this.add(transformer(entity))
+            list.add(transformer(entity))
         }
+        this[jsonKey] = list
     }
     return this
 }

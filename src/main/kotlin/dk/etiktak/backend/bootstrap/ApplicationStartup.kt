@@ -36,6 +36,6 @@ class ApplicationStartup : ApplicationListener<ContextRefreshedEvent> {
     private val logger = LoggerFactory.getLogger(ApplicationStartup::class.java)
 
     override fun onApplicationEvent(event: ContextRefreshedEvent) {
-        logger.info("Bootstrapping application...");
+        logger.info("Bootstrapping application...")
     }
 }

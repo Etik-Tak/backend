@@ -38,7 +38,6 @@ import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 
 @Entity(name = "info_source_reference")
 class InfoSourceReference constructor() : BaseModel() {

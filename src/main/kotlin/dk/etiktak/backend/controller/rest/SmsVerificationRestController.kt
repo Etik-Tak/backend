@@ -69,7 +69,7 @@ class SmsVerificationRestController @Autowired constructor(
                            @RequestParam password: String,
                            @RequestParam smsChallenge: String,
                            @RequestParam clientChallenge: String): HashMap<String, Any> {
-        val client = smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge)
+        smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge)
         return okMap()
     }
 

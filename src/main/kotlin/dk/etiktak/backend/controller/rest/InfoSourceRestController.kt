@@ -55,6 +55,6 @@ class InfoSourceRestController @Autowired constructor(
                 .add("infoSource", hashMapOf<String, Any>()
                         .add("uuid", infoSource.uuid)
                         .add("friendlyName", infoSource.friendlyName)
-                        .add("urlPrefixes", arrayListOf<Any>().add(infoSource.urlPrefixes, { urlPrefix -> urlPrefix.urlPrefix })))
+                        .add("urlPrefixes", infoSource.urlPrefixes, { urlPrefix -> urlPrefix.urlPrefix }))
     }
 }

@@ -117,9 +117,9 @@ class RecommendationRestController @Autowired constructor(
 
     fun recommendationsOkMap(recommendations: List<Recommendation>): HashMap<String, Any> {
         return okMap()
-                .add("recommendations", arrayListOf<Any>().add(recommendations, { recommendation -> hashMapOf<String, Any>()
+                .add("recommendations", recommendations, { recommendation -> hashMapOf<String, Any>()
                         .add("uuid", recommendation.uuid)
                         .add("summary", recommendation.summary)
-                        .add("score", recommendation.score.name) }))
+                        .add("score", recommendation.score.name) })
     }
 }

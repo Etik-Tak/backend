@@ -146,11 +146,11 @@ class InfoSourceReferenceRestController @Autowired constructor(
                         .add("url", infoSourceReference.url)
                         .add("title", infoSourceReference.title)
                         .add("summary", infoSourceReference.summary)
-                        .add("categories", arrayListOf<Any>().add(infoSourceReference.productCategories, { category -> hashMapOf<String, Any>()
+                        .add("categories", infoSourceReference.productCategories, { category -> hashMapOf<String, Any>()
                                 .add("uuid", category.uuid)
-                                .add("name", category.name) }))
-                        .add("labels", arrayListOf<Any>().add(infoSourceReference.productLabels, { label -> hashMapOf<String, Any>()
+                                .add("name", category.name) })
+                        .add("labels", infoSourceReference.productLabels, { label -> hashMapOf<String, Any>()
                                 .add("uuid", label.uuid)
-                                .add("name", label.name) })))
+                                .add("name", label.name) }))
     }
 }
