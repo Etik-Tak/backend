@@ -45,7 +45,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-open class ProductScanServiceTest : BaseRestTest() {
+open class ProductScanTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
         return super.serviceEndpoint() + "product/scan/" + postfix
@@ -126,6 +126,22 @@ open class ProductScanServiceTest : BaseRestTest() {
     }
 
     /**
+     * Test that a new product is created when scanning non existing product.
+     */
+    @Test
+    fun scanNonExistingProductWillCreateNewProduct() {
+        mockMvc().perform(
+                post(serviceEndpoint(""))
+                        .param("barcode", "product_that_does_not_exist")
+                        .param("clientUuid", client1Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.scan.product.uuid", notNullValue()))
+                .andExpect(jsonPath("$.scan.product.name", `is`("Automatisk oprettet")))
+    }
+
+    /**
      * Test that we can assign a location to an already existant product scan.
      */
     @Test
@@ -193,6 +209,7 @@ open class ProductScanServiceTest : BaseRestTest() {
                         .param("productScanUuid", productScanUuid))
                 .andExpect(status().`is`(400))
     }
+
 
 
     private fun scanProduct(): String {

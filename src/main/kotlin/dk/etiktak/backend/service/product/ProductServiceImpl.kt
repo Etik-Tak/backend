@@ -206,14 +206,15 @@ class ProductServiceImpl @Autowired constructor(
     }
 
     /**
-     * Finds a product from the given barcode and creates and returns a product scan.
+     * Finds a product from the given barcode and creates and returns a product scan. If no product is found,
+     * the methods creates an empty product.
      *
      * @param barcode     Barcode
      * @param client      Client
      * @param location    Optional location
      * @return            Created product scan entry (which contains the actual product)
      */
-    override fun scanProduct(barcode: String, client: Client, location: Location?): ProductScanResult? {
+    override fun scanProduct(barcode: String, client: Client, location: Location?): ProductScanResult {
 
         // Check for empty fields
         Assert.isTrue(
@@ -225,18 +226,24 @@ class ProductServiceImpl @Autowired constructor(
                 "Client must be provided")
 
         // Find product
-        var product = getProductByBarcode(barcode) ?: return null
+        var modifiedClient = client
+
+        var product = getProductByBarcode(barcode)
+        if (product == null) {
+            product = createProduct(client, barcode, Product.BarcodeType.UNKNOWN, "Automatisk oprettet", arrayListOf(), arrayListOf(),
+                    modifyValues = {client, productCategories, productLabels -> modifiedClient = client})
+        }
 
         // Create product scan
         var modifiedProduct = product
-        var modifiedClient = client
 
-        val productScan = createProductScan(product, client, location, modifyValues = {product, client, location -> modifiedProduct = product; modifiedClient = client})
+        val productScan = createProductScan(modifiedProduct, client, location,
+                modifyValues = {product, client, location -> modifiedProduct = product; modifiedClient = client})
 
         // Retrieve recommendations
-        val recommendations = recommendationService.getRecommendations(modifiedClient, modifiedProduct)
+        val recommendations = recommendationService.getRecommendations(modifiedClient, product)
 
-        return ProductScanResult(productScan, modifiedProduct, recommendations)
+        return ProductScanResult(productScan, product, recommendations)
     }
 
     /**

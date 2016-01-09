@@ -51,6 +51,6 @@ interface ProductService {
     fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory, modifyValues: (Product, ProductCategory) -> Unit = {product, productCategory -> Unit})
     fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel, modifyValues: (Product, ProductLabel) -> Unit = {product, productLabel -> Unit})
 
-    fun scanProduct(barcode: String, client: Client, location: Location?): ProductScanResult?
+    fun scanProduct(barcode: String, client: Client, location: Location?): ProductScanResult
     fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?, modifyValues: (ProductScan) -> Unit = {})
 }
