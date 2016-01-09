@@ -62,7 +62,7 @@ class ProductScanRestController @Autowired constructor(
             location = Location(latitude.toDouble(), longitude.toDouble())
         }
 
-        val productScanResult = productService.scanProduct(barcode, client, location) ?: return notFoundMap()
+        val productScanResult = productService.scanProduct(barcode, client, location)
 
         return okMap()
                 .add("scan", hashMapOf<String, Any>()
@@ -70,6 +70,7 @@ class ProductScanRestController @Autowired constructor(
                         .add("product", hashMapOf<String, Any>()
                                 .add("uuid", productScanResult.product.uuid)
                                 .add("name", productScanResult.product.name)
+                                .add("trusted", productScanResult.product.trusted)
                                 .add("categories", productScanResult.product.productCategories, { category -> hashMapOf<String, Any>()
                                         .add("uuid", category.uuid)
                                         .add("name", category.name) })

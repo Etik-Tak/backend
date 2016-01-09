@@ -68,10 +68,10 @@ class InfoChannel constructor() : BaseModel() {
     var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
+    var creationTime = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
+    var modificationTime = Date()
 
 
 

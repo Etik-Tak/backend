@@ -61,15 +61,15 @@ class InfoSourceReference constructor() : BaseModel() {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
-    var creator: Client = Client()
+    var creator = Client()
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_channel_id")
-    var infoChannel: InfoChannel = InfoChannel()
+    var infoChannel = InfoChannel()
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_source_id")
-    var infoSource: InfoSource = InfoSource()
+    var infoSource = InfoSource()
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -96,10 +96,10 @@ class InfoSourceReference constructor() : BaseModel() {
     var productLabels: MutableSet<ProductLabel> = HashSet()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
+    var creationTime = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
+    var modificationTime = Date()
 
 
 

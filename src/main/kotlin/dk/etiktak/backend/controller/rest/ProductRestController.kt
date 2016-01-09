@@ -33,6 +33,7 @@ import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.product.ProductTrustVoteType
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
@@ -133,11 +134,25 @@ class ProductRestController @Autowired constructor(
         return okMap()
     }
 
+    @RequestMapping(value = "/trust/", method = arrayOf(RequestMethod.POST))
+    fun trustVoteProduct(
+            @RequestParam clientUuid: String,
+            @RequestParam productUuid: String,
+            @RequestParam vote: ProductTrustVoteType): HashMap<String, Any> {
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap()
+
+        productService.trustVoteProduct(client, product, vote)
+
+        return okMap()
+    }
+
     fun productOkMap(product: Product): HashMap<String, Any> {
         return okMap()
                 .add("product", hashMapOf<String, Any>()
                         .add("uuid", product.uuid)
                         .add("name", product.name)
+                        .add("trusted", product.trusted)
                         .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
                                 .add("uuid", category.uuid)
                                 .add("name", category.name) })

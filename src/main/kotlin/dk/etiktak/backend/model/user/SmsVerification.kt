@@ -62,13 +62,13 @@ class SmsVerification {
     var clientChallenge: String? = null
 
     @Column(name = "status", nullable = false)
-    var status: SmsVerificationStatus = SmsVerificationStatus.UNKNOWN
+    var status = SmsVerificationStatus.UNKNOWN
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
+    var creationTime = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
+    var modificationTime = Date()
 
 
 

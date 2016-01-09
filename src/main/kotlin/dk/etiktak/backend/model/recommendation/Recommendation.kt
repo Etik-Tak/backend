@@ -36,12 +36,6 @@ import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
-enum class RecommendationScore {
-    THUMBS_UP,
-    NEUTRAL,
-    THUMBS_DOWN
-}
-
 @Entity(name = "recommendations")
 @Table(uniqueConstraints = arrayOf(
         UniqueConstraint(columnNames = arrayOf("product_id", "info_channel_id")),
@@ -59,23 +53,23 @@ open class Recommendation constructor() : BaseModel() {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
-    var creator: Client = Client()
+    var creator = Client()
 
     @Column(name = "summary")
     var summary: String = ""
 
     @Column(name = "score")
-    var score: RecommendationScore = RecommendationScore.NEUTRAL
+    var score = RecommendationScore.NEUTRAL
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_channel_id")
-    var infoChannel: InfoChannel = InfoChannel()
+    var infoChannel = InfoChannel()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
+    var creationTime = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
+    var modificationTime = Date()
 
 
 
@@ -90,4 +84,10 @@ open class Recommendation constructor() : BaseModel() {
         creationTime = now
         modificationTime = now
     }
+}
+
+enum class RecommendationScore {
+    THUMBS_UP,
+    NEUTRAL,
+    THUMBS_DOWN
 }

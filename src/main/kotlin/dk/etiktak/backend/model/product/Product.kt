@@ -59,10 +59,17 @@ class Product constructor() : BaseModel() {
     var barcode: String = ""
 
     @Column(name = "barcode_type")
-    var barcodeType: BarcodeType = BarcodeType.EAN13
+    var barcodeType = BarcodeType.UNKNOWN
 
     @Column(name = "name")
     var name: String = ""
+
+    @Column(name = "trusted")
+    var trusted: Boolean = false
+
+    @NotNull
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    var trustVotes: MutableList<ProductTrustVote> = ArrayList()
 
     @NotNull
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
@@ -89,16 +96,16 @@ class Product constructor() : BaseModel() {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
-    var creator: Client = Client()
+    var creator = Client()
 
     @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
+    var creationTime = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
+    var modificationTime = Date()
 
 
 

@@ -50,7 +50,7 @@ class ProductCategory constructor() : BaseModel() {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
-    var creator: Client = Client()
+    var creator = Client()
 
     @Column(name = "name")
     var name: String = ""
@@ -65,10 +65,10 @@ class ProductCategory constructor() : BaseModel() {
     var recommendations: MutableList<ProductCategoryRecommendation> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
+    var creationTime = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
+    var modificationTime = Date()
 
 
 

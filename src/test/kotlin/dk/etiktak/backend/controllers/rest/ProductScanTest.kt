@@ -25,6 +25,7 @@
 
 package dk.etiktak.backend.controllers.rest
 
+import com.jayway.jsonpath.JsonPath
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
@@ -130,7 +131,7 @@ open class ProductScanTest : BaseRestTest() {
      */
     @Test
     fun scanNonExistingProductWillCreateNewProduct() {
-        mockMvc().perform(
+        val json = mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", "product_that_does_not_exist")
                         .param("clientUuid", client1Uuid))
@@ -139,6 +140,21 @@ open class ProductScanTest : BaseRestTest() {
                 .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
                 .andExpect(jsonPath("$.scan.product.uuid", notNullValue()))
                 .andExpect(jsonPath("$.scan.product.name", `is`("Automatisk oprettet")))
+                .andExpect(jsonPath("$.scan.product.trusted", `is`(false)))
+                .andReturn().response.contentAsString
+        val productUuid = JsonPath.read<String>(json, "$.scan.product.uuid")
+
+        // Now see that the same product is returned when scanning second time
+        mockMvc().perform(
+                post(serviceEndpoint(""))
+                        .param("barcode", "product_that_does_not_exist")
+                        .param("clientUuid", client1Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.scan.product.uuid", `is`(productUuid)))
+                .andExpect(jsonPath("$.scan.product.name", `is`("Automatisk oprettet")))
+                .andExpect(jsonPath("$.scan.product.trusted", `is`(false)))
     }
 
     /**

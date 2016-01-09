@@ -36,10 +36,7 @@ package dk.etiktak.backend.model.user
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infochannel.InfoChannelFollower
 import dk.etiktak.backend.model.infosource.InfoSourceReference
-import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductCategory
-import dk.etiktak.backend.model.product.ProductLabel
-import dk.etiktak.backend.model.product.ProductScan
+import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.recommendation.Recommendation
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -92,11 +89,14 @@ class Client constructor() {
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     var recommendations: MutableList<Recommendation> = ArrayList()
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
+    var productTrustVotes: MutableList<ProductTrustVote> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
+    var creationTime = Date()
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var modificationTime = Date()
 
 
     @PreUpdate

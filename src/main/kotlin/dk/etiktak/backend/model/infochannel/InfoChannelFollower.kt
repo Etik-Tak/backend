@@ -49,17 +49,17 @@ class InfoChannelFollower constructor() : BaseModel() {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
-    var client: Client = Client()
+    var client = Client()
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_channel_id")
-    var infoChannel: InfoChannel = InfoChannel()
+    var infoChannel = InfoChannel()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
+    var creationTime = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
+    var modificationTime = Date()
 
 
 

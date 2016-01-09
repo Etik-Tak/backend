@@ -38,5 +38,5 @@ class ProductLabelRecommendation : Recommendation() {
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "product_label_id")
-    var productLabel: ProductLabel = ProductLabel()
+    var productLabel = ProductLabel()
 }

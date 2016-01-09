@@ -50,13 +50,13 @@ class InfoSourceUrlPrefix constructor() : BaseModel() {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "infosource_id")
-    var infoSource: InfoSource = InfoSource()
+    var infoSource = InfoSource()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime: Date = Date()
+    var creationTime = Date()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime: Date = Date()
+    var modificationTime = Date()
 
 
 

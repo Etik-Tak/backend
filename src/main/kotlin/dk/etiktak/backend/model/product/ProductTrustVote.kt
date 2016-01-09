@@ -24,7 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product scan.
+ * Represents a trust vote for a product, i.e. if the product is correct or not.
  */
 
 package dk.etiktak.backend.model.product
@@ -35,16 +35,15 @@ import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
-@Entity(name = "product_scans")
-class ProductScan constructor() : BaseModel() {
+@Entity(name = "product_trust_votes")
+@Table(uniqueConstraints = arrayOf(
+        UniqueConstraint(columnNames = arrayOf("client_id", "product_id"))))
+class ProductTrustVote constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_scan_id")
+    @Column(name = "product_trust_vote_id")
     var id: Long = 0
-
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
@@ -54,12 +53,8 @@ class ProductScan constructor() : BaseModel() {
     @JoinColumn(name = "product_id")
     var product = Product()
 
-    @Column(name = "timestamp", nullable = false)
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var timestamp = Date()
-
-    @OneToOne(cascade = arrayOf(CascadeType.ALL))
-    var location: Location? = null
+    @Column(name = "vote")
+    var vote = ProductTrustVoteType.Trusted
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()
@@ -80,4 +75,9 @@ class ProductScan constructor() : BaseModel() {
         creationTime = now
         modificationTime = now
     }
+}
+
+enum class ProductTrustVoteType {
+    Trusted,
+    NotTrusted
 }

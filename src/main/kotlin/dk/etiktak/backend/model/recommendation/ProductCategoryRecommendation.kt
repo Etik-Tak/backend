@@ -38,5 +38,5 @@ class ProductCategoryRecommendation : Recommendation() {
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "product_category_id")
-    var productCategory: ProductCategory = ProductCategory()
+    var productCategory = ProductCategory()
 }

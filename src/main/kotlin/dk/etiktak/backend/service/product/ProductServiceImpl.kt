@@ -28,10 +28,7 @@ package dk.etiktak.backend.service.product
 import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.location.LocationRepository
-import dk.etiktak.backend.repository.product.ProductCategoryRepository
-import dk.etiktak.backend.repository.product.ProductLabelRepository
-import dk.etiktak.backend.repository.product.ProductRepository
-import dk.etiktak.backend.repository.product.ProductScanRepository
+import dk.etiktak.backend.repository.product.*
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.recommendation.RecommendationService
 import dk.etiktak.backend.service.security.SecurityService
@@ -54,6 +51,7 @@ class ProductServiceImpl @Autowired constructor(
         private val locationRepository: LocationRepository,
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
+        private val productTrustVoteRepository: ProductTrustVoteRepository,
         private val securityService: SecurityService) : ProductService {
 
     private val logger = LoggerFactory.getLogger(ProductServiceImpl::class.java)
@@ -61,8 +59,8 @@ class ProductServiceImpl @Autowired constructor(
     /**
      * Finds a product from the given UUID.
      *
-     * @param uuid  UUID
-     * @return      Product with given UUID
+     * @param uuid     UUID
+     * @return         Product with given UUID
      */
     override fun getProductByUuid(uuid: String): Product? {
         return productRepository.findByUuid(uuid)
@@ -128,13 +126,16 @@ class ProductServiceImpl @Autowired constructor(
         for (productLabel in labels) {
             modifiedProductLabels.add(productLabelRepository.save(productLabel))
         }
-        val modifiedClient = clientRepository.save(client)
+        var modifiedClient = clientRepository.save(client)
         var modifiedProduct = productRepository.save(product)
 
         // Assign barcode
         if (barcode != null) {
             assignBarcodeToProduct(modifiedClient, modifiedProduct, barcode, barcodeType ?: Product.BarcodeType.UNKNOWN, { product -> modifiedProduct = product})
         }
+
+        // Trust vote product
+        trustVoteProduct(modifiedClient, modifiedProduct, ProductTrustVoteType.Trusted, modifyValues = {client, product -> modifiedClient = client; modifiedProduct = product})
 
         modifyValues(modifiedClient, modifiedProductCategories, modifiedProductLabels)
 
@@ -151,8 +152,6 @@ class ProductServiceImpl @Autowired constructor(
      * @param modifyValues  Function called with modified product
      */
     override fun assignBarcodeToProduct(client: Client, product: Product, barcode: String, barcodeType: Product.BarcodeType, modifyValues: (Product) -> Unit) {
-        securityService.assertCreatorOrAdmin(client, product.creator)
-
         product.barcode = barcode
         product.barcodeType = barcodeType
 
@@ -309,5 +308,31 @@ class ProductServiceImpl @Autowired constructor(
         modifyValues(modifiedProduct, modifiedClient, modifiedLocation)
 
         return modifiedProductScan
+    }
+
+    /**
+     * Trust vote product correctness.
+     *
+     * @param client        Client
+     * @param product       Product
+     * @param vote          Vote
+     * @param modifyValues  Function called with modified client and product
+     */
+    override fun trustVoteProduct(client: Client, product: Product, vote: ProductTrustVoteType, modifyValues: (Client, Product) -> Unit): ProductTrustVote {
+        val productTrustVote = ProductTrustVote()
+        productTrustVote.client = client
+        productTrustVote.product = product
+        productTrustVote.vote = vote
+
+        product.trustVotes.add(productTrustVote)
+        client.productTrustVotes.add(productTrustVote)
+
+        val modifiedProductTrustVote = productTrustVoteRepository.save(productTrustVote)
+        val modifiedProduct = productRepository.save(product)
+        val modifiedClient = clientRepository.save(client)
+
+        modifyValues(modifiedClient, modifiedProduct)
+
+        return modifiedProductTrustVote
     }
 }

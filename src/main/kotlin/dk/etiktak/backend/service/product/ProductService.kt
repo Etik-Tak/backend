@@ -30,11 +30,6 @@ import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
 import java.util.*
 
-data class ProductScanResult(
-        val productScan: ProductScan,
-        val product: Product,
-        val recommendations: List<Recommendation>)
-
 interface ProductService {
 
     fun getProductByUuid(uuid: String): Product?
@@ -53,4 +48,12 @@ interface ProductService {
 
     fun scanProduct(barcode: String, client: Client, location: Location?): ProductScanResult
     fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?, modifyValues: (ProductScan) -> Unit = {})
+
+    fun trustVoteProduct(client: Client, product: Product, vote: ProductTrustVoteType,
+                         modifyValues: (Client, Product) -> Unit = {client, product -> Unit}): ProductTrustVote
 }
+
+data class ProductScanResult(
+        val productScan: ProductScan,
+        val product: Product,
+        val recommendations: List<Recommendation>)
