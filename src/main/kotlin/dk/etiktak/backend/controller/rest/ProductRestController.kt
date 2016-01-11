@@ -33,7 +33,7 @@ import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
-import dk.etiktak.backend.model.product.TrustVoteType
+import dk.etiktak.backend.model.trust.TrustVoteType
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService

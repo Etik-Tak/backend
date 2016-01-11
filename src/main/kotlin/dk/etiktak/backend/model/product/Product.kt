@@ -32,6 +32,7 @@ package dk.etiktak.backend.model.product
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.ProductRecommendation
+import dk.etiktak.backend.model.trust.ProductTrustVote
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*

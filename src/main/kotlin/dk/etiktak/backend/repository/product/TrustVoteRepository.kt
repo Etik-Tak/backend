@@ -25,8 +25,8 @@
 
 package dk.etiktak.backend.repository.product
 
-import dk.etiktak.backend.model.product.ProductTrustVote
-import dk.etiktak.backend.model.product.TrustVoteType
+import dk.etiktak.backend.model.trust.ProductTrustVote
+import dk.etiktak.backend.model.trust.TrustVoteType
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 

@@ -27,7 +27,7 @@
  * Represents a trust vote, fx. if the item in question is correct or not.
  */
 
-package dk.etiktak.backend.model.product
+package dk.etiktak.backend.model.trust
 
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.user.Client

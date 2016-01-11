@@ -38,6 +38,7 @@ import dk.etiktak.backend.model.infochannel.InfoChannelFollower
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.recommendation.Recommendation
+import dk.etiktak.backend.model.trust.TrustVote
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*

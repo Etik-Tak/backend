@@ -27,8 +27,9 @@
  * Represents a trust vote for a product, i.e. if the product is correct or not.
  */
 
-package dk.etiktak.backend.model.product
+package dk.etiktak.backend.model.trust
 
+import dk.etiktak.backend.model.product.Product
 import javax.persistence.*
 
 @Entity

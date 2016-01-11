@@ -27,6 +27,8 @@ package dk.etiktak.backend.service.product
 
 import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.recommendation.Recommendation
+import dk.etiktak.backend.model.trust.ProductTrustVote
+import dk.etiktak.backend.model.trust.TrustVoteType
 import dk.etiktak.backend.model.user.Client
 import java.util.*
 
