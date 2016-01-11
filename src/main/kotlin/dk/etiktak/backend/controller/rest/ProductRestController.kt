@@ -120,6 +120,22 @@ class ProductRestController @Autowired constructor(
         return productOkMap(product)
     }
 
+    @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
+    fun editProduct(
+            @RequestParam clientUuid: String,
+            @RequestParam productUuid: String,
+            @RequestParam(required = false) name: String,
+            @RequestParam(required = false) barcode: String? = null): HashMap<String, Any> {
+
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+
+        var product = productService.getProductByUuid(productUuid) ?: return notFoundMap()
+
+        productService.editProduct(client, product, name, modifyValues = {modifiedProduct -> product = modifiedProduct})
+
+        return productOkMap(product)
+    }
+
     @RequestMapping(value = "/assign/category/", method = arrayOf(RequestMethod.POST))
     fun assignCategoryToProduct(
             @RequestParam clientUuid: String,
@@ -148,6 +164,20 @@ class ProductRestController @Autowired constructor(
         return okMap()
     }
 
+    @RequestMapping(value = "/assign/company/", method = arrayOf(RequestMethod.POST))
+    fun assignCompanyToProduct(
+            @RequestParam clientUuid: String,
+            @RequestParam productUuid: String,
+            @RequestParam companyUuid: String): HashMap<String, Any> {
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap()
+        val company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap()
+
+        productService.assignCompanyToProduct(client, product, company)
+
+        return okMap()
+    }
+
     @RequestMapping(value = "/trust/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
             @RequestParam clientUuid: String,
@@ -166,7 +196,7 @@ class ProductRestController @Autowired constructor(
                 .add("product", hashMapOf<String, Any>()
                         .add("uuid", product.uuid)
                         .add("name", product.name)
-                        .add("correctnessTrusted", product.correctnessTrusted)
+                        .add("correctnessTrust", product.correctnessTrust)
                         .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
                                 .add("uuid", category.uuid)
                                 .add("name", category.name) })

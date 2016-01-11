@@ -66,8 +66,8 @@ class Product constructor() : BaseModel() {
     @Column(name = "name")
     var name: String = ""
 
-    @Column(name = "correctness_trusted")
-    var correctnessTrusted: Boolean = false
+    @Column(name = "correctness_trust")
+    var correctnessTrust: Double = 0.0
 
     @NotNull
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)

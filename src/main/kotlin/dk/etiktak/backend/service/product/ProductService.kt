@@ -159,6 +159,30 @@ open class ProductService @Autowired constructor(
     }
 
     /**
+     * Edits a product.
+     *
+     * @param client        Client
+     * @param name          Name of product
+     * @param modifyValues  Function called with modified product
+     * @return              Edited product
+     */
+    open fun editProduct(client: Client, product: Product, name: String?, modifyValues: (Product) -> Unit = {product -> Unit}) {
+
+        // Modify values
+        name?.let {
+            product.name = name
+        }
+
+        // Save it all
+        var modifiedProduct = productRepository.save(product)
+
+        // Recalculate trust
+        recalculateCorrectnessTrust(modifiedProduct, modifyValues = {recalculatedProduct -> modifiedProduct = recalculatedProduct})
+
+        modifyValues(modifiedProduct)
+    }
+
+    /**
      * Assign barcode to product.
      *
      * @param client        Client
@@ -218,6 +242,28 @@ open class ProductService @Autowired constructor(
         val modifiedProduct = productRepository.save(product)
 
         modifyValues(modifiedProduct, modifiedProductLabel)
+    }
+
+    /**
+     * Assigns a company to a product.
+     *
+     * @param client            Client
+     * @param product           Product
+     * @param company           Company
+     * @param modifyValues      Function called with modified product and product label
+     */
+    open fun assignCompanyToProduct(client: Client, product: Product, company: Company, modifyValues: (Product, Company) -> Unit = {product, company -> Unit}) {
+        securityService.assertCreatorOrAdmin(client, product.creator)
+
+        // Glue it together
+        product.companies.add(company)
+        company.products.add(product)
+
+        // Save it all
+        val modifiedCompany = companyRepository.save(company)
+        val modifiedProduct = productRepository.save(product)
+
+        modifyValues(modifiedProduct, modifiedCompany)
     }
 
     /**
@@ -337,21 +383,39 @@ open class ProductService @Autowired constructor(
      * @param modifyValues  Function called with modified client and product
      */
     open fun trustVoteProduct(client: Client, product: Product, vote: TrustVoteType, modifyValues: (Client, Product) -> Unit = {client, product -> Unit}): ProductTrustVote {
+
+        // Create trust vote
         val productTrustVote = ProductTrustVote()
         productTrustVote.client = client
         productTrustVote.product = product
         productTrustVote.vote = vote
 
+        // Glue it together
         product.correctnessTrustVotes.add(productTrustVote)
         client.productTrustVotes.add(productTrustVote)
 
+        // Save it all
         val modifiedProductTrustVote = trustVoteRepository.save(productTrustVote)
-        val modifiedProduct = productRepository.save(product)
+        var modifiedProduct = productRepository.save(product)
         val modifiedClient = clientRepository.save(client)
+
+        // Recalculate trust
+        recalculateCorrectnessTrust(modifiedProduct, modifyValues = {recalculatedProduct -> modifiedProduct = recalculatedProduct})
 
         modifyValues(modifiedClient, modifiedProduct)
 
         return modifiedProductTrustVote
+    }
+
+    /**
+     * Recalculates product correctness trust.
+     *
+     * @param product        Product
+     * @param modifyValues   Function called with modified product
+     */
+    open fun recalculateCorrectnessTrust(product: Product, modifyValues: (Product) -> Unit = {}) {
+
+        // TODO! Calculate trust
     }
 }
 
