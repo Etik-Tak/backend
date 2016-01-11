@@ -67,7 +67,7 @@ class ProductLabelServiceTest : BaseRestTest() {
                         .param("name", "KRAV"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.productLabel.uuid", notNullValue()))
                 .andExpect(jsonPath("$.productLabel.name", `is`("KRAV")))
     }
@@ -84,7 +84,7 @@ class ProductLabelServiceTest : BaseRestTest() {
                         .param("uuid", productLabel1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.productLabel.uuid", `is`(productLabel1Uuid)))
                 .andExpect(jsonPath("$.productLabel.name", `is`("Ecocert")))
     }

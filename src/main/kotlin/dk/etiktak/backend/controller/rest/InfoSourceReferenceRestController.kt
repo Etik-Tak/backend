@@ -64,9 +64,9 @@ class InfoSourceReferenceRestController @Autowired constructor(
             @RequestParam url: String,
             @RequestParam title: String,
             @RequestParam summary: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
-        val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid) ?: return notFoundMap()
-        val infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid) ?: return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid) ?: return notFoundMap("Info channel")
+        val infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid) ?: return notFoundMap("Info source")
 
         val infoSourceReference = infoSourceReferenceService.createInfoSourceReference(client, infoChannel, infoSource, url, title, summary)
 
@@ -78,8 +78,8 @@ class InfoSourceReferenceRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam infoSourceReferenceUuid: String,
             @RequestParam productUuids: List<String>): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
-        val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid) ?: return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid) ?: return notFoundMap("Info source reference")
 
         val products: MutableList<Product> = ArrayList()
         for (productUuid in productUuids) {
@@ -100,8 +100,8 @@ class InfoSourceReferenceRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam infoSourceReferenceUuid: String,
             @RequestParam productCategoryUuids: List<String>): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
-        val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid) ?: return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid) ?: return notFoundMap("Info source reference")
 
         val productCategories: MutableList<ProductCategory> = ArrayList()
         for (productCategoryUuid in productCategoryUuids) {
@@ -122,8 +122,8 @@ class InfoSourceReferenceRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam infoSourceReferenceUuid: String,
             @RequestParam productLabelUuids: List<String>): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
-        val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid) ?: return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid) ?: return notFoundMap("Info source reference")
 
         val productLabels: MutableList<ProductLabel> = ArrayList()
         for (productLabelUuid in productLabelUuids) {

@@ -56,7 +56,7 @@ class ProductScanRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam(required = false) latitude: String? = null,
             @RequestParam(required = false) longitude: String? = null): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
         var location: Location? = null
         if (latitude != null && longitude != null) {
@@ -95,8 +95,8 @@ class ProductScanRestController @Autowired constructor(
             @RequestParam productScanUuid: String,
             @RequestParam latitude: String,
             @RequestParam longitude: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
-        var productScan = productService.getProductScanByUuid(productScanUuid) ?: return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var productScan = productService.getProductScanByUuid(productScanUuid) ?: return notFoundMap("Product")
 
         val location = Location(latitude.toDouble(), longitude.toDouble())
 

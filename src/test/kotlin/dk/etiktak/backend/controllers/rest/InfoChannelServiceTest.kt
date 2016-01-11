@@ -68,7 +68,7 @@ open class InfoChannelServiceTest : BaseRestTest() {
                         .param("name", "Test Info Channel 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.infoChannel.uuid", Matchers.notNullValue()))
                 .andExpect(jsonPath("$.infoChannel.name", `is`("Test Info Channel 1")))
     }
@@ -101,7 +101,7 @@ open class InfoChannelServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel2Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
 
         Assert.assertEquals(
                 2,
@@ -114,7 +114,7 @@ open class InfoChannelServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
 
         Assert.assertEquals(
                 2,

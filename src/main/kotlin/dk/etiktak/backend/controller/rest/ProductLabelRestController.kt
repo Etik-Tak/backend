@@ -49,7 +49,7 @@ class ProductLabelRestController @Autowired constructor(
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProductLabel(
             @RequestParam uuid: String): HashMap<String, Any> {
-        val productLabel = productLabelService.getProductLabelByUuid(uuid) ?: return notFoundMap()
+        val productLabel = productLabelService.getProductLabelByUuid(uuid) ?: return notFoundMap("Product label")
 
         return productLabelOkMap(productLabel)
     }
@@ -58,7 +58,7 @@ class ProductLabelRestController @Autowired constructor(
     fun createProductLabel(
             @RequestParam clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
         val productLabel = productLabelService.createProductLabel(client, name)
 

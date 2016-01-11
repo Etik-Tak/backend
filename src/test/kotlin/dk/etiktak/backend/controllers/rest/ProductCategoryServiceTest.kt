@@ -67,7 +67,7 @@ class ProductCategoryServiceTest : BaseRestTest() {
                         .param("name", "Chokolade"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.productCategory.uuid", notNullValue()))
                 .andExpect(jsonPath("$.productCategory.name", `is`("Chokolade")))
     }
@@ -84,7 +84,7 @@ class ProductCategoryServiceTest : BaseRestTest() {
                         .param("uuid", productCategory1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.productCategory.uuid", `is`(productCategory1Uuid)))
                 .andExpect(jsonPath("$.productCategory.name", `is`("Pandekager")))
     }

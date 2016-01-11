@@ -72,7 +72,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("password", "test1234"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
     }
 
@@ -144,7 +144,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("password", "test1234"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
 
         // Request second SMS verification
@@ -155,7 +155,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("password", "test1234"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
     }
 
@@ -173,7 +173,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("password", "test1234"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
 
         // Request second SMS verification with another client uuid
@@ -201,7 +201,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("clientChallenge", smsVerification.clientChallenge))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
     }
 
     /**
@@ -286,7 +286,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("password", "test1234"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
     }
 
@@ -348,7 +348,7 @@ class SmsVerificationServiceTest : BaseRestTest() {
                         .param("clientChallenge", smsVerification.clientChallenge))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
     }
 
     /**

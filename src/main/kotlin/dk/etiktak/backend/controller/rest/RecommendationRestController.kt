@@ -60,8 +60,8 @@ class RecommendationRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam productUuid: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
-        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 
         val recommendations = recommendationService.getRecommendations(client, product)
 
@@ -78,33 +78,33 @@ class RecommendationRestController @Autowired constructor(
             @RequestParam(required = false) productCategoryUuid: String? = null,
             @RequestParam(required = false) productLabelUuid: String? = null): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
-        val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid) ?: return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid) ?: return notFoundMap("Info channel")
 
         val scoreType = RecommendationScore.valueOf(score)
 
         // Create product recommendation
         productUuid?.let {
-            val product = productService.getProductByUuid(productUuid) ?: return notFoundMap()
+            val product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
             val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, product)
             return recommendationOkMap(recommendation)
         }
 
         // Create product category recommendation
         productCategoryUuid?.let {
-            val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: return notFoundMap()
+            val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: return notFoundMap("Product category")
             val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productCategory)
             return recommendationOkMap(recommendation)
         }
 
         // Create product label recommendation
         productLabelUuid?.let {
-            val productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: return notFoundMap()
+            val productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: return notFoundMap("Product label")
             val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productLabel)
             return recommendationOkMap(recommendation)
         }
 
-        return notFoundMap()
+        return illegalInvocationMap("None of the required parameters set")
     }
 
     fun recommendationOkMap(recommendation: Recommendation): HashMap<String, Any> {

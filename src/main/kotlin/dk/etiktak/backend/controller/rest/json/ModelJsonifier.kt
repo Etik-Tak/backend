@@ -35,6 +35,17 @@ import java.util.*
 private val logger = LoggerFactory.getLogger("Jsonifier")
 
 /**
+ * Adds a result to the hash map.
+ *
+ * @param result   Result to add
+ * @return         Self with result mapped
+ */
+fun HashMap<String, Any>.addResult(result: Int) : HashMap<String, Any> {
+    this["result"] = result
+    return this
+}
+
+/**
  * Adds a message to the hash map.
  *
  * @param message  Message to add

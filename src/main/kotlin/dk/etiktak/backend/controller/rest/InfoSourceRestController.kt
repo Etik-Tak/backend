@@ -47,7 +47,7 @@ class InfoSourceRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam friendlyName: String,
             @RequestParam urlPrefixList: List<String>): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
         val infoSource = infoSourceService.createInfoSource(client, urlPrefixList, friendlyName)
 

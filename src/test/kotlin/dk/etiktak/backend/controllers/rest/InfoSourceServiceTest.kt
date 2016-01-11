@@ -69,7 +69,7 @@ open class InfoSourceServiceTest : BaseRestTest() {
                         .param("friendlyName", "Test Info Source 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.message", `is`(WebserviceResult.OK.name)))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.infoSource.uuid", notNullValue()))
                 .andExpect(jsonPath("$.infoSource.urlPrefixes", containsInAnyOrder("http://dr.dk", "https://dr.dk", "http://www.dr.dk", "https://www.dr.dk")))
                 .andExpect(jsonPath("$.infoSource.friendlyName", `is`("Test Info Source 1")))

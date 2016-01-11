@@ -31,21 +31,43 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.addMessage
+import dk.etiktak.backend.controller.rest.json.addResult
 import java.util.*
 
-enum class WebserviceResult {
-    OK,
-    NotFound
+enum class WebserviceResult(val value: Int, val message: String) {
+    OK(0, "OK"),
+    NotFound(1, "not found"),
+    IllegalInvocation(2, "Illegal invocation of endpoint")
 }
 
 open class BaseRestController {
     fun okMap() : HashMap<String, Any> {
         return hashMapOf<String, Any>()
-                .addMessage(WebserviceResult.OK.name)
+                .addResult(WebserviceResult.OK.value)
+                .addMessage(WebserviceResult.OK.message)
     }
 
-    fun notFoundMap() : HashMap<String, Any> {
+    /**
+     * Return a hashmap where not found message has been set.
+     *
+     * @param entity   Entity name
+     * @return         Hash map
+     */
+    fun notFoundMap(entity: String) : HashMap<String, Any> {
         return hashMapOf<String, Any>()
-                .addMessage(WebserviceResult.NotFound.name)
+                .addResult(WebserviceResult.NotFound.value)
+                .addMessage(entity + " " + WebserviceResult.NotFound.message)
+    }
+
+    /**
+     * Return a hashmap where illegal invocation message has been set.
+     *
+     * @param entity   Optional message
+     * @return         Hash map
+     */
+    fun illegalInvocationMap(message: String = WebserviceResult.IllegalInvocation.message) : HashMap<String, Any> {
+        return hashMapOf<String, Any>()
+                .addResult(WebserviceResult.IllegalInvocation.value)
+                .addMessage(message)
     }
 }
