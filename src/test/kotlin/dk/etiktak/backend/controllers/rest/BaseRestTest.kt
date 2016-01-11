@@ -28,6 +28,7 @@ package dk.etiktak.backend.controllers.rest
 import com.jayway.jsonpath.JsonPath
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.recommendation.RecommendationScore
+import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelFollowerRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
@@ -120,6 +121,9 @@ open class BaseRestTest {
     val productRepository: ProductRepository? = null
 
     @Autowired
+    val companyRepository: CompanyRepository? = null
+
+    @Autowired
     val trustVoteRepository: TrustVoteRepository? = null
 
     @Autowired
@@ -198,6 +202,8 @@ open class BaseRestTest {
         infoChannelFollowerRepository!!.deleteAll()
         infoChannelClientRepository!!.deleteAll()
         infoChannelRepository!!.deleteAll()
+
+        companyRepository!!.deleteAll()
 
         productScanRepository!!.deleteAll()
         locationRepository!!.deleteAll()

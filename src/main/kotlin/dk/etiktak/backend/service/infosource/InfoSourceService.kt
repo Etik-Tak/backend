@@ -26,11 +26,101 @@
 package dk.etiktak.backend.service.infosource
 
 import dk.etiktak.backend.model.infosource.InfoSource
+import dk.etiktak.backend.model.infosource.InfoSourceUrlPrefix
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.infosource.InfoSourceRepository
+import dk.etiktak.backend.repository.infosource.InfoSourceUrlPrefixRepository
+import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.util.CryptoUtil
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.Assert
+import org.springframework.util.StringUtils
 
-interface InfoSourceService {
+@Service
+@Transactional
+open class InfoSourceService @Autowired constructor(
+        private val infoSourceRepository: InfoSourceRepository,
+        private val infoSourceUrlPrefixRepository: InfoSourceUrlPrefixRepository,
+        private val clientRepository: ClientRepository) {
 
-    fun getInfoSourceByUuid(uuid: String): InfoSource?
+    private val logger = LoggerFactory.getLogger(InfoSourceService::class.java)
 
-    fun createInfoSource(client: Client, urlPrefixes: List<String>, friendlyName: String): InfoSource
+    /**
+     * Finds an info source from the given UUID.
+     *
+     * @param uuid  UUID
+     * @return      Info source with given UUID
+     */
+    open fun getInfoSourceByUuid(uuid: String): InfoSource? {
+        return infoSourceRepository.findByUuid(uuid)
+    }
+
+    /**
+     * Creates an info source.
+     *
+     * @param client         Creator
+     * @param urlPrefixes    Url prefixes of info source
+     * @param friendlyName   Name of info source
+     * @return               Created info source
+     */
+    open fun createInfoSource(client: Client, urlPrefixes: List<String>, friendlyName: String, modifyValues: (Client) -> Unit = {}): InfoSource {
+
+        // Validate url prefix
+        for (urlPrefix in urlPrefixes) {
+            validateUrlPrefix(urlPrefix)
+        }
+
+        logger.info("Creating new info source with name: $friendlyName")
+
+        // Create info source
+        val infoSource = InfoSource()
+        infoSource.uuid = CryptoUtil().uuid()
+        infoSource.creator = client
+        infoSource.friendlyName = friendlyName
+
+        // Create url prefixes
+        for (urlPrefix in urlPrefixes) {
+            val infoSourceUrlPrefix = InfoSourceUrlPrefix()
+            infoSourceUrlPrefix.uuid = CryptoUtil().uuid()
+            infoSourceUrlPrefix.urlPrefix = urlPrefix
+            infoSourceUrlPrefix.infoSource = infoSource
+
+            infoSource.urlPrefixes.add(infoSourceUrlPrefix)
+        }
+
+        // Glue it together
+        client.infoSources.add(infoSource)
+
+        // Save it all
+        var modifiedClient = clientRepository.save(client)
+        infoSourceRepository.save(infoSource)
+        for (infoSourceUrlPrefix in infoSource.urlPrefixes) {
+            infoSourceUrlPrefixRepository.save(infoSourceUrlPrefix)
+        }
+
+        modifyValues(modifiedClient)
+
+        return infoSource
+    }
+
+    /**
+     * Validates an info source url prefix.
+     *
+     * @param urlPrefix      Url prefix
+     * @throws               Exception if url prefix does not validate
+     */
+    open fun validateUrlPrefix(urlPrefix: String) {
+        // TODO! Implement url prefix validator!
+        Assert.isTrue(
+                !StringUtils.isEmpty(urlPrefix),
+                "URL prefix must not be empty")
+
+        Assert.isTrue(
+                urlPrefix.toLowerCase().startsWith("http://") || urlPrefix.toLowerCase().startsWith("https://"),
+                "URL prefix must start with http:// or https://. Got: " + urlPrefix
+        )
+    }
 }

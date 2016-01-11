@@ -27,10 +27,52 @@ package dk.etiktak.backend.service.product
 
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.product.ProductCategoryRepository
+import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.util.CryptoUtil
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
-interface ProductCategoryService {
+@Service
+@Transactional
+open class ProductCategoryService @Autowired constructor(
+        private val productCategoryRepository: ProductCategoryRepository,
+        private val clientRepository: ClientRepository) {
 
-    fun getProductCategoryByUuid(uuid: String): ProductCategory?
+    private val logger = LoggerFactory.getLogger(ProductCategoryService::class.java)
 
-    fun createProductCategory(client: Client, name: String, modifyValues: (Client) -> Unit): ProductCategory
+    /**
+     * Finds a product category from the given UUID.
+     *
+     * @param uuid  UUID
+     * @return      Product category with given UUID
+     */
+    open fun getProductCategoryByUuid(uuid: String): ProductCategory? {
+        return productCategoryRepository.findByUuid(uuid)
+    }
+
+    /**
+     * Creates a product category.
+     *
+     * @param name          Name
+     * @param modifyValues  Function called with modified client
+     * @return              Product category
+     */
+    open fun createProductCategory(client: Client, name: String, modifyValues: (Client) -> Unit = {}): ProductCategory {
+        val productCategory = ProductCategory()
+        productCategory.uuid = CryptoUtil().uuid()
+        productCategory.creator = client
+        productCategory.name = name
+
+        client.productCategories.add(productCategory)
+
+        val modifiedClient = clientRepository.save(client)
+        val modifiedProductCategory = productCategoryRepository.save(productCategory)
+
+        modifyValues(modifiedClient)
+
+        return modifiedProductCategory
+    }
 }

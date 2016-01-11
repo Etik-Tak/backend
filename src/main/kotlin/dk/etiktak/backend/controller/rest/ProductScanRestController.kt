@@ -31,6 +31,7 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.product.Location
+import dk.etiktak.backend.model.recommendation.CompanyRecommendation
 import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
 import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
 import dk.etiktak.backend.model.recommendation.ProductRecommendation
@@ -70,7 +71,7 @@ class ProductScanRestController @Autowired constructor(
                         .add("product", hashMapOf<String, Any>()
                                 .add("uuid", productScanResult.product.uuid)
                                 .add("name", productScanResult.product.name)
-                                .add("trusted", productScanResult.product.trusted)
+                                .add("correctnessTrusted", productScanResult.product.correctnessTrusted)
                                 .add("categories", productScanResult.product.productCategories, { category -> hashMapOf<String, Any>()
                                         .add("uuid", category.uuid)
                                         .add("name", category.name) })
@@ -83,7 +84,8 @@ class ProductScanRestController @Autowired constructor(
                                 .add("score", recommendation.score.name)
                                 .add("product", if (recommendation.javaClass == ProductRecommendation::class.java) (recommendation as ProductRecommendation).product.uuid else null)
                                 .add("productCategory", if (recommendation.javaClass == ProductCategoryRecommendation::class.java) (recommendation as ProductCategoryRecommendation).productCategory.uuid else null)
-                                .add("productLabel", if (recommendation.javaClass == ProductLabelRecommendation::class.java) (recommendation as ProductLabelRecommendation).productLabel.uuid else null) })
+                                .add("productLabel", if (recommendation.javaClass == ProductLabelRecommendation::class.java) (recommendation as ProductLabelRecommendation).productLabel.uuid else null)
+                                .add("company", if (recommendation.javaClass == CompanyRecommendation::class.java) (recommendation as CompanyRecommendation).company.uuid else null) })
                 )
     }
 

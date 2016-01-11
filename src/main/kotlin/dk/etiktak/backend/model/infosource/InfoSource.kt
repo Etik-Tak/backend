@@ -30,6 +30,7 @@
 package dk.etiktak.backend.model.infosource
 
 import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -48,6 +49,10 @@ class InfoSource constructor() : BaseModel() {
 
     @Column(name = "friendly_name")
     var friendlyName: String = ""
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var creator = Client()
 
     @NotNull
     @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)

@@ -23,13 +23,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.service.product
+package dk.etiktak.backend.service.company
 
-import dk.etiktak.backend.model.product.ProductCategory
-import dk.etiktak.backend.model.user.Client
-import dk.etiktak.backend.repository.product.ProductCategoryRepository
+import dk.etiktak.backend.model.company.Company
+import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.user.ClientRepository
-import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -37,42 +35,19 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional
-class ProductCategoryServiceImpl @Autowired constructor(
-        private val productCategoryRepository: ProductCategoryRepository,
-        private val clientRepository: ClientRepository) : ProductCategoryService {
+open class CompanyService @Autowired constructor(
+        private val companyRepository: CompanyRepository,
+        private val clientRepository: ClientRepository) {
 
-    private val logger = LoggerFactory.getLogger(ProductCategoryServiceImpl::class.java)
+    private val logger = LoggerFactory.getLogger(CompanyService::class.java)
 
     /**
-     * Finds a product category from the given UUID.
+     * Finds a company from the given UUID.
      *
      * @param uuid  UUID
-     * @return      Product category with given UUID
+     * @return      Company with given UUID
      */
-    override fun getProductCategoryByUuid(uuid: String): ProductCategory? {
-        return productCategoryRepository.findByUuid(uuid)
-    }
-
-    /**
-     * Creates a product category.
-     *
-     * @param name          Name
-     * @param modifyValues  Function called with modified client
-     * @return              Product category
-     */
-    override fun createProductCategory(client: Client, name: String, modifyValues: (Client) -> Unit): ProductCategory {
-        val productCategory = ProductCategory()
-        productCategory.uuid = CryptoUtil().uuid()
-        productCategory.creator = client
-        productCategory.name = name
-
-        client.productCategories.add(productCategory)
-
-        val modifiedClient = clientRepository.save(client)
-        val modifiedProductCategory = productCategoryRepository.save(productCategory)
-
-        modifyValues(modifiedClient)
-
-        return modifiedProductCategory
+    open fun getCompanyByUuid(uuid: String): Company? {
+        return companyRepository.findByUuid(uuid)
     }
 }

@@ -151,6 +151,9 @@ class InfoSourceReferenceRestController @Autowired constructor(
                                 .add("name", category.name) })
                         .add("labels", infoSourceReference.productLabels, { label -> hashMapOf<String, Any>()
                                 .add("uuid", label.uuid)
-                                .add("name", label.name) }))
+                                .add("name", label.name) })
+                        .add("companies", infoSourceReference.companies, { company -> hashMapOf<String, Any>()
+                                .add("uuid", company.uuid)
+                                .add("name", company.name) }))
     }
 }

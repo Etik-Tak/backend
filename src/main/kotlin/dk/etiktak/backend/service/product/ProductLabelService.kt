@@ -27,10 +27,52 @@ package dk.etiktak.backend.service.product
 
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.product.ProductLabelRepository
+import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.util.CryptoUtil
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
-interface ProductLabelService {
+@Service
+@Transactional
+open class ProductLabelService @Autowired constructor(
+        private val productLabelRepository: ProductLabelRepository,
+        private val clientRepository: ClientRepository) {
 
-    fun getProductLabelByUuid(uuid: String): ProductLabel?
+    private val logger = LoggerFactory.getLogger(ProductLabelService::class.java)
 
-    fun createProductLabel(client: Client, name: String, modifyValues: (Client) -> Unit = {}): ProductLabel
+    /**
+     * Finds a product label from the given UUID.
+     *
+     * @param uuid  UUID
+     * @return      Product label with given UUID
+     */
+    open fun getProductLabelByUuid(uuid: String): ProductLabel? {
+        return productLabelRepository.findByUuid(uuid)
+    }
+
+    /**
+     * Creates a product label.
+     *
+     * @param name          Name
+     * @param modifyValues  Function called with modified client
+     * @return              Product label
+     */
+    open fun createProductLabel(client: Client, name: String, modifyValues: (Client) -> Unit = {}): ProductLabel {
+        val productLabel = ProductLabel()
+        productLabel.uuid = CryptoUtil().uuid()
+        productLabel.creator = client
+        productLabel.name = name
+
+        client.productLabels.add(productLabel)
+
+        val modifiedClient = clientRepository.save(client)
+        val modifiedProductLabel = productLabelRepository.save(productLabel)
+
+        modifyValues(modifiedClient)
+
+        return modifiedProductLabel
+    }
 }

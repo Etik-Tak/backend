@@ -35,6 +35,7 @@ package dk.etiktak.backend.model.user
 
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infochannel.InfoChannelFollower
+import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.recommendation.Recommendation
@@ -89,6 +90,10 @@ class Client constructor() {
     @NotNull
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     var recommendations: MutableList<Recommendation> = ArrayList()
+
+    @NotNull
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    var infoSources: MutableList<InfoSource> = ArrayList()
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var productTrustVotes: MutableList<TrustVote> = ArrayList()

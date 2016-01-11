@@ -24,44 +24,32 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product.
+ * Represents a company.
  */
 
-package dk.etiktak.backend.model.product
+package dk.etiktak.backend.model.company
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.infosource.InfoSourceReference
-import dk.etiktak.backend.model.recommendation.ProductRecommendation
-import dk.etiktak.backend.model.trust.ProductTrustVote
+import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.recommendation.CompanyRecommendation
+import dk.etiktak.backend.model.trust.CompanyTrustVote
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-@Entity(name = "products")
-class Product constructor() : BaseModel() {
-
-    enum class BarcodeType {
-        EAN13,
-        UPC,
-        UNKNOWN
-    }
+@Entity(name = "companies")
+class Company constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_id")
+    @Column(name = "company_id")
     var id: Long = 0
 
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
-
-    @Column(name = "barcode")
-    var barcode: String = ""
-
-    @Column(name = "barcode_type")
-    var barcodeType = BarcodeType.UNKNOWN
 
     @Column(name = "name")
     var name: String = ""
@@ -70,45 +58,20 @@ class Product constructor() : BaseModel() {
     var correctnessTrusted: Boolean = false
 
     @NotNull
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    var correctnessTrustVotes: MutableList<ProductTrustVote> = ArrayList()
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    var correctnessTrustVotes: MutableList<CompanyTrustVote> = ArrayList()
 
-    @NotNull
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    var productScans: MutableList<ProductScan> = ArrayList()
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    var recommendations: MutableList<CompanyRecommendation> = ArrayList()
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="product_productCategory",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
-    @Column(name = "product_categories")
-    var productCategories: MutableSet<ProductCategory> = HashSet()
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="product_productLabel",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_label_id", referencedColumnName="product_label_id")))
-    @Column(name = "product_labels")
-    var productLabels: MutableSet<ProductLabel> = HashSet()
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="product_company",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="company_id", referencedColumnName="company_id")))
-    @Column(name = "companies")
-    var companies: MutableSet<Company> = HashSet()
-
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    var recommendations: MutableList<ProductRecommendation> = ArrayList()
+    @ManyToMany(mappedBy = "companies", fetch = FetchType.LAZY)
+    var products: MutableSet<Product> = HashSet()
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
     var creator = Client()
 
-    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "companies", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

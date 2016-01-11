@@ -23,49 +23,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.service.client
+/**
+ * Represents a trust vote for a company, i.e. if the company info is correct or not.
+ */
 
-import dk.etiktak.backend.model.user.Client
-import dk.etiktak.backend.repository.user.ClientRepository
-import dk.etiktak.backend.util.CryptoUtil
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
+package dk.etiktak.backend.model.trust
 
-@Service
-@Transactional
-class ClientServiceImpl @Autowired constructor(
-        private val clientRepository: ClientRepository) : ClientService {
+import dk.etiktak.backend.model.company.Company
+import javax.persistence.*
 
-    private val logger = LoggerFactory.getLogger(ClientServiceImpl::class.java)
+@Entity
+@DiscriminatorValue("Company")
+class CompanyTrustVote : TrustVote() {
 
-    /**
-     * Creates a client entry. Throws exception if client with mobile number *and* given password already exists.
-     *
-     * @return                Created client entry
-     * @throws Exception
-     */
-    @Throws(Exception::class)
-    override fun createClient(): Client {
-        val client = Client()
-        client.uuid = CryptoUtil().uuid()
-        client.mobileNumberHashPasswordHashHashed = null
-        client.verified = false
-        clientRepository.save(client)
-
-        logger.info("Created new client with uuid: ${client.uuid}")
-
-        return client
-    }
-
-    /**
-     * Finds client by UUID.
-     *
-     * @param uuid    Client UUID
-     * @return        Client
-     */
-    override fun getByUuid(uuid: String): Client? {
-        return clientRepository.findByUuid(uuid)
-    }
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "company_id")
+    var company = Company()
 }

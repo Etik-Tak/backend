@@ -30,11 +30,13 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.trust.TrustVoteType
 import dk.etiktak.backend.service.client.ClientService
+import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
 import dk.etiktak.backend.service.product.ProductService
@@ -48,6 +50,7 @@ class ProductRestController @Autowired constructor(
         private val productService: ProductService,
         private val productCategoryService: ProductCategoryService,
         private val productLabelService: ProductLabelService,
+        private val companyService: CompanyService,
         private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
@@ -72,7 +75,8 @@ class ProductRestController @Autowired constructor(
             @RequestParam(required = false) barcode: String? = null,
             @RequestParam(required = false) barcodeType: String? = null,
             @RequestParam(required = false) categoryUuidList: List<String>? = null,
-            @RequestParam(required = false) labelUuidList: List<String>? = null): HashMap<String, Any> {
+            @RequestParam(required = false) labelUuidList: List<String>? = null,
+            @RequestParam(required = false) companyUuidList: List<String>?): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
 
@@ -94,6 +98,15 @@ class ProductRestController @Autowired constructor(
             }
         }
 
+        // List of companies
+        val companies = ArrayList<Company>()
+        companyUuidList?.let {
+            for (companyUuid in companyUuidList) {
+                val company = companyService.getCompanyByUuid(companyUuid) ?: continue
+                companies.add(company)
+            }
+        }
+
         // Create product
         val product = productService.createProduct(
                 client,
@@ -101,7 +114,8 @@ class ProductRestController @Autowired constructor(
                 if (barcodeType != null) Product.BarcodeType.valueOf(barcodeType) else null,
                 name,
                 productCategories,
-                productLabels)
+                productLabels,
+                companies)
 
         return productOkMap(product)
     }
@@ -152,7 +166,7 @@ class ProductRestController @Autowired constructor(
                 .add("product", hashMapOf<String, Any>()
                         .add("uuid", product.uuid)
                         .add("name", product.name)
-                        .add("trusted", product.trusted)
+                        .add("correctnessTrusted", product.correctnessTrusted)
                         .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
                                 .add("uuid", category.uuid)
                                 .add("name", category.name) })

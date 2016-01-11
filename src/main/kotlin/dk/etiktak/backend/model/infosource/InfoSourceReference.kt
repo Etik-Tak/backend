@@ -30,6 +30,7 @@
 package dk.etiktak.backend.model.infosource
 
 import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
@@ -94,6 +95,14 @@ class InfoSourceReference constructor() : BaseModel() {
             inverseJoinColumns=arrayOf(JoinColumn(name="product_label_id", referencedColumnName="product_label_id")))
     @Column(name = "product_labels")
     var productLabels: MutableSet<ProductLabel> = HashSet()
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name="infoSourceReference_company",
+            joinColumns=arrayOf(JoinColumn(name="info_source_reference_id", referencedColumnName="info_source_reference_id")),
+            inverseJoinColumns=arrayOf(JoinColumn(name="company_id", referencedColumnName="company_id")))
+    @Column(name = "companies")
+    var companies: MutableSet<Company> = HashSet()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

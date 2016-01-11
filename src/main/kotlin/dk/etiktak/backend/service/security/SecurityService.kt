@@ -26,8 +26,23 @@
 package dk.etiktak.backend.service.security
 
 import dk.etiktak.backend.model.user.Client
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
-interface SecurityService {
+@Service
+@Transactional
+open class SecurityService {
 
-    fun assertCreatorOrAdmin(callingClient: Client, creatorClient: Client)
+    private val logger = LoggerFactory.getLogger(SecurityService::class.java)
+
+    open fun assertCreatorOrAdmin(callingClient: Client, creatorClient: Client) {
+
+        // Check if same client
+        if (callingClient.uuid.equals(creatorClient.uuid)) {
+            return
+        }
+
+        throw RuntimeException("Client with UUID: ${callingClient.uuid} not owner of object. Owner is client with UUID: ${creatorClient.uuid}")
+    }
 }

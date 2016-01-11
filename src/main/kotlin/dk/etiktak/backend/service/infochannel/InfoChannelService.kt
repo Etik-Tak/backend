@@ -25,15 +25,124 @@
 
 package dk.etiktak.backend.service.infochannel
 
+import dk.etiktak.backend.model.acl.AclRole
 import dk.etiktak.backend.model.infochannel.InfoChannel
+import dk.etiktak.backend.model.infochannel.InfoChannelClient
+import dk.etiktak.backend.model.infochannel.InfoChannelFollower
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
+import dk.etiktak.backend.repository.infochannel.InfoChannelFollowerRepository
+import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
+import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.util.CryptoUtil
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
-interface InfoChannelService {
+@Service
+@Transactional
+open class InfoChannelService @Autowired constructor(
+        private val clientRepository: ClientRepository,
+        private val infoChannelRepository: InfoChannelRepository,
+        private val infoChannelClientRepository: InfoChannelClientRepository,
+        private val infoChannelFollowerRepository: InfoChannelFollowerRepository) {
 
-    fun getInfoChannelByUuid(uuid: String): InfoChannel?
+    private val logger = LoggerFactory.getLogger(InfoChannelService::class.java)
 
-    fun createInfoChannel(client: Client, name: String, modifyValues: (Client) -> Unit = {}): InfoChannel
-    fun followInfoChannel(client: Client, infoChannel: InfoChannel, modifyValues: (Client, InfoChannel) -> Unit = {client, infoChannel -> Unit})
+    /**
+     * Finds an info channel from the given UUID.
+     *
+     * @param uuid  UUID
+     * @return      Info channel with given UUID
+     */
+    open fun getInfoChannelByUuid(uuid: String): InfoChannel? {
+        return infoChannelRepository.findByUuid(uuid)
+    }
 
-    fun isClientMemberOfInfoChannel(client: Client, infoChannel: InfoChannel): Boolean
+    /**
+     * Creates an info channel with the given client as owner.
+     *
+     * @param client        Owner
+     * @param name          Name of info channel
+     * @param modifyValues  Function called with modified client
+     * @return              Created info channel
+     */
+    open fun createInfoChannel(client: Client, name: String, modifyValues: (Client) -> Unit = {}): InfoChannel {
+        logger.info("Creating new info channel with name: $name")
+
+        // Create info channel
+        val infoChannel = InfoChannel()
+        infoChannel.uuid = CryptoUtil().uuid()
+        infoChannel.name = name
+
+        // Create info channel client
+        val infoChannelClient = InfoChannelClient()
+        infoChannelClient.uuid = CryptoUtil().uuid()
+        infoChannelClient.client = client
+        infoChannelClient.infoChannel = infoChannel
+        infoChannelClient.roles.add(AclRole.OWNER)
+
+        // Glue them together
+        infoChannel.infoChannelClients.add(infoChannelClient)
+        client.infoChannelClients.add(infoChannelClient)
+
+        // Save them all
+        var modifiedClient = clientRepository.save(client)
+        var modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        infoChannelClientRepository.save(infoChannelClient)
+
+        modifiedClient = clientRepository.findByUuid(modifiedClient.uuid)
+
+        // Follow ones own info channel
+        followInfoChannel(modifiedClient, modifiedInfoChannel,
+                modifyValues = {client, infoChannel -> modifiedClient = client; modifiedInfoChannel = infoChannel})
+
+        modifyValues(modifiedClient)
+
+        return modifiedInfoChannel
+    }
+
+    /**
+     * Marks the client as following the given info channel.
+     *
+     * @param client        Client
+     * @param infoChannel   Info channel
+     * @param modifyValues  Function called with modified client and info channel
+     */
+    open fun followInfoChannel(client: Client, infoChannel: InfoChannel, modifyValues: (Client, InfoChannel) -> Unit = {client, infoChannel -> Unit}) {
+
+        // Create info channel client
+        val infoChannelFollower = InfoChannelFollower()
+        infoChannelFollower.uuid = CryptoUtil().uuid()
+        infoChannelFollower.client = client
+        infoChannelFollower.infoChannel = infoChannel
+
+        // Glue them together
+        infoChannel.followers.add(infoChannelFollower)
+        client.followingInfoChannels.add(infoChannelFollower)
+
+        // Save them all
+        val modifiedClient = clientRepository.save(client)
+        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        infoChannelFollowerRepository.save(infoChannelFollower)
+
+        modifyValues(modifiedClient, modifiedInfoChannel)
+    }
+
+    /**
+     * Checks whether the given client is member of the given info channel.
+     *
+     * @param client        Client
+     * @param infoChannel   Info channel
+     * @return              True, if client is member of info channel, else false
+     */
+    open fun isClientMemberOfInfoChannel(client: Client, infoChannel: InfoChannel): Boolean {
+        for (infoChannelClient in infoChannel.infoChannelClients) {
+            if (infoChannelClient.client.uuid.equals(client.uuid)) {
+                return true
+            }
+        }
+        return false
+    }
 }

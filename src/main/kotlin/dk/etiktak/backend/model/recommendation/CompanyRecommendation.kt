@@ -23,26 +23,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.service.security
+/**
+ * Represents a company recommendation. Extends Recommendation.
+ */
 
-import dk.etiktak.backend.model.user.Client
-import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
+package dk.etiktak.backend.model.recommendation
 
-@Service
-@Transactional
-class SecurityServiceImpl : SecurityService {
+import dk.etiktak.backend.model.company.Company
+import javax.persistence.*
 
-    private val logger = LoggerFactory.getLogger(SecurityServiceImpl::class.java)
+@Entity
+@DiscriminatorValue("Company")
+class CompanyRecommendation : Recommendation() {
 
-    override fun assertCreatorOrAdmin(callingClient: Client, creatorClient: Client) {
-
-        // Check if same client
-        if (callingClient.uuid.equals(creatorClient.uuid)) {
-            return
-        }
-
-        throw RuntimeException("Client with UUID: ${callingClient.uuid} not owner of object. Owner is client with UUID: ${creatorClient.uuid}")
-    }
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "company_id")
+    var company = Company()
 }

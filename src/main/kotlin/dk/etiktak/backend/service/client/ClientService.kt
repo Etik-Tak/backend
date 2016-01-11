@@ -26,11 +26,46 @@
 package dk.etiktak.backend.service.client
 
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.util.CryptoUtil
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
-interface ClientService {
+@Service
+@Transactional
+open class ClientService @Autowired constructor(
+        private val clientRepository: ClientRepository) {
 
+    private val logger = LoggerFactory.getLogger(ClientService::class.java)
+
+    /**
+     * Creates a client entry. Throws exception if client with mobile number *and* given password already exists.
+     *
+     * @return                Created client entry
+     * @throws Exception
+     */
     @Throws(Exception::class)
-    fun createClient(): Client
+    open fun createClient(): Client {
+        val client = Client()
+        client.uuid = CryptoUtil().uuid()
+        client.mobileNumberHashPasswordHashHashed = null
+        client.verified = false
+        clientRepository.save(client)
 
-    fun getByUuid(uuid: String): Client?
+        logger.info("Created new client with uuid: ${client.uuid}")
+
+        return client
+    }
+
+    /**
+     * Finds client by UUID.
+     *
+     * @param uuid    Client UUID
+     * @return        Client
+     */
+    open fun getByUuid(uuid: String): Client? {
+        return clientRepository.findByUuid(uuid)
+    }
 }
