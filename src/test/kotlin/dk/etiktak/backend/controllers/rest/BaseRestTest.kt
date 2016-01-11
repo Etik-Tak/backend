@@ -120,7 +120,7 @@ open class BaseRestTest {
     val productRepository: ProductRepository? = null
 
     @Autowired
-    val productTrustVoteRepository: ProductTrustVoteRepository? = null
+    val trustVoteRepository: TrustVoteRepository? = null
 
     @Autowired
     val clientRepository: ClientRepository? = null
@@ -184,7 +184,7 @@ open class BaseRestTest {
 
 
     fun cleanRepository() {
-        productTrustVoteRepository!!.deleteAll()
+        trustVoteRepository!!.deleteAll()
 
         recommendationRepository!!.deleteAll()
         productRecommendationRepository!!.deleteAll()

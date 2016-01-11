@@ -33,7 +33,7 @@ import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
-import dk.etiktak.backend.model.product.ProductTrustVoteType
+import dk.etiktak.backend.model.product.TrustVoteType
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
@@ -138,7 +138,7 @@ class ProductRestController @Autowired constructor(
     fun trustVoteProduct(
             @RequestParam clientUuid: String,
             @RequestParam productUuid: String,
-            @RequestParam vote: ProductTrustVoteType): HashMap<String, Any> {
+            @RequestParam vote: TrustVoteType): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap()
         val product = productService.getProductByUuid(productUuid) ?: return notFoundMap()
 

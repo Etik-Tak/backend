@@ -23,19 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Represents a trust vote for a product, i.e. if the product is correct or not.
- */
+package dk.etiktak.backend.repository.product
 
-package dk.etiktak.backend.model.product
+import dk.etiktak.backend.model.product.ProductTrustVote
+import dk.etiktak.backend.model.product.TrustVoteType
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-import javax.persistence.*
-
-@Entity
-@DiscriminatorValue("Product")
-class ProductTrustVote : TrustVote() {
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "product_id")
-    var product = Product()
+@Repository
+interface TrustVoteRepository : PagingAndSortingRepository<ProductTrustVote, Long> {
+    fun findByVote(vote: TrustVoteType): List<ProductTrustVote>
+    fun findByProductUuid(uuid: String): List<ProductTrustVote>
 }

@@ -49,7 +49,7 @@ interface ProductService {
     fun scanProduct(barcode: String, client: Client, location: Location?): ProductScanResult
     fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?, modifyValues: (ProductScan) -> Unit = {})
 
-    fun trustVoteProduct(client: Client, product: Product, vote: ProductTrustVoteType,
+    fun trustVoteProduct(client: Client, product: Product, vote: TrustVoteType,
                          modifyValues: (Client, Product) -> Unit = {client, product -> Unit}): ProductTrustVote
 }
 

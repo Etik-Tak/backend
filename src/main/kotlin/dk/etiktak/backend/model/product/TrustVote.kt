@@ -23,15 +23,57 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.product
+/**
+ * Represents a trust vote, fx. if the item in question is correct or not.
+ */
 
-import dk.etiktak.backend.model.product.ProductTrustVote
-import dk.etiktak.backend.model.product.ProductTrustVoteType
-import org.springframework.data.repository.PagingAndSortingRepository
-import org.springframework.stereotype.Repository
+package dk.etiktak.backend.model.product
 
-@Repository
-interface ProductTrustVoteRepository : PagingAndSortingRepository<ProductTrustVote, Long> {
-    fun findByVote(vote: ProductTrustVoteType): List<ProductTrustVote>
-    fun findByProductUuid(uuid: String): List<ProductTrustVote>
+import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.user.Client
+import org.springframework.format.annotation.DateTimeFormat
+import java.util.*
+import javax.persistence.*
+
+@Entity(name = "trust_votes")
+@Table(uniqueConstraints = arrayOf(
+        UniqueConstraint(columnNames = arrayOf("client_id", "product_id"))))
+open class TrustVote constructor() : BaseModel() {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "trust_vote_id")
+    var id: Long = 0
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var client = Client()
+
+    @Column(name = "vote")
+    var vote = TrustVoteType.Trusted
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var creationTime = Date()
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var modificationTime = Date()
+
+
+
+    @PreUpdate
+    fun preUpdate() {
+        modificationTime = Date()
+    }
+
+    @PrePersist
+    fun prePersist() {
+        val now = Date()
+        creationTime = now
+        modificationTime = now
+    }
+}
+
+enum class TrustVoteType {
+    Trusted,
+    NotTrusted
 }

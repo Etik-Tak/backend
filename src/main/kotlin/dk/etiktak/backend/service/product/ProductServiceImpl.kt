@@ -51,7 +51,7 @@ class ProductServiceImpl @Autowired constructor(
         private val locationRepository: LocationRepository,
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
-        private val productTrustVoteRepository: ProductTrustVoteRepository,
+        private val trustVoteRepository: TrustVoteRepository,
         private val securityService: SecurityService) : ProductService {
 
     private val logger = LoggerFactory.getLogger(ProductServiceImpl::class.java)
@@ -135,7 +135,7 @@ class ProductServiceImpl @Autowired constructor(
         }
 
         // Trust vote product
-        trustVoteProduct(modifiedClient, modifiedProduct, ProductTrustVoteType.Trusted, modifyValues = {client, product -> modifiedClient = client; modifiedProduct = product})
+        trustVoteProduct(modifiedClient, modifiedProduct, TrustVoteType.Trusted, modifyValues = { client, product -> modifiedClient = client; modifiedProduct = product})
 
         modifyValues(modifiedClient, modifiedProductCategories, modifiedProductLabels)
 
@@ -318,7 +318,7 @@ class ProductServiceImpl @Autowired constructor(
      * @param vote          Vote
      * @param modifyValues  Function called with modified client and product
      */
-    override fun trustVoteProduct(client: Client, product: Product, vote: ProductTrustVoteType, modifyValues: (Client, Product) -> Unit): ProductTrustVote {
+    override fun trustVoteProduct(client: Client, product: Product, vote: TrustVoteType, modifyValues: (Client, Product) -> Unit): ProductTrustVote {
         val productTrustVote = ProductTrustVote()
         productTrustVote.client = client
         productTrustVote.product = product
@@ -327,7 +327,7 @@ class ProductServiceImpl @Autowired constructor(
         product.trustVotes.add(productTrustVote)
         client.productTrustVotes.add(productTrustVote)
 
-        val modifiedProductTrustVote = productTrustVoteRepository.save(productTrustVote)
+        val modifiedProductTrustVote = trustVoteRepository.save(productTrustVote)
         val modifiedProduct = productRepository.save(product)
         val modifiedClient = clientRepository.save(client)
 
