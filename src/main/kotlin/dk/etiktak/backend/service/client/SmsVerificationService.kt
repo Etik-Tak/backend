@@ -54,9 +54,7 @@ open class SmsVerificationService @Autowired constructor(
      * @param mobileNumber    Mobile number
      * @param password        Password
      * @return                Created SMS verification
-     * @throws Exception
      */
-    @Throws(Exception::class)
     open fun requestRecoverySmsChallenge(mobileNumber: String, password: String): SmsVerification {
 
         // Check for empty fields
@@ -81,28 +79,23 @@ open class SmsVerificationService @Autowired constructor(
 
         client!!
 
-        return requestSmsChallenge(client.uuid, mobileNumber, password)
+        return requestSmsChallenge(client, mobileNumber, password)
     }
 
     /**
      * Creates and returns an SMS verification entry and sends the challenge part to the given mobile number.
      *
-     * @param clientUuid      Client uuid for which to attach
+     * @param client          Client for which to attach
      * @param mobileNumber    Mobile number
      * @param password        Choosen password
+     * @param modifyValues    Function called with modified client
      * @return                Created SMS verification
-     * @throws Exception
      */
-    @Throws(Exception::class)
-    open fun requestSmsChallenge(clientUuid: String, mobileNumber: String, password: String): SmsVerification {
+    open fun requestSmsChallenge(client: Client, mobileNumber: String, password: String, modifyValues: (Client) -> Unit = {}): SmsVerification {
         val smsChallenge = CryptoUtil().generateSmsChallenge()
         val clientChallenge = CryptoUtil().uuid()
 
         // Check for empty fields
-        Assert.isTrue(
-                !StringUtils.isEmpty(clientUuid),
-                "Client UUID must be provided")
-
         Assert.isTrue(
                 !StringUtils.isEmpty(mobileNumber),
                 "Mobile number must be provided")
@@ -112,15 +105,6 @@ open class SmsVerificationService @Autowired constructor(
                 "Password must be provided")
 
         logger.info("Requesting new SMS challenge for user with mobile number: $mobileNumber")
-
-        // Fetch client from UUID
-        val client = clientRepository.findByUuid(clientUuid)
-
-        Assert.notNull(
-                client,
-                "Client with UUID $clientUuid does not exist")
-
-        client!!
 
         // Fetch existing SMS verification, if any
         var smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber))
@@ -143,7 +127,7 @@ open class SmsVerificationService @Autowired constructor(
             // Client with given mobile number and password cannot already exist
             Assert.isNull(
                     client.mobileNumberHashPasswordHashHashed,
-                    "Internal error: Client with UUID $clientUuid already verified, though mobile number entry $mobileNumber did not exist")
+                    "Internal error: Client with UUID ${client.uuid} already verified, though mobile number entry $mobileNumber did not exist")
 
             // SMS challenge cannot already exist
             Assert.isNull(
@@ -161,7 +145,7 @@ open class SmsVerificationService @Autowired constructor(
         // Mark client as not verified
         client.mobileNumberHashPasswordHashHashed = CryptoUtil().hashOfHashes(mobileNumber, password)
         client.verified = false
-        clientRepository.save(client)
+        val modifiedClient = clientRepository.save(client)
 
         // Check SMS verification
         Assert.notNull(
@@ -184,6 +168,8 @@ open class SmsVerificationService @Autowired constructor(
         smsVerification.status = SmsVerification.SmsVerificationStatus.SENT
         smsVerificationRepository.save(smsVerification)
 
+        modifyValues(modifiedClient)
+
         return smsVerification
     }
 
@@ -195,9 +181,7 @@ open class SmsVerificationService @Autowired constructor(
      * @param smsChallenge       Received SMS challenge
      * @param clientChallenge    Received client challenge
      * @return                   Verified client
-     * @throws Exception
      */
-    @Throws(Exception::class)
     open fun verifySmsChallenge(mobileNumber: String, password: String, smsChallenge: String, clientChallenge: String): Client {
 
         // Check for empty fields
@@ -267,9 +251,7 @@ open class SmsVerificationService @Autowired constructor(
      *
      * @param mobileNumber    Mobile number
      * @return                Created mobile number entry
-     * @throws Exception
      */
-    @Throws(Exception::class)
     open fun createMobileNumber(mobileNumber: String): MobileNumber {
         Assert.isNull(
                 mobileNumberRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber)),

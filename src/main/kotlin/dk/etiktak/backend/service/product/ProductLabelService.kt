@@ -29,6 +29,7 @@ import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -60,6 +61,7 @@ open class ProductLabelService @Autowired constructor(
      * @param modifyValues  Function called with modified client
      * @return              Product label
      */
+    @ClientVerified
     open fun createProductLabel(client: Client, name: String, modifyValues: (Client) -> Unit = {}): ProductLabel {
         val productLabel = ProductLabel()
         productLabel.uuid = CryptoUtil().uuid()

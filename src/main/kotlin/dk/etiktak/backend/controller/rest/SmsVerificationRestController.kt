@@ -31,6 +31,7 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.user.SmsVerification
+import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.client.SmsVerificationService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -42,7 +43,8 @@ import java.util.*
 @RestController
 @RequestMapping("/service/verification")
 class SmsVerificationRestController @Autowired constructor(
-        private val smsVerificationService: SmsVerificationService) : BaseRestController() {
+        private val smsVerificationService: SmsVerificationService,
+        private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/request/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
@@ -50,7 +52,8 @@ class SmsVerificationRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam mobileNumber: String,
             @RequestParam password: String): HashMap<String, Any> {
-        val smsVerification = smsVerificationService.requestSmsChallenge(clientUuid, mobileNumber, password)
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val smsVerification = smsVerificationService.requestSmsChallenge(client, mobileNumber, password)
         return smsVerificationOkMap(smsVerification)
     }
 

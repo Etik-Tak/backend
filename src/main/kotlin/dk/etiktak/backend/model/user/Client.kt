@@ -62,6 +62,12 @@ class Client constructor() {
     @Column(name = "verified", nullable = false)
     var verified: Boolean = false
 
+    @Column(name = "enabled", nullable = false)
+    var enabled: Boolean = true
+
+    @Column(name = "banned", nullable = false)
+    var banned: Boolean = false
+
     @NotNull
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
@@ -82,10 +88,6 @@ class Client constructor() {
     @NotNull
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     var productLabels: MutableList<ProductLabel> = ArrayList()
-
-    @NotNull
-    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
-    var products: MutableList<Product> = ArrayList()
 
     @NotNull
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)

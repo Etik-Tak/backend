@@ -29,6 +29,7 @@ import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -60,6 +61,7 @@ open class ProductCategoryService @Autowired constructor(
      * @param modifyValues  Function called with modified client
      * @return              Product category
      */
+    @ClientVerified
     open fun createProductCategory(client: Client, name: String, modifyValues: (Client) -> Unit = {}): ProductCategory {
         val productCategory = ProductCategory()
         productCategory.uuid = CryptoUtil().uuid()

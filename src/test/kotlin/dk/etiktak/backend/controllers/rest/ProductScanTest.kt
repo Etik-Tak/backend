@@ -139,7 +139,7 @@ open class ProductScanTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.scan.product.uuid", notNullValue()))
-                .andExpect(jsonPath("$.scan.product.name", `is`("Automatisk oprettet")))
+                .andExpect(jsonPath("$.scan.product.name", `is`("Ukendt")))
                 .andExpect(jsonPath("$.scan.product.correctnessTrust", `is`(0.0)))
                 .andReturn().response.contentAsString
         val productUuid = JsonPath.read<String>(json, "$.scan.product.uuid")
@@ -153,7 +153,7 @@ open class ProductScanTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.scan.product.uuid", `is`(productUuid)))
-                .andExpect(jsonPath("$.scan.product.name", `is`("Automatisk oprettet")))
+                .andExpect(jsonPath("$.scan.product.name", `is`("Ukendt")))
                 .andExpect(jsonPath("$.scan.product.correctnessTrust", `is`(0.0)))
     }
 

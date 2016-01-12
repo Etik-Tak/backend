@@ -74,6 +74,9 @@ open class BaseRestTest {
     var client1Uuid = ""
     var client2Uuid = ""
 
+    var nonVerifiedClient1Uuid = ""
+    var nonVerifiedClient2Uuid = ""
+
     var product1Uuid = ""
     var product2Uuid = ""
 
@@ -334,10 +337,15 @@ open class BaseRestTest {
                 "$.recommendation.uuid")
     }
 
-    fun createAndSaveClient(): String {
-        return postAndExtract(ClientServiceTest().serviceEndpoint("create/"),
+    fun createAndSaveClient(verified: Boolean = true): String {
+        val clientUuid = postAndExtract(ClientServiceTest().serviceEndpoint("create/"),
                 hashMapOf(),
                 "$.client.uuid")
+
+        val client = clientRepository!!.findByUuid(clientUuid)!!
+        client.verified = verified
+        clientRepository.save(client)
+        return clientUuid
     }
 
     fun createLocation(latitude: Double, longitude: Double): TestLocation {

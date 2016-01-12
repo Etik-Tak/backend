@@ -31,6 +31,7 @@ import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceUrlPrefixRepository
 import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -66,6 +67,7 @@ open class InfoSourceService @Autowired constructor(
      * @param friendlyName   Name of info source
      * @return               Created info source
      */
+    @ClientVerified
     open fun createInfoSource(client: Client, urlPrefixes: List<String>, friendlyName: String, modifyValues: (Client) -> Unit = {}): InfoSource {
 
         // Validate url prefix

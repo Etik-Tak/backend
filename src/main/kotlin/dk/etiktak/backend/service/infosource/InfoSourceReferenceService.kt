@@ -42,6 +42,7 @@ import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.infochannel.InfoChannelService
+import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -88,6 +89,7 @@ open class InfoSourceReferenceService @Autowired constructor(
      * @param modifyValues     Function called with modified client, info channel and info source
      * @return                 Created info source reference
      */
+    @ClientVerified
     open fun createInfoSourceReference(client: Client, infoChannel: InfoChannel, infoSource: InfoSource,
                                        url: String, title: String, summary: String,
                                        modifyValues: (Client, InfoChannel, InfoSource) -> Unit = {client, infoChannel, infoSource -> Unit}): InfoSourceReference {
@@ -144,6 +146,7 @@ open class InfoSourceReferenceService @Autowired constructor(
      * @param products              Products
      * @param modifyValues          Function called with modified info source reference and products
      */
+    @ClientVerified
     open fun assignProductsToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, products: List<Product>,
                                                  modifyValues: (InfoSourceReference, List<Product>) -> Unit = {infoSourceReference, products -> Unit}) {
 
@@ -176,6 +179,7 @@ open class InfoSourceReferenceService @Autowired constructor(
      * @param productCategories     Product categories
      * @param modifyValues          Function called with modified info source reference and product categories
      */
+    @ClientVerified
     open fun assignProductCategoriesToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productCategories: List<ProductCategory>,
                                                           modifyValues: (InfoSourceReference, List<ProductCategory>) -> Unit = {infoSourceReference, productCategories -> Unit}) {
 
@@ -208,6 +212,7 @@ open class InfoSourceReferenceService @Autowired constructor(
      * @param productLabels         Product labels
      * @param modifyValues          Function called with modified info source reference and product labels
      */
+    @ClientVerified
     open fun assignProductLabelsToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productLabels: List<ProductLabel>,
                                                       modifyValues: (InfoSourceReference, List<ProductLabel>) -> Unit = {infoSourceReference, productLabels -> Unit}) {
 
@@ -240,6 +245,7 @@ open class InfoSourceReferenceService @Autowired constructor(
      * @param companies             Companies
      * @param modifyValues          Function called with modified info source reference and companies
      */
+    @ClientVerified
     open fun assignCompaniesToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, companies: List<Company>,
                                                   modifyValues: (InfoSourceReference, List<Company>) -> Unit = {infoSourceReference, companies -> Unit}) {
 

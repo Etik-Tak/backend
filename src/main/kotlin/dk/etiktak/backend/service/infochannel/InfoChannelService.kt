@@ -34,6 +34,7 @@ import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelFollowerRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -68,6 +69,7 @@ open class InfoChannelService @Autowired constructor(
      * @param modifyValues  Function called with modified client
      * @return              Created info channel
      */
+    @ClientVerified
     open fun createInfoChannel(client: Client, name: String, modifyValues: (Client) -> Unit = {}): InfoChannel {
         logger.info("Creating new info channel with name: $name")
 

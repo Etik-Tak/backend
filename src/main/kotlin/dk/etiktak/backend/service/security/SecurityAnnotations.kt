@@ -23,47 +23,37 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.service.client
+package dk.etiktak.backend.service.security
 
 import dk.etiktak.backend.model.user.Client
-import dk.etiktak.backend.repository.user.ClientRepository
-import dk.etiktak.backend.util.CryptoUtil
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
+import org.aspectj.lang.JoinPoint
+import org.aspectj.lang.annotation.Aspect
+import org.aspectj.lang.annotation.Before
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.EnableAspectJAutoProxy
+import org.springframework.stereotype.Component
+import org.springframework.util.Assert
 
-@Service
-@Transactional
-open class ClientService @Autowired constructor(
-        private val clientRepository: ClientRepository) {
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+public annotation class ClientVerified ()
 
-    private val logger = LoggerFactory.getLogger(ClientService::class.java)
-
-    /**
-     * Creates a client entry. Throws exception if client with mobile number *and* given password already exists.
-     *
-     * @return  Created client entry
-     */
-    open fun createClient(): Client {
-        val client = Client()
-        client.uuid = CryptoUtil().uuid()
-        client.mobileNumberHashPasswordHashHashed = null
-        client.verified = false
-        clientRepository.save(client)
-
-        logger.info("Created new client with uuid: ${client.uuid}")
-
-        return client
-    }
-
-    /**
-     * Finds client by UUID.
-     *
-     * @param uuid    Client UUID
-     * @return        Client
-     */
-    open fun getByUuid(uuid: String): Client? {
-        return clientRepository.findByUuid(uuid)
+@Component
+@Configuration
+@EnableAspectJAutoProxy
+@Aspect
+open class ClientVerifiedAspect {
+    @Before(value = "@within(dk.etiktak.backend.service.security.ClientVerified) || @annotation(dk.etiktak.backend.service.security.ClientVerified)")
+    fun before(joinPoint: JoinPoint) {
+        for (argument in joinPoint.args) {
+            if (argument.javaClass == Client::class.java) {
+                val client = argument as Client
+                Assert.isTrue(
+                        client.verified,
+                        "Client must be verified in order to call: ${joinPoint.signature.name}"
+                )
+                return
+            }
+        }
     }
 }

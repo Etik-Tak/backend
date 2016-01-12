@@ -73,6 +73,9 @@ class Product constructor() : BaseModel() {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var correctnessTrustVotes: MutableList<ProductTrustVote> = ArrayList()
 
+    @Column(name = "stub")
+    var stub = true
+
     @NotNull
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
@@ -103,10 +106,6 @@ class Product constructor() : BaseModel() {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var recommendations: MutableList<ProductRecommendation> = ArrayList()
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var creator = Client()
 
     @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()

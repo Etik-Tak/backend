@@ -36,6 +36,7 @@ import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.*
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.recommendation.RecommendationService
+import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.service.security.SecurityService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
@@ -105,20 +106,20 @@ open class ProductService @Autowired constructor(
      * @param modifyValues  Function called with modified client, product categories, product labels and companies
      * @return              Created product
      */
+    @ClientVerified
     open fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String,
                            categories: List<ProductCategory>, labels: List<ProductLabel>, companies: List<Company>,
                            modifyValues: (Client, List<ProductCategory>, List<ProductLabel>, List<Company>) -> Unit = {client, productCategories, productLabels, companies -> Unit}): Product {
 
         val product = Product()
         product.uuid = CryptoUtil().uuid()
-        product.creator = client
+        product.stub = true
         product.name = name
         product.productCategories.addAll(categories)
         product.productLabels.addAll(labels)
         product.companies.addAll(companies)
 
         // Glue it together
-        client.products.add(product)
         for (productCategory in categories) {
             productCategory.products.add(product)
         }
@@ -142,18 +143,54 @@ open class ProductService @Autowired constructor(
         for (company in companies) {
             modifiedCompanies.add(companyRepository.save(company))
         }
-        var modifiedClient = clientRepository.save(client)
         var modifiedProduct = productRepository.save(product)
 
         // Assign barcode
         if (barcode != null) {
-            assignBarcodeToProduct(modifiedClient, modifiedProduct, barcode, barcodeType ?: Product.BarcodeType.UNKNOWN, { product -> modifiedProduct = product})
+            assignBarcodeToProduct(client, modifiedProduct, barcode, barcodeType ?: Product.BarcodeType.UNKNOWN, { product -> modifiedProduct = product})
         }
 
         // Trust vote product
-        trustVoteProduct(modifiedClient, modifiedProduct, TrustVoteType.Trusted, modifyValues = { client, product -> modifiedClient = client; modifiedProduct = product})
+        var modifiedClient = client
+
+        trustVoteProduct(client, modifiedProduct, TrustVoteType.Trusted, modifyValues = { client, product -> modifiedClient = client; modifiedProduct = product})
 
         modifyValues(modifiedClient, modifiedProductCategories, modifiedProductLabels, modifiedCompanies)
+
+        return modifiedProduct
+    }
+
+    /**
+     * Creates a new stub product, that is, an empty product used to glue scans together and for later filling
+     * in information.
+     *
+     * @param client        Client
+     * @param barcode       Barcode
+     * @param barcodeType   Barcode type
+     * @param modifyValues  Function called with modified client
+     * @return              Created product
+     */
+    open fun createStubProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?,
+                           modifyValues: (Client) -> Unit = {}): Product {
+
+        val product = Product()
+        product.uuid = CryptoUtil().uuid()
+        product.name = "Ukendt"
+        product.stub = true
+
+        var modifiedProduct = productRepository.save(product)
+
+        // Assign barcode
+        if (barcode != null) {
+            assignBarcodeToProduct(client, modifiedProduct, barcode, barcodeType ?: Product.BarcodeType.UNKNOWN, { product -> modifiedProduct = product})
+        }
+
+        // Trust vote product
+        var modifiedClient = client
+
+        trustVoteProduct(modifiedClient, modifiedProduct, TrustVoteType.Trusted, modifyValues = { client, product -> modifiedClient = client; modifiedProduct = product})
+
+        modifyValues(modifiedClient)
 
         return modifiedProduct
     }
@@ -166,6 +203,7 @@ open class ProductService @Autowired constructor(
      * @param modifyValues  Function called with modified product
      * @return              Edited product
      */
+    @ClientVerified
     open fun editProduct(client: Client, product: Product, name: String?, modifyValues: (Product) -> Unit = {product -> Unit}) {
 
         // Modify values
@@ -191,6 +229,7 @@ open class ProductService @Autowired constructor(
      * @param barcodeType   Barcode type
      * @param modifyValues  Function called with modified product
      */
+    @ClientVerified
     open fun assignBarcodeToProduct(client: Client, product: Product, barcode: String, barcodeType: Product.BarcodeType, modifyValues: (Product) -> Unit = {}) {
         product.barcode = barcode
         product.barcodeType = barcodeType
@@ -208,14 +247,12 @@ open class ProductService @Autowired constructor(
      * @param productCategory   Product category
      * @param modifyValues      Function called with modified product and product category
      */
+    @ClientVerified
     open fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory, modifyValues: (Product, ProductCategory) -> Unit = {product, productCategory -> Unit}) {
-        securityService.assertCreatorOrAdmin(client, product.creator)
 
-        // Glue it together
         product.productCategories.add(productCategory)
         productCategory.products.add(product)
 
-        // Save it all
         val modifiedProductCategory = productCategoryRepository.save(productCategory)
         val modifiedProduct = productRepository.save(product)
 
@@ -230,14 +267,12 @@ open class ProductService @Autowired constructor(
      * @param productLabel      Product label
      * @param modifyValues      Function called with modified product and product label
      */
+    @ClientVerified
     open fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel, modifyValues: (Product, ProductLabel) -> Unit = {product, productLabel -> Unit}) {
-        securityService.assertCreatorOrAdmin(client, product.creator)
 
-        // Glue it together
         product.productLabels.add(productLabel)
         productLabel.products.add(product)
 
-        // Save it all
         val modifiedProductLabel = productLabelRepository.save(productLabel)
         val modifiedProduct = productRepository.save(product)
 
@@ -252,14 +287,12 @@ open class ProductService @Autowired constructor(
      * @param company           Company
      * @param modifyValues      Function called with modified product and product label
      */
+    @ClientVerified
     open fun assignCompanyToProduct(client: Client, product: Product, company: Company, modifyValues: (Product, Company) -> Unit = {product, company -> Unit}) {
-        securityService.assertCreatorOrAdmin(client, product.creator)
 
-        // Glue it together
         product.companies.add(company)
         company.products.add(product)
 
-        // Save it all
         val modifiedCompany = companyRepository.save(company)
         val modifiedProduct = productRepository.save(product)
 
@@ -291,10 +324,7 @@ open class ProductService @Autowired constructor(
 
         var product = getProductByBarcode(barcode)
         if (product == null) {
-            product = createProduct(
-                    client, barcode, Product.BarcodeType.UNKNOWN, "Automatisk oprettet",
-                    categories = arrayListOf(), labels = arrayListOf(), companies = arrayListOf(),
-                    modifyValues = {client, productCategories, productLabels, companies -> modifiedClient = client})
+            product = createStubProduct(client, barcode, Product.BarcodeType.UNKNOWN, modifyValues = {client -> modifiedClient = client})
         }
 
         // Create product scan
