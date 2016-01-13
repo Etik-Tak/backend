@@ -59,7 +59,6 @@ open class RecommendationService @Autowired constructor(
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
         private val infoChannelService: InfoChannelService,
-        private val clientRepository: ClientRepository,
         private val infoChannelRepository: InfoChannelRepository) {
 
     private val logger = LoggerFactory.getLogger(RecommendationService::class.java)

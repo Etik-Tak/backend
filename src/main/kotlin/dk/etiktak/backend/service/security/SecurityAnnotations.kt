@@ -29,10 +29,10 @@ import dk.etiktak.backend.model.user.Client
 import org.aspectj.lang.JoinPoint
 import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Before
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.stereotype.Component
-import org.springframework.util.Assert
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
@@ -49,24 +49,17 @@ public annotation class ClientValid ()
 @EnableAspectJAutoProxy
 @Aspect
 open class ClientVerifiedAspect {
+
+    @Autowired
+    private val securityService: SecurityService? = null
+
     @Before(value = "@within(dk.etiktak.backend.service.security.ClientVerified) || @annotation(dk.etiktak.backend.service.security.ClientVerified)")
     fun before(joinPoint: JoinPoint) {
         for (argument in joinPoint.args) {
-            if (argument.javaClass == Client::class.java) {
-                val client = argument as Client
-                Assert.isTrue(
-                        client.enabled,
-                        "Client must be enabled in order to call: ${joinPoint.signature.name}"
-                )
-                Assert.isTrue(
-                        !client.banned,
-                        "Client is banned and cannot call: ${joinPoint.signature.name}"
-                )
-                Assert.isTrue(
-                        client.verified,
-                        "Client must be verified in order to call: ${joinPoint.signature.name}"
-                )
-                return
+            argument?.let {
+                if (argument.javaClass == Client::class.java) {
+                    securityService!!.assertClientVerified(argument as Client)
+                }
             }
         }
     }
@@ -77,20 +70,17 @@ open class ClientVerifiedAspect {
 @EnableAspectJAutoProxy
 @Aspect
 open class ClientValidAspect {
+
+    @Autowired
+    private val securityService: SecurityService? = null
+
     @Before(value = "@within(dk.etiktak.backend.service.security.ClientValid) || @annotation(dk.etiktak.backend.service.security.ClientValid)")
     fun before(joinPoint: JoinPoint) {
         for (argument in joinPoint.args) {
-            if (argument.javaClass == Client::class.java) {
-                val client = argument as Client
-                Assert.isTrue(
-                        client.enabled,
-                        "Client must be enabled in order to call: ${joinPoint.signature.name}"
-                )
-                Assert.isTrue(
-                        !client.banned,
-                        "Client is banned and cannot call: ${joinPoint.signature.name}"
-                )
-                return
+            argument?.let {
+                if (argument.javaClass == Client::class.java) {
+                    securityService!!.assertClientValid(argument as Client)
+                }
             }
         }
     }

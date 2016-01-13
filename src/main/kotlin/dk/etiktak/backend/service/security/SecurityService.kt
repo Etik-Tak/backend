@@ -29,6 +29,7 @@ import dk.etiktak.backend.model.user.Client
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.Assert
 
 @Service
 @Transactional
@@ -36,13 +37,28 @@ open class SecurityService {
 
     private val logger = LoggerFactory.getLogger(SecurityService::class.java)
 
-    open fun assertCreatorOrAdmin(callingClient: Client, creatorClient: Client) {
+    /**
+     * Asserts that the client is valid, i.e. is enabled and not banned.
+     */
+    fun assertClientValid(client: Client) {
+        Assert.isTrue(
+                client.enabled,
+                "Client with UUID ${client.uuid} is disabled"
+        )
+        Assert.isTrue(
+                !client.banned,
+                "Client with UUID ${client.uuid} is banned"
+        )
+    }
 
-        // Check if same client
-        if (callingClient.uuid.equals(creatorClient.uuid)) {
-            return
-        }
-
-        throw RuntimeException("Client with UUID: ${callingClient.uuid} not owner of object. Owner is client with UUID: ${creatorClient.uuid}")
+    /**
+     * Asserts that the client is valid and verified.
+     */
+    open fun assertClientVerified(client: Client) {
+        assertClientValid(client)
+        Assert.isTrue(
+                client.verified,
+                "Client with UUID ${client.uuid} is not verified"
+        )
     }
 }

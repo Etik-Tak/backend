@@ -38,7 +38,6 @@ import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.recommendation.RecommendationService
 import dk.etiktak.backend.service.security.ClientValid
 import dk.etiktak.backend.service.security.ClientVerified
-import dk.etiktak.backend.service.security.SecurityService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -59,8 +58,7 @@ open class ProductService @Autowired constructor(
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
         private val companyRepository: CompanyRepository,
-        private val trustVoteRepository: TrustVoteRepository,
-        private val securityService: SecurityService) {
+        private val trustVoteRepository: TrustVoteRepository) {
 
     private val logger = LoggerFactory.getLogger(ProductService::class.java)
 
@@ -353,7 +351,10 @@ open class ProductService @Autowired constructor(
      */
     @ClientValid
     open fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?, modifyValues: (ProductScan) -> Unit = {}) {
-        securityService.assertCreatorOrAdmin(client, productScan.client)
+        Assert.isTrue(
+                client.uuid.equals(productScan.client.uuid),
+                "Client with UUID ${client.uuid} not owner of object. Owner has UUID ${productScan.client.uuid}"
+        )
 
         Assert.notNull(
                 location,
