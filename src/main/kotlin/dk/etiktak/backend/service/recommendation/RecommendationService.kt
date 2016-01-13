@@ -40,6 +40,7 @@ import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRe
 import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.infochannel.InfoChannelService
+import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -63,10 +64,24 @@ open class RecommendationService @Autowired constructor(
 
     private val logger = LoggerFactory.getLogger(RecommendationService::class.java)
 
+    /**
+     * Get recommendations for a product for the given client.
+     *
+     * @param client   Client
+     * @param product  Product
+     * @return         List of recommendations for given product for all info channels followed by the given client
+     */
     open fun getRecommendations(client: Client, product: Product): List<Recommendation> {
         return getRecommendations(followedInfoChannelsFromClient(client), product)
     }
 
+    /**
+     * Get recommendations for a product for the given info channels.
+     *
+     * @param infoChannels  Info channels to get recommendations for
+     * @param product       Product
+     * @return              List of recommendations for given product for all info channels
+     */
     open fun getRecommendations(infoChannels: List<InfoChannel>, product: Product): List<Recommendation> {
         val productRecommendations = productRecommendationRepository.findByProductUuidAndInfoChannelUuidIn(
                 product.uuid,
@@ -96,6 +111,7 @@ open class RecommendationService @Autowired constructor(
      * @param modifyValues   Function called with modified info channel and product
      * @return               Created recommendation
      */
+    @ClientVerified
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, product: Product,
                                   modifyValues: (InfoChannel, Product) -> Unit = {infoChannel, product -> Unit}): Recommendation {
 
@@ -133,6 +149,7 @@ open class RecommendationService @Autowired constructor(
      * @param modifyValues     Function called with modified info channel and product category
      * @return                 Created recommendation
      */
+    @ClientVerified
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductCategory,
                                   modifyValues: (InfoChannel, ProductCategory) -> Unit = {infoChannel, productCategory -> Unit}): Recommendation {
 
@@ -170,6 +187,7 @@ open class RecommendationService @Autowired constructor(
      * @param modifyValues     Function called with modified info channel and product label
      * @return                 Created recommendation
      */
+    @ClientVerified
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productLabel: ProductLabel,
                                   modifyValues: (InfoChannel, ProductLabel) -> Unit = {infoChannel, productLabel -> Unit}): Recommendation {
 
@@ -197,6 +215,8 @@ open class RecommendationService @Autowired constructor(
     }
 
 
+
+    /* Helper methods */
 
     open fun setupRecommendation(client: Client, infoChannel: InfoChannel, recommendation: Recommendation, summary: String, score: RecommendationScore) {
         recommendation.uuid = CryptoUtil().uuid()

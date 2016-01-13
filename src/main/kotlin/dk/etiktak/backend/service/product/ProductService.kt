@@ -36,6 +36,7 @@ import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.*
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.recommendation.RecommendationService
+import dk.etiktak.backend.service.security.ClientValid
 import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.service.security.SecurityService
 import dk.etiktak.backend.util.CryptoUtil
@@ -170,6 +171,7 @@ open class ProductService @Autowired constructor(
      * @param modifyValues  Function called with modified client
      * @return              Created product
      */
+    @ClientValid
     open fun createStubProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?,
                            modifyValues: (Client) -> Unit = {}): Product {
 
@@ -303,12 +305,13 @@ open class ProductService @Autowired constructor(
      * Finds a product from the given barcode and creates and returns a product scan. If no product is found,
      * the methods creates an empty product.
      *
-     * @param barcode     Barcode
      * @param client      Client
+     * @param barcode     Barcode
      * @param location    Optional location
      * @return            Created product scan entry (which contains the actual product)
      */
-    open fun scanProduct(barcode: String, client: Client, location: Location?): ProductScanResult {
+    @ClientValid
+    open fun scanProduct(client: Client, barcode: String, location: Location?): ProductScanResult {
 
         // Check for empty fields
         Assert.isTrue(
@@ -330,8 +333,8 @@ open class ProductService @Autowired constructor(
         // Create product scan
         var modifiedProduct = product
 
-        val productScan = createProductScan(modifiedProduct, client, location,
-                modifyValues = {product, client, location -> modifiedProduct = product; modifiedClient = client})
+        val productScan = createProductScan(client, modifiedProduct, location,
+                modifyValues = {client, product, location -> modifiedClient = client; modifiedProduct = product})
 
         // Retrieve recommendations
         val recommendations = recommendationService.getRecommendations(modifiedClient, product)
@@ -347,6 +350,7 @@ open class ProductService @Autowired constructor(
      * @param location       Location
      * @param modifyValues   Function called with modified product scan
      */
+    @ClientValid
     open fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?, modifyValues: (ProductScan) -> Unit = {}) {
         securityService.assertCreatorOrAdmin(client, productScan.client)
 
@@ -368,14 +372,15 @@ open class ProductService @Autowired constructor(
     /**
      * Creates a product scan, glues it together with product and client, and saves it all.
      *
-     * @param product        Product
      * @param client         Client
+     * @param product        Product
      * @param location       Optional location
-     * @param modifyValues   Function called with modified product, client and location
+     * @param modifyValues   Function called with modified client, product and location
      * @return               Product scan
      */
-    open fun createProductScan(product: Product, client: Client, location: Location?,
-                               modifyValues: (Product, Client, Location?) -> Unit = {product, client, location -> Unit}): ProductScan {
+    @ClientValid
+    open fun createProductScan(client: Client, product: Product, location: Location?,
+                               modifyValues: (Client, Product, Location?) -> Unit = {client, product, location -> Unit}): ProductScan {
 
         // Create product scan
         val productScan = ProductScan()
@@ -399,7 +404,7 @@ open class ProductService @Autowired constructor(
         val modifiedProduct = productRepository.save(product)
         val modifiedClient = clientRepository.save(client)
 
-        modifyValues(modifiedProduct, modifiedClient, modifiedLocation)
+        modifyValues(modifiedClient, modifiedProduct, modifiedLocation)
 
         return modifiedProductScan
     }
@@ -412,6 +417,7 @@ open class ProductService @Autowired constructor(
      * @param vote          Vote
      * @param modifyValues  Function called with modified client and product
      */
+    @ClientValid
     open fun trustVoteProduct(client: Client, product: Product, vote: TrustVoteType, modifyValues: (Client, Product) -> Unit = {client, product -> Unit}): ProductTrustVote {
 
         // Create trust vote

@@ -63,7 +63,7 @@ class ProductScanRestController @Autowired constructor(
             location = Location(latitude.toDouble(), longitude.toDouble())
         }
 
-        val productScanResult = productService.scanProduct(barcode, client, location)
+        val productScanResult = productService.scanProduct(client, barcode, location)
 
         return okMap()
                 .add("scan", hashMapOf<String, Any>()

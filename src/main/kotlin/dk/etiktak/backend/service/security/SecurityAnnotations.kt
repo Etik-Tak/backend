@@ -38,6 +38,12 @@ import org.springframework.util.Assert
 @Retention(AnnotationRetention.RUNTIME)
 public annotation class ClientVerified ()
 
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+public annotation class ClientValid ()
+
+
+
 @Component
 @Configuration
 @EnableAspectJAutoProxy
@@ -49,8 +55,40 @@ open class ClientVerifiedAspect {
             if (argument.javaClass == Client::class.java) {
                 val client = argument as Client
                 Assert.isTrue(
+                        client.enabled,
+                        "Client must be enabled in order to call: ${joinPoint.signature.name}"
+                )
+                Assert.isTrue(
+                        !client.banned,
+                        "Client is banned and cannot call: ${joinPoint.signature.name}"
+                )
+                Assert.isTrue(
                         client.verified,
                         "Client must be verified in order to call: ${joinPoint.signature.name}"
+                )
+                return
+            }
+        }
+    }
+}
+
+@Component
+@Configuration
+@EnableAspectJAutoProxy
+@Aspect
+open class ClientValidAspect {
+    @Before(value = "@within(dk.etiktak.backend.service.security.ClientValid) || @annotation(dk.etiktak.backend.service.security.ClientValid)")
+    fun before(joinPoint: JoinPoint) {
+        for (argument in joinPoint.args) {
+            if (argument.javaClass == Client::class.java) {
+                val client = argument as Client
+                Assert.isTrue(
+                        client.enabled,
+                        "Client must be enabled in order to call: ${joinPoint.signature.name}"
+                )
+                Assert.isTrue(
+                        !client.banned,
+                        "Client is banned and cannot call: ${joinPoint.signature.name}"
                 )
                 return
             }

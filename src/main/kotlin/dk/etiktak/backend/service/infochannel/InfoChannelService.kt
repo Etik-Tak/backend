@@ -34,6 +34,7 @@ import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelFollowerRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.security.ClientValid
 import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
@@ -112,6 +113,7 @@ open class InfoChannelService @Autowired constructor(
      * @param infoChannel   Info channel
      * @param modifyValues  Function called with modified client and info channel
      */
+    @ClientValid
     open fun followInfoChannel(client: Client, infoChannel: InfoChannel, modifyValues: (Client, InfoChannel) -> Unit = {client, infoChannel -> Unit}) {
 
         // Create info channel client

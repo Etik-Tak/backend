@@ -31,6 +31,7 @@ import dk.etiktak.backend.model.user.SmsVerification
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository
+import dk.etiktak.backend.service.security.ClientValid
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -91,6 +92,7 @@ open class SmsVerificationService @Autowired constructor(
      * @param modifyValues    Function called with modified client
      * @return                Created SMS verification
      */
+    @ClientValid
     open fun requestSmsChallenge(client: Client, mobileNumber: String, password: String, modifyValues: (Client) -> Unit = {}): SmsVerification {
         val smsChallenge = CryptoUtil().generateSmsChallenge()
         val clientChallenge = CryptoUtil().uuid()
