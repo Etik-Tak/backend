@@ -93,11 +93,11 @@ open class RecommendationService @Autowired constructor(
      * @param summary        Summary
      * @param score          Score
      * @param product        Product
-     * @param modifyValues   Function called with modified client and info channel
+     * @param modifyValues   Function called with modified info channel and product
      * @return               Created recommendation
      */
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, product: Product,
-                                  modifyValues: (Client, InfoChannel, Product) -> Unit = {client, infoChannel, product -> Unit}): Recommendation {
+                                  modifyValues: (InfoChannel, Product) -> Unit = {infoChannel, product -> Unit}): Recommendation {
 
         // Security checks
         Assert.isTrue(
@@ -113,12 +113,11 @@ open class RecommendationService @Autowired constructor(
         product.recommendations.add(recommendation)
 
         // Save it all
-        val modifiedClient = clientRepository.save(client)
         val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
         val modifiedProduct = productRepository.save(product)
         val modifiedRecommandation = productRecommendationRepository.save(recommendation)
 
-        modifyValues(modifiedClient, modifiedInfoChannel, modifiedProduct)
+        modifyValues(modifiedInfoChannel, modifiedProduct)
 
         return modifiedRecommandation
     }
@@ -131,11 +130,11 @@ open class RecommendationService @Autowired constructor(
      * @param summary          Summary
      * @param score            Score
      * @param productCategory  Product category
-     * @param modifyValues     Function called with modified client and info channel
+     * @param modifyValues     Function called with modified info channel and product category
      * @return                 Created recommendation
      */
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductCategory,
-                                  modifyValues: (Client, InfoChannel, ProductCategory) -> Unit = {client, infoChannel, productCategory -> Unit}): Recommendation {
+                                  modifyValues: (InfoChannel, ProductCategory) -> Unit = {infoChannel, productCategory -> Unit}): Recommendation {
 
         // Security checks
         Assert.isTrue(
@@ -151,12 +150,11 @@ open class RecommendationService @Autowired constructor(
         productCategory.recommendations.add(recommendation)
 
         // Save it all
-        val modifiedClient = clientRepository.save(client)
         val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
         val modifiedProductCategory = productCategoryRepository.save(productCategory)
         val modifiedRecommandation = productCategoryRecommendationRepository.save(recommendation)
 
-        modifyValues(modifiedClient, modifiedInfoChannel, modifiedProductCategory)
+        modifyValues(modifiedInfoChannel, modifiedProductCategory)
 
         return modifiedRecommandation
     }
@@ -169,11 +167,11 @@ open class RecommendationService @Autowired constructor(
      * @param summary          Summary
      * @param score            Score
      * @param productLabel     Product label
-     * @param modifyValues     Function called with modified client and info channel
+     * @param modifyValues     Function called with modified info channel and product label
      * @return                 Created recommendation
      */
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productLabel: ProductLabel,
-                                  modifyValues: (Client, InfoChannel, ProductLabel) -> Unit = {client, infoChannel, productLabel -> Unit}): Recommendation {
+                                  modifyValues: (InfoChannel, ProductLabel) -> Unit = {infoChannel, productLabel -> Unit}): Recommendation {
 
         // Security checks
         Assert.isTrue(
@@ -189,27 +187,21 @@ open class RecommendationService @Autowired constructor(
         productLabel.recommendations.add(recommendation)
 
         // Save it all
-        val modifiedClient = clientRepository.save(client)
         val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
         val modifiedProductLabel = productLabelRepository.save(productLabel)
         val modifiedRecommandation = productLabelRecommendationRepository.save(recommendation)
 
-        modifyValues(modifiedClient, modifiedInfoChannel, modifiedProductLabel)
+        modifyValues(modifiedInfoChannel, modifiedProductLabel)
 
         return modifiedRecommandation
     }
 
 
 
-    open fun setupRecommendation(client: Client, infoChannel: InfoChannel, recommendation: Recommendation,
-                                    summary: String, score: RecommendationScore) {
-
+    open fun setupRecommendation(client: Client, infoChannel: InfoChannel, recommendation: Recommendation, summary: String, score: RecommendationScore) {
         recommendation.uuid = CryptoUtil().uuid()
         recommendation.summary = summary
         recommendation.score = score
-
-        recommendation.creator = client
-        client.recommendations.add(recommendation)
 
         recommendation.infoChannel = infoChannel
         infoChannel.recommendations.add(recommendation)

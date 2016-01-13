@@ -57,23 +57,16 @@ open class ProductCategoryService @Autowired constructor(
     /**
      * Creates a product category.
      *
-     * @param name          Name
-     * @param modifyValues  Function called with modified client
-     * @return              Product category
+     * @param name    Name
+     * @return        Product category
      */
     @ClientVerified
-    open fun createProductCategory(client: Client, name: String, modifyValues: (Client) -> Unit = {}): ProductCategory {
+    open fun createProductCategory(client: Client, name: String): ProductCategory {
         val productCategory = ProductCategory()
         productCategory.uuid = CryptoUtil().uuid()
-        productCategory.creator = client
         productCategory.name = name
 
-        client.productCategories.add(productCategory)
-
-        val modifiedClient = clientRepository.save(client)
         val modifiedProductCategory = productCategoryRepository.save(productCategory)
-
-        modifyValues(modifiedClient)
 
         return modifiedProductCategory
     }

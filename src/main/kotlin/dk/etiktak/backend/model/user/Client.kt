@@ -35,10 +35,8 @@ package dk.etiktak.backend.model.user
 
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infochannel.InfoChannelFollower
-import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.*
-import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.trust.TrustVote
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -80,22 +78,6 @@ class Client constructor() {
 
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
-
-    @NotNull
-    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
-    var productCategories: MutableList<ProductCategory> = ArrayList()
-
-    @NotNull
-    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
-    var productLabels: MutableList<ProductLabel> = ArrayList()
-
-    @NotNull
-    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
-    var recommendations: MutableList<Recommendation> = ArrayList()
-
-    @NotNull
-    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
-    var infoSources: MutableList<InfoSource> = ArrayList()
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var productTrustVotes: MutableList<TrustVote> = ArrayList()

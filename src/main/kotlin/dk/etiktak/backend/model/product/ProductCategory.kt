@@ -48,10 +48,6 @@ class ProductCategory constructor() : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var creator = Client()
-
     @Column(name = "name")
     var name: String = ""
 

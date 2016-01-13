@@ -67,10 +67,6 @@ class Company constructor() : BaseModel() {
     @ManyToMany(mappedBy = "companies", fetch = FetchType.LAZY)
     var products: MutableSet<Product> = HashSet()
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var creator = Client()
-
     @ManyToMany(mappedBy = "companies", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
 

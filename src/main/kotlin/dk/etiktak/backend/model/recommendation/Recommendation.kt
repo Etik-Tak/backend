@@ -51,10 +51,6 @@ open class Recommendation constructor() : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var creator = Client()
-
     @Column(name = "summary")
     var summary: String = ""
 

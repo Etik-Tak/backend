@@ -57,23 +57,16 @@ open class ProductLabelService @Autowired constructor(
     /**
      * Creates a product label.
      *
-     * @param name          Name
-     * @param modifyValues  Function called with modified client
-     * @return              Product label
+     * @param name     Name
+     * @return         Product label
      */
     @ClientVerified
-    open fun createProductLabel(client: Client, name: String, modifyValues: (Client) -> Unit = {}): ProductLabel {
+    open fun createProductLabel(client: Client, name: String): ProductLabel {
         val productLabel = ProductLabel()
         productLabel.uuid = CryptoUtil().uuid()
-        productLabel.creator = client
         productLabel.name = name
 
-        client.productLabels.add(productLabel)
-
-        val modifiedClient = clientRepository.save(client)
         val modifiedProductLabel = productLabelRepository.save(productLabel)
-
-        modifyValues(modifiedClient)
 
         return modifiedProductLabel
     }

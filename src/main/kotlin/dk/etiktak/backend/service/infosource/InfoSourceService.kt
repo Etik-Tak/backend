@@ -68,7 +68,7 @@ open class InfoSourceService @Autowired constructor(
      * @return               Created info source
      */
     @ClientVerified
-    open fun createInfoSource(client: Client, urlPrefixes: List<String>, friendlyName: String, modifyValues: (Client) -> Unit = {}): InfoSource {
+    open fun createInfoSource(client: Client, urlPrefixes: List<String>, friendlyName: String): InfoSource {
 
         // Validate url prefix
         for (urlPrefix in urlPrefixes) {
@@ -80,7 +80,6 @@ open class InfoSourceService @Autowired constructor(
         // Create info source
         val infoSource = InfoSource()
         infoSource.uuid = CryptoUtil().uuid()
-        infoSource.creator = client
         infoSource.friendlyName = friendlyName
 
         // Create url prefixes
@@ -93,17 +92,11 @@ open class InfoSourceService @Autowired constructor(
             infoSource.urlPrefixes.add(infoSourceUrlPrefix)
         }
 
-        // Glue it together
-        client.infoSources.add(infoSource)
-
         // Save it all
-        var modifiedClient = clientRepository.save(client)
         infoSourceRepository.save(infoSource)
         for (infoSourceUrlPrefix in infoSource.urlPrefixes) {
             infoSourceUrlPrefixRepository.save(infoSourceUrlPrefix)
         }
-
-        modifyValues(modifiedClient)
 
         return infoSource
     }

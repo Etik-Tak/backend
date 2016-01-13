@@ -50,10 +50,6 @@ class InfoSource constructor() : BaseModel() {
     @Column(name = "friendly_name")
     var friendlyName: String = ""
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var creator = Client()
-
     @NotNull
     @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)
     var urlPrefixes: MutableList<InfoSourceUrlPrefix> = ArrayList()
