@@ -212,6 +212,7 @@ open class ProductService @Autowired constructor(
         name?.let {
             product.name = name
         }
+        product.stub = false
 
         // Save it all
         var modifiedProduct = productRepository.save(product)

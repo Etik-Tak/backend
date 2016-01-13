@@ -196,6 +196,7 @@ class ProductRestController @Autowired constructor(
                 .add("product", hashMapOf<String, Any>()
                         .add("uuid", product.uuid)
                         .add("name", product.name)
+                        .add("stub", product.stub)
                         .add("correctnessTrust", product.correctnessTrust)
                         .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
                                 .add("uuid", category.uuid)
