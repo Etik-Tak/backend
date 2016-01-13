@@ -33,6 +33,7 @@
 
 package dk.etiktak.backend.model.user
 
+import dk.etiktak.backend.model.changelog.ChangeLog
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infochannel.InfoChannelFollower
 import dk.etiktak.backend.model.infosource.InfoSourceReference
@@ -81,6 +82,9 @@ class Client constructor() {
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var productTrustVotes: MutableList<TrustVote> = ArrayList()
+
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
+    var changeLogs: MutableList<ChangeLog> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()
