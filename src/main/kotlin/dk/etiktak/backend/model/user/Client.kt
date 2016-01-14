@@ -84,6 +84,9 @@ class Client constructor() {
     var productTrustVotes: MutableList<TrustVote> = ArrayList()
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
+    var companyTrustVotes: MutableList<TrustVote> = ArrayList()
+
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var changeLogs: MutableList<ChangeLog> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

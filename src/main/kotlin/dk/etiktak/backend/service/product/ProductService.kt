@@ -34,6 +34,7 @@ import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.*
+import dk.etiktak.backend.repository.trust.ProductTrustVoteRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.recommendation.RecommendationService
 import dk.etiktak.backend.service.security.ClientValid
@@ -58,7 +59,7 @@ open class ProductService @Autowired constructor(
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
         private val companyRepository: CompanyRepository,
-        private val trustVoteRepository: TrustVoteRepository) {
+        private val trustVoteRepository: ProductTrustVoteRepository) {
 
     private val logger = LoggerFactory.getLogger(ProductService::class.java)
 
@@ -107,12 +108,13 @@ open class ProductService @Autowired constructor(
      */
     @ClientVerified
     open fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String,
-                           categories: List<ProductCategory>, labels: List<ProductLabel>, companies: List<Company>,
+                           categories: List<ProductCategory> = listOf(),
+                           labels: List<ProductLabel> = listOf(),
+                           companies: List<Company> = listOf(),
                            modifyValues: (Client, List<ProductCategory>, List<ProductLabel>, List<Company>) -> Unit = {client, productCategories, productLabels, companies -> Unit}): Product {
 
         val product = Product()
         product.uuid = CryptoUtil().uuid()
-        product.stub = true
         product.name = name
         product.productCategories.addAll(categories)
         product.productLabels.addAll(labels)
@@ -160,42 +162,6 @@ open class ProductService @Autowired constructor(
     }
 
     /**
-     * Creates a new stub product, that is, an empty product used to glue scans together and for later filling
-     * in information.
-     *
-     * @param client        Client
-     * @param barcode       Barcode
-     * @param barcodeType   Barcode type
-     * @param modifyValues  Function called with modified client
-     * @return              Created product
-     */
-    @ClientValid
-    open fun createStubProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?,
-                           modifyValues: (Client) -> Unit = {}): Product {
-
-        val product = Product()
-        product.uuid = CryptoUtil().uuid()
-        product.name = "Ukendt"
-        product.stub = true
-
-        var modifiedProduct = productRepository.save(product)
-
-        // Assign barcode
-        if (barcode != null) {
-            assignBarcodeToProduct(client, modifiedProduct, barcode, barcodeType ?: Product.BarcodeType.UNKNOWN, { product -> modifiedProduct = product})
-        }
-
-        // Trust vote product
-        var modifiedClient = client
-
-        trustVoteProduct(modifiedClient, modifiedProduct, TrustVoteType.Trusted, modifyValues = { client, product -> modifiedClient = client; modifiedProduct = product})
-
-        modifyValues(modifiedClient)
-
-        return modifiedProduct
-    }
-
-    /**
      * Edits a product.
      *
      * @param client        Client
@@ -210,7 +176,6 @@ open class ProductService @Autowired constructor(
         name?.let {
             product.name = name
         }
-        product.stub = false
 
         // Save it all
         var modifiedProduct = productRepository.save(product)
@@ -326,7 +291,7 @@ open class ProductService @Autowired constructor(
 
         var product = getProductByBarcode(barcode)
         if (product == null) {
-            product = createStubProduct(client, barcode, Product.BarcodeType.UNKNOWN, modifyValues = {client -> modifiedClient = client})
+            product = createProduct(client, barcode, Product.BarcodeType.UNKNOWN, name = "", modifyValues = {client, categories, labels, companies -> modifiedClient = client})
         }
 
         // Create product scan
@@ -418,6 +383,7 @@ open class ProductService @Autowired constructor(
      * @param product       Product
      * @param vote          Vote
      * @param modifyValues  Function called with modified client and product
+     * @return              Trust vote
      */
     @ClientValid
     open fun trustVoteProduct(client: Client, product: Product, vote: TrustVoteType, modifyValues: (Client, Product) -> Unit = {client, product -> Unit}): ProductTrustVote {

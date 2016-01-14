@@ -23,7 +23,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.product
+package dk.etiktak.backend.repository.trust
 
 import dk.etiktak.backend.model.trust.ProductTrustVote
 import dk.etiktak.backend.model.trust.TrustVoteType
@@ -31,7 +31,7 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface TrustVoteRepository : PagingAndSortingRepository<ProductTrustVote, Long> {
+interface ProductTrustVoteRepository : PagingAndSortingRepository<ProductTrustVote, Long> {
     fun findByVote(vote: TrustVoteType): List<ProductTrustVote>
     fun findByProductUuid(uuid: String): List<ProductTrustVote>
 }

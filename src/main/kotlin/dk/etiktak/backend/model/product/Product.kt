@@ -73,9 +73,6 @@ class Product constructor() : BaseModel() {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var correctnessTrustVotes: MutableList<ProductTrustVote> = ArrayList()
 
-    @Column(name = "stub")
-    var stub = true
-
     @NotNull
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()

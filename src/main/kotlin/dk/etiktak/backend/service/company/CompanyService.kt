@@ -26,8 +26,15 @@
 package dk.etiktak.backend.service.company
 
 import dk.etiktak.backend.model.company.Company
+import dk.etiktak.backend.model.trust.CompanyTrustVote
+import dk.etiktak.backend.model.trust.TrustVoteType
+import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
+import dk.etiktak.backend.repository.trust.CompanyTrustVoteRepository
 import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.security.ClientValid
+import dk.etiktak.backend.service.security.ClientVerified
+import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -37,7 +44,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 open class CompanyService @Autowired constructor(
         private val companyRepository: CompanyRepository,
-        private val clientRepository: ClientRepository) {
+        private val clientRepository: ClientRepository,
+        private val trustVoteRepository: CompanyTrustVoteRepository) {
 
     private val logger = LoggerFactory.getLogger(CompanyService::class.java)
 
@@ -49,5 +57,79 @@ open class CompanyService @Autowired constructor(
      */
     open fun getCompanyByUuid(uuid: String): Company? {
         return companyRepository.findByUuid(uuid)
+    }
+
+    /**
+     * Creates a new product.
+     *
+     * @param client        Client
+     * @param name          Name of product
+     * @param modifyValues  Function called with modified client
+     * @return              Created product
+     */
+    @ClientVerified
+    open fun createCompany(client: Client, name: String?, modifyValues: (Client) -> Unit = {}): Company {
+        val company = Company()
+        company.uuid = CryptoUtil().uuid()
+        company.name = name ?: ""
+
+        var modifiedCompany = companyRepository.save(company)
+
+        // Trust vote product
+        var modifiedClient = client
+
+        name?.let {
+            trustVoteCompany(client, modifiedCompany, TrustVoteType.Trusted, modifyValues = { client, company -> modifiedClient = client; modifiedCompany = company })
+        }
+
+        modifyValues(modifiedClient)
+
+        return modifiedCompany
+    }
+
+    /**
+     * Trust vote product correctness.
+     *
+     * @param client        Client
+     * @param company       Company
+     * @param vote          Vote
+     * @param modifyValues  Function called with modified client and company
+     * @return              Trust vote
+     */
+    @ClientValid
+    open fun trustVoteCompany(client: Client, company: Company, vote: TrustVoteType, modifyValues: (Client, Company) -> Unit = {client, company -> Unit}): CompanyTrustVote {
+
+        // Create trust vote
+        val companyTrustVote = CompanyTrustVote()
+        companyTrustVote.client = client
+        companyTrustVote.company = company
+        companyTrustVote.vote = vote
+
+        // Glue it together
+        company.correctnessTrustVotes.add(companyTrustVote)
+        client.companyTrustVotes.add(companyTrustVote)
+
+        // Save it all
+        val modifiedCompanyTrustVote = trustVoteRepository.save(companyTrustVote)
+        var modifiedCompany = companyRepository.save(company)
+        val modifiedClient = clientRepository.save(client)
+
+        // Recalculate trust
+        recalculateCorrectnessTrust(modifiedCompany, modifyValues = {recalculatedCompany -> modifiedCompany = recalculatedCompany})
+
+        modifyValues(modifiedClient, modifiedCompany)
+
+        return modifiedCompanyTrustVote
+    }
+
+    /**
+     * Recalculates company correctness trust.
+     *
+     * @param company        Company
+     * @param modifyValues   Function called with modified company
+     */
+    open fun recalculateCorrectnessTrust(company: Company, modifyValues: (Company) -> Unit = {}) {
+
+        // TODO! Calculate trust
     }
 }

@@ -124,8 +124,7 @@ class ProductRestController @Autowired constructor(
     fun editProduct(
             @RequestParam clientUuid: String,
             @RequestParam productUuid: String,
-            @RequestParam(required = false) name: String,
-            @RequestParam(required = false) barcode: String? = null): HashMap<String, Any> {
+            @RequestParam(required = false) name: String): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
@@ -196,7 +195,6 @@ class ProductRestController @Autowired constructor(
                 .add("product", hashMapOf<String, Any>()
                         .add("uuid", product.uuid)
                         .add("name", product.name)
-                        .add("stub", product.stub)
                         .add("correctnessTrust", product.correctnessTrust)
                         .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
                                 .add("uuid", category.uuid)
