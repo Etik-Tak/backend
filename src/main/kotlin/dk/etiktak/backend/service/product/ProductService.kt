@@ -26,6 +26,7 @@
 package dk.etiktak.backend.service.product
 
 import dk.etiktak.backend.model.company.Company
+import dk.etiktak.backend.model.location.Location
 import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.trust.ProductTrustVote
@@ -165,12 +166,12 @@ open class ProductService @Autowired constructor(
      * Edits a product.
      *
      * @param client        Client
+     * @param product       Product
      * @param name          Name of product
      * @param modifyValues  Function called with modified product
-     * @return              Edited product
      */
     @ClientVerified
-    open fun editProduct(client: Client, product: Product, name: String?, modifyValues: (Product) -> Unit = {product -> Unit}) {
+    open fun editProduct(client: Client, product: Product, name: String?, modifyValues: (Product) -> Unit = {}) {
 
         // Modify values
         name?.let {
@@ -271,20 +272,12 @@ open class ProductService @Autowired constructor(
      *
      * @param client      Client
      * @param barcode     Barcode
-     * @param location    Optional location
+     * @param latitude    Optional latitude
+     * @param longitude   Optional longitude
      * @return            Created product scan entry (which contains the actual product)
      */
     @ClientValid
-    open fun scanProduct(client: Client, barcode: String, location: Location?): ProductScanResult {
-
-        // Check for empty fields
-        Assert.isTrue(
-                !StringUtils.isEmpty(barcode),
-                "Barcode must be provided")
-
-        Assert.notNull(
-                client,
-                "Client must be provided")
+    open fun scanProduct(client: Client, barcode: String, latitude: Double?, longitude: Double?): ProductScanResult {
 
         // Find product
         var modifiedClient = client
@@ -297,8 +290,8 @@ open class ProductService @Autowired constructor(
         // Create product scan
         var modifiedProduct = product
 
-        val productScan = createProductScan(client, modifiedProduct, location,
-                modifyValues = {client, product, location -> modifiedClient = client; modifiedProduct = product})
+        val productScan = createProductScan(client, modifiedProduct, latitude, longitude,
+                modifyValues = {client, product -> modifiedClient = client; modifiedProduct = product})
 
         // Retrieve recommendations
         val recommendations = recommendationService.getRecommendations(modifiedClient, product)
@@ -311,25 +304,26 @@ open class ProductService @Autowired constructor(
      *
      * @param client         Client
      * @param productScan    Product scan entry
-     * @param location       Location
+     * @param latitude       Latitude
+     * @param longitude      Longitude
      * @param modifyValues   Function called with modified product scan
      */
     @ClientValid
-    open fun assignLocationToProductScan(client: Client, productScan: ProductScan, location: Location?, modifyValues: (ProductScan) -> Unit = {}) {
+    open fun assignLocationToProductScan(client: Client, productScan: ProductScan, latitude: Double, longitude: Double, modifyValues: (ProductScan) -> Unit = {}) {
         Assert.isTrue(
                 client.uuid.equals(productScan.client.uuid),
                 "Client with UUID ${client.uuid} not owner of object. Owner has UUID ${productScan.client.uuid}"
         )
 
-        Assert.notNull(
-                location,
-                "Location must not be empty")
-
         Assert.isNull(
                 productScan.location,
                 "Location already set on product scan with UUID: " + productScan.uuid)
 
+        val location = Location(latitude, longitude)
         productScan.location = location
+
+        locationRepository.save(location)
+
         val modifiedProductScan = productScanRepository.save(productScan)
 
         modifyValues(modifiedProductScan)
@@ -341,37 +335,38 @@ open class ProductService @Autowired constructor(
      *
      * @param client         Client
      * @param product        Product
-     * @param location       Optional location
-     * @param modifyValues   Function called with modified client, product and location
+     * @param latitude       Optional latitude
+     * @param longitude      Optional longitude
+     * @param modifyValues   Function called with modified client and product
      * @return               Product scan
      */
     @ClientValid
-    open fun createProductScan(client: Client, product: Product, location: Location?,
-                               modifyValues: (Client, Product, Location?) -> Unit = {client, product, location -> Unit}): ProductScan {
+    open fun createProductScan(client: Client, product: Product, latitude: Double?, longitude: Double?,
+                               modifyValues: (Client, Product) -> Unit = { client, product -> Unit}): ProductScan {
+
+        // Create location, if any
+        val location = if (latitude != null && longitude != null) Location(latitude, longitude) else null
+        if (location != null) {
+            locationRepository.save(location)
+        }
 
         // Create product scan
         val productScan = ProductScan()
         productScan.uuid = CryptoUtil().uuid()
         productScan.product = product
         productScan.client = client
-        if (location != null) {
-            productScan.location = location
-        }
+        productScan.location = location
 
         // Glue together with client and product
         client.productScans.add(productScan)
         product.productScans.add(productScan)
 
         // Save if all
-        var modifiedLocation: Location? = null
-        if (location != null) {
-            modifiedLocation = locationRepository.save(location)
-        }
         val modifiedProductScan = productScanRepository.save(productScan)
         val modifiedProduct = productRepository.save(product)
         val modifiedClient = clientRepository.save(client)
 
-        modifyValues(modifiedClient, modifiedProduct, modifiedLocation)
+        modifyValues(modifiedClient, modifiedProduct)
 
         return modifiedProductScan
     }

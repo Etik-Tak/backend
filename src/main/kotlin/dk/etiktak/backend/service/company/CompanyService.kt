@@ -75,7 +75,7 @@ open class CompanyService @Autowired constructor(
 
         var modifiedCompany = companyRepository.save(company)
 
-        // Trust vote product
+        // Trust vote company
         var modifiedClient = client
 
         name?.let {
@@ -88,7 +88,32 @@ open class CompanyService @Autowired constructor(
     }
 
     /**
-     * Trust vote product correctness.
+     * Edits a company.
+     *
+     * @param client        Client
+     * @param company       Company
+     * @param name          Name of company
+     * @param modifyValues  Function called with modified company
+     */
+    @ClientVerified
+    open fun editCompany(client: Client, company: Company, name: String?, modifyValues: (Company) -> Unit = {}) {
+
+        // Modify values
+        name?.let {
+            company.name = name
+        }
+
+        // Save it all
+        var modifiedCompany = companyRepository.save(company)
+
+        // Recalculate trust
+        recalculateCorrectnessTrust(modifiedCompany, modifyValues = {recalculatedCompany -> modifiedCompany = recalculatedCompany})
+
+        modifyValues(modifiedCompany)
+    }
+
+    /**
+     * Trust vote company correctness.
      *
      * @param client        Client
      * @param company       Company

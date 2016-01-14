@@ -24,43 +24,46 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product scan.
+ * Represents a company.
  */
 
-package dk.etiktak.backend.model.product
+package dk.etiktak.backend.model.company
 
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.location.Location
-import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.model.trust.StoreTrustVote
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
+import javax.validation.constraints.NotNull
 
-@Entity(name = "product_scans")
-class ProductScan constructor() : BaseModel() {
+@Entity(name = "stores")
+class Store constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_scan_id")
+    @Column(name = "store_id")
     var id: Long = 0
 
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var client = Client()
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "product_id")
-    var product = Product()
-
-    @Column(name = "timestamp", nullable = false)
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var timestamp = Date()
+    @Column(name = "name")
+    var name: String = ""
 
     @OneToOne(cascade = arrayOf(CascadeType.ALL))
-    var location: Location? = null
+    var location: Location = Location()
+
+    @Column(name = "correctness_trust")
+    var correctnessTrust: Double = 0.0
+
+    @NotNull
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    var correctnessTrustVotes: MutableList<StoreTrustVote> = ArrayList()
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "company_id")
+    var company = Company()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

@@ -23,62 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Represents a product scan.
- */
+package dk.etiktak.backend.repository.trust
 
-package dk.etiktak.backend.model.product
+import dk.etiktak.backend.model.trust.StoreTrustVote
+import dk.etiktak.backend.model.trust.TrustVoteType
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.location.Location
-import dk.etiktak.backend.model.user.Client
-import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
-import javax.persistence.*
-
-@Entity(name = "product_scans")
-class ProductScan constructor() : BaseModel() {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_scan_id")
-    var id: Long = 0
-
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var client = Client()
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "product_id")
-    var product = Product()
-
-    @Column(name = "timestamp", nullable = false)
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var timestamp = Date()
-
-    @OneToOne(cascade = arrayOf(CascadeType.ALL))
-    var location: Location? = null
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
-    }
+@Repository
+interface StoreTrustVoteRepository : PagingAndSortingRepository<StoreTrustVote, Long> {
+    fun findByVote(vote: TrustVoteType): List<StoreTrustVote>
+    fun findByStoreUuid(uuid: String): List<StoreTrustVote>
 }

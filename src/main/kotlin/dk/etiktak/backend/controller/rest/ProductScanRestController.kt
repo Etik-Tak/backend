@@ -30,7 +30,7 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
-import dk.etiktak.backend.model.product.Location
+import dk.etiktak.backend.model.location.Location
 import dk.etiktak.backend.model.recommendation.CompanyRecommendation
 import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
 import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
@@ -54,16 +54,11 @@ class ProductScanRestController @Autowired constructor(
     fun scanProduct(
             @RequestParam barcode: String,
             @RequestParam clientUuid: String,
-            @RequestParam(required = false) latitude: String? = null,
-            @RequestParam(required = false) longitude: String? = null): HashMap<String, Any> {
+            @RequestParam(required = false) latitude: Double? = null,
+            @RequestParam(required = false) longitude: Double? = null): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
-        var location: Location? = null
-        if (latitude != null && longitude != null) {
-            location = Location(latitude.toDouble(), longitude.toDouble())
-        }
-
-        val productScanResult = productService.scanProduct(client, barcode, location)
+        val productScanResult = productService.scanProduct(client, barcode, latitude, longitude)
 
         return okMap()
                 .add("scan", hashMapOf<String, Any>()
@@ -93,14 +88,12 @@ class ProductScanRestController @Autowired constructor(
     fun provideProductScanLocation(
             @RequestParam clientUuid: String,
             @RequestParam productScanUuid: String,
-            @RequestParam latitude: String,
-            @RequestParam longitude: String): HashMap<String, Any> {
+            @RequestParam latitude: Double,
+            @RequestParam longitude: Double): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var productScan = productService.getProductScanByUuid(productScanUuid) ?: return notFoundMap("Product")
 
-        val location = Location(latitude.toDouble(), longitude.toDouble())
-
-        productService.assignLocationToProductScan(client, productScan, location, {scan -> productScan = scan})
+        productService.assignLocationToProductScan(client, productScan, latitude, longitude, {scan -> productScan = scan})
 
         return okMap()
                 .add("scan", hashMapOf<String, Any>()

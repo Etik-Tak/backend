@@ -24,43 +24,37 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product scan.
+ * Represents a location.
  */
 
-package dk.etiktak.backend.model.product
+package dk.etiktak.backend.model.location
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.location.Location
-import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
-@Entity(name = "product_scans")
-class ProductScan constructor() : BaseModel() {
+@Entity(name = "location")
+class Location constructor() : BaseModel() {
+
+    constructor(latitude: Double, longitude: Double): this() {
+        this.latitude = latitude
+        this.longitude = longitude
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_scan_id")
+    @Column(name = "location_id")
     var id: Long = 0
 
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
+    @Column(name = "latitude", nullable = false)
+    var latitude: Double = 0.0
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var client = Client()
+    @Column(name = "longitude", nullable = false)
+    var longitude: Double = 0.0
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "product_id")
-    var product = Product()
-
-    @Column(name = "timestamp", nullable = false)
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var timestamp = Date()
-
-    @OneToOne(cascade = arrayOf(CascadeType.ALL))
-    var location: Location? = null
+    @Column(name = "name", columnDefinition = "TEXT")
+    var name: String = ""
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

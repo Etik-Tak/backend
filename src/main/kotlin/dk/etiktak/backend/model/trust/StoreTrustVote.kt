@@ -24,55 +24,19 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a location.
+ * Represents a trust vote for a store, i.e. if the store info is correct or not.
  */
 
-package dk.etiktak.backend.model.product
+package dk.etiktak.backend.model.trust
 
-import dk.etiktak.backend.model.BaseModel
-import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
+import dk.etiktak.backend.model.company.Store
 import javax.persistence.*
 
-@Entity(name = "location")
-class Location constructor() : BaseModel() {
+@Entity
+@DiscriminatorValue("Store")
+class StoreTrustVote : TrustVote() {
 
-    constructor(latitude: Double, longitude: Double): this() {
-        this.latitude = latitude
-        this.longitude = longitude
-    }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "location_id")
-    var id: Long = 0
-
-    @Column(name = "latitude", nullable = false)
-    var latitude: Double = 0.0
-
-    @Column(name = "longitude", nullable = false)
-    var longitude: Double = 0.0
-
-    @Column(name = "name", columnDefinition = "TEXT")
-    var name: String = ""
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
-    }
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "store_id")
+    var store = Store()
 }

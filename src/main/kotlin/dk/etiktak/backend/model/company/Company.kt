@@ -64,6 +64,9 @@ class Company constructor() : BaseModel() {
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
     var recommendations: MutableList<CompanyRecommendation> = ArrayList()
 
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    var stores: MutableList<Store> = ArrayList()
+
     @ManyToMany(mappedBy = "companies", fetch = FetchType.LAZY)
     var products: MutableSet<Product> = HashSet()
 

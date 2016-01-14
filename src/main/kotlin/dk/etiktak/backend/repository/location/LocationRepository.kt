@@ -25,7 +25,7 @@
 
 package dk.etiktak.backend.repository.location
 
-import dk.etiktak.backend.model.product.Location
+import dk.etiktak.backend.model.location.Location
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
