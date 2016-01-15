@@ -57,6 +57,9 @@ class Product constructor() : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
+    @Column(name = "enabled")
+    var enabled = true
+
     @Column(name = "barcode")
     var barcode: String = ""
 
@@ -69,9 +72,15 @@ class Product constructor() : BaseModel() {
     @Column(name = "correctness_trust")
     var correctnessTrust: Double = 0.0
 
+    @Column(name = "voted_correctness_trust")
+    var votedCorrectnessTrust: Double = 0.0
+
     @NotNull
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var correctnessTrustVotes: MutableList<ProductTrustVote> = ArrayList()
+
+    @OneToOne(cascade = arrayOf(CascadeType.ALL))
+    var productHistory: Product? = null
 
     @NotNull
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
@@ -106,6 +115,10 @@ class Product constructor() : BaseModel() {
 
     @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var creator = Client()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

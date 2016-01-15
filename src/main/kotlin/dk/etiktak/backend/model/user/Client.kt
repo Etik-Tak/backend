@@ -67,6 +67,9 @@ class Client constructor() {
     @Column(name = "banned", nullable = false)
     var banned: Boolean = false
 
+    @Column(name = "trustScore", nullable = false)
+    var trustLevel: Double = 0.0
+
     @NotNull
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
@@ -79,6 +82,9 @@ class Client constructor() {
 
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
+
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    var editedProducts: MutableList<Product> = ArrayList()
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var productTrustVotes: MutableList<TrustVote> = ArrayList()

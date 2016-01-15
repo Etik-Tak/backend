@@ -72,7 +72,7 @@ class ProductRestController @Autowired constructor(
     fun createProduct(
             @RequestParam clientUuid: String,
             @RequestParam name: String,
-            @RequestParam(required = false) barcode: String? = null,
+            @RequestParam(required = false) barcode: String,
             @RequestParam(required = false) barcodeType: String? = null,
             @RequestParam(required = false) categoryUuidList: List<String>? = null,
             @RequestParam(required = false) labelUuidList: List<String>? = null,
@@ -130,7 +130,7 @@ class ProductRestController @Autowired constructor(
 
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 
-        productService.editProduct(client, product, name, modifyValues = {modifiedProduct -> product = modifiedProduct})
+        productService.editProduct(client, product, name, modifyValues = {modifiedClient, modifiedProduct -> product = modifiedProduct})
 
         return productOkMap(product)
     }

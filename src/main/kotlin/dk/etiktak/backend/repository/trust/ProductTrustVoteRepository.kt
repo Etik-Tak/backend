@@ -32,6 +32,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ProductTrustVoteRepository : PagingAndSortingRepository<ProductTrustVote, Long> {
-    fun findByVote(vote: TrustVoteType): List<ProductTrustVote>
     fun findByProductUuid(uuid: String): List<ProductTrustVote>
+    fun findByVoteAndProductUuid(vote: TrustVoteType, productUuid: String): List<ProductTrustVote>
+    fun countByVoteAndProductUuid(vote: TrustVoteType, productUuid: String): Long
 }

@@ -40,13 +40,13 @@ import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.recommendation.RecommendationService
 import dk.etiktak.backend.service.security.ClientValid
 import dk.etiktak.backend.service.security.ClientVerified
+import dk.etiktak.backend.service.trust.TrustService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
-import org.springframework.util.StringUtils
 import java.util.*
 
 @Service
@@ -60,7 +60,8 @@ open class ProductService @Autowired constructor(
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
         private val companyRepository: CompanyRepository,
-        private val trustVoteRepository: ProductTrustVoteRepository) {
+        private val productTrustVoteRepository: ProductTrustVoteRepository,
+        private val trustService: TrustService) {
 
     private val logger = LoggerFactory.getLogger(ProductService::class.java)
 
@@ -71,7 +72,7 @@ open class ProductService @Autowired constructor(
      * @return         Product with given UUID
      */
     open fun getProductByUuid(uuid: String): Product? {
-        return productRepository.findByUuid(uuid)
+        return productRepository.findByUuidAndEnabled(uuid)
     }
 
     /**
@@ -81,7 +82,7 @@ open class ProductService @Autowired constructor(
      * @return          Product with given barcode
      */
     open fun getProductByBarcode(barcode: String): Product? {
-        return productRepository.findByBarcode(barcode)
+        return productRepository.findByBarcodeAndEnabled(barcode)
     }
 
     /**
@@ -108,7 +109,7 @@ open class ProductService @Autowired constructor(
      * @return              Created product
      */
     @ClientVerified
-    open fun createProduct(client: Client, barcode: String?, barcodeType: Product.BarcodeType?, name: String,
+    open fun createProduct(client: Client, barcode: String, barcodeType: Product.BarcodeType?, name: String,
                            categories: List<ProductCategory> = listOf(),
                            labels: List<ProductLabel> = listOf(),
                            companies: List<Company> = listOf(),
@@ -116,7 +117,10 @@ open class ProductService @Autowired constructor(
 
         val product = Product()
         product.uuid = CryptoUtil().uuid()
+        product.creator = client
         product.name = name
+        product.barcode = barcode
+        product.barcodeType = barcodeType ?: Product.BarcodeType.UNKNOWN
         product.productCategories.addAll(categories)
         product.productLabels.addAll(labels)
         product.companies.addAll(companies)
@@ -131,6 +135,7 @@ open class ProductService @Autowired constructor(
         for (company in companies) {
             company.products.add(product)
         }
+        client.editedProducts.add(product)
 
         // Save it all
         val modifiedProductCategories: MutableList<ProductCategory> = ArrayList()
@@ -145,19 +150,41 @@ open class ProductService @Autowired constructor(
         for (company in companies) {
             modifiedCompanies.add(companyRepository.save(company))
         }
+        var modifiedClient = clientRepository.save(client)
         var modifiedProduct = productRepository.save(product)
 
-        // Assign barcode
-        if (barcode != null) {
-            assignBarcodeToProduct(client, modifiedProduct, barcode, barcodeType ?: Product.BarcodeType.UNKNOWN, { product -> modifiedProduct = product})
-        }
-
-        // Trust vote product
-        var modifiedClient = client
-
-        trustVoteProduct(client, modifiedProduct, TrustVoteType.Trusted, modifyValues = { client, product -> modifiedClient = client; modifiedProduct = product})
-
         modifyValues(modifiedClient, modifiedProductCategories, modifiedProductLabels, modifiedCompanies)
+
+        return modifiedProduct
+    }
+
+    /**
+     * Creates a new empty product.
+     *
+     * @param client        Client
+     * @param barcode       Barcode
+     * @param barcodeType   Barcode type
+     * @param modifyValues  Function called with modified client
+     * @return              Created product
+     */
+    open fun createEmptyProduct(client: Client, barcode: String, barcodeType: Product.BarcodeType?,
+                                modifyValues: (Client) -> Unit = {}): Product {
+
+        val product = Product()
+        product.uuid = CryptoUtil().uuid()
+        product.creator = client
+        product.name = ""
+        product.barcode = barcode
+        product.barcodeType = barcodeType ?: Product.BarcodeType.UNKNOWN
+
+        // Glue it together
+        client.editedProducts.add(product)
+
+        // Save it all
+        var modifiedClient = clientRepository.save(client)
+        var modifiedProduct = productRepository.save(product)
+
+        modifyValues(modifiedClient)
 
         return modifiedProduct
     }
@@ -168,42 +195,60 @@ open class ProductService @Autowired constructor(
      * @param client        Client
      * @param product       Product
      * @param name          Name of product
-     * @param modifyValues  Function called with modified product
+     * @param modifyValues  Function called with modified client and product
      */
     @ClientVerified
-    open fun editProduct(client: Client, product: Product, name: String?, modifyValues: (Product) -> Unit = {}) {
+    open fun editProduct(client: Client, product: Product, name: String?, modifyValues: (Client, Product) -> Unit = {client, product -> Unit}) {
 
-        // Modify values
-        name?.let {
-            product.name = name
-        }
+        // Check sufficient trust
+        trustService.assertSufficientTrustToEditProduct(client, product)
+
+        // Create history product
+        var modifiedProduct = product
+        createHistoryProduct(client, product, modifyValues = {product -> modifiedProduct = product})
+
+        // Modify fields
+        modifiedProduct.name = name ?: modifiedProduct.name
 
         // Save it all
-        var modifiedProduct = productRepository.save(product)
+        var modifiedClient = clientRepository.save(client)
+        modifiedProduct = productRepository.save(modifiedProduct)
 
-        // Recalculate trust
-        recalculateCorrectnessTrust(modifiedProduct, modifyValues = {recalculatedProduct -> modifiedProduct = recalculatedProduct})
-
-        modifyValues(modifiedProduct)
+        modifyValues(modifiedClient, modifiedProduct)
     }
 
-    /**
-     * Assign barcode to product.
-     *
-     * @param client        Client
-     * @param product       Product
-     * @param barcode       Barcode
-     * @param barcodeType   Barcode type
-     * @param modifyValues  Function called with modified product
-     */
     @ClientVerified
-    open fun assignBarcodeToProduct(client: Client, product: Product, barcode: String, barcodeType: Product.BarcodeType, modifyValues: (Product) -> Unit = {}) {
-        product.barcode = barcode
-        product.barcodeType = barcodeType
+    open fun createHistoryProduct(client: Client, product: Product, modifyValues: (Product) -> Unit = {}) : Product {
 
+        // Create product
+        val historyProduct = Product()
+        historyProduct.uuid = CryptoUtil().uuid()
+        historyProduct.enabled = false
+        historyProduct.creator = product.creator
+        historyProduct.barcode = product.barcode
+        historyProduct.barcodeType = product.barcodeType
+        historyProduct.correctnessTrust = client.trustLevel
+
+        // Duplicate relevant fields
+        historyProduct.name = product.name
+        historyProduct.correctnessTrust = product.correctnessTrust
+        historyProduct.votedCorrectnessTrust = trustService.votedCorrectnessTrustScoreForProduct(product)
+
+        // Move creator from original product to history product
+        client.editedProducts.remove(product)
+        client.editedProducts.add(historyProduct)
+
+        // Glue it together
+        product.creator = client
+        product.productHistory = historyProduct
+
+        // Save it all
+        productRepository.save(historyProduct)
         val modifiedProduct = productRepository.save(product)
 
         modifyValues(modifiedProduct)
+
+        return historyProduct
     }
 
     /**
@@ -284,7 +329,7 @@ open class ProductService @Autowired constructor(
 
         var product = getProductByBarcode(barcode)
         if (product == null) {
-            product = createProduct(client, barcode, Product.BarcodeType.UNKNOWN, name = "", modifyValues = {client, categories, labels, companies -> modifiedClient = client})
+            product = createEmptyProduct(client, barcode, Product.BarcodeType.UNKNOWN, modifyValues = {client -> modifiedClient = client})
         }
 
         // Create product scan
@@ -380,7 +425,7 @@ open class ProductService @Autowired constructor(
      * @param modifyValues  Function called with modified client and product
      * @return              Trust vote
      */
-    @ClientValid
+    @ClientVerified
     open fun trustVoteProduct(client: Client, product: Product, vote: TrustVoteType, modifyValues: (Client, Product) -> Unit = {client, product -> Unit}): ProductTrustVote {
 
         // Create trust vote
@@ -394,27 +439,17 @@ open class ProductService @Autowired constructor(
         client.productTrustVotes.add(productTrustVote)
 
         // Save it all
-        val modifiedProductTrustVote = trustVoteRepository.save(productTrustVote)
+        val modifiedProductTrustVote = productTrustVoteRepository.save(productTrustVote)
         var modifiedProduct = productRepository.save(product)
         val modifiedClient = clientRepository.save(client)
 
         // Recalculate trust
-        recalculateCorrectnessTrust(modifiedProduct, modifyValues = {recalculatedProduct -> modifiedProduct = recalculatedProduct})
+        modifiedProduct.votedCorrectnessTrust = trustService.votedCorrectnessTrustScoreForProduct(product)
+        modifiedProduct = productRepository.save(product)
 
         modifyValues(modifiedClient, modifiedProduct)
 
         return modifiedProductTrustVote
-    }
-
-    /**
-     * Recalculates product correctness trust.
-     *
-     * @param product        Product
-     * @param modifyValues   Function called with modified product
-     */
-    open fun recalculateCorrectnessTrust(product: Product, modifyValues: (Product) -> Unit = {}) {
-
-        // TODO! Calculate trust
     }
 }
 

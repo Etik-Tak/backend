@@ -43,7 +43,7 @@ import org.springframework.web.util.NestedServletException
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class ProductServiceTest : BaseRestTest() {
+class ProductTrustTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
         return super.serviceEndpoint() + "product/" + postfix
@@ -67,61 +67,12 @@ class ProductServiceTest : BaseRestTest() {
     }
 
     /**
-     * Test that we can retrieve product by UUID.
+     * Test that we can create a product if we have sufficient trust level.
      */
     @Test
-    fun retrieveProductByUuid() {
-        mockMvc().perform(
-                get(serviceEndpoint(""))
-                        .param("uuid", product1Uuid))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1Uuid)))
-                .andExpect(jsonPath("$.product.name", `is`("Test product 1")))
-                .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
-                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
-    }
+    fun createProductWhenSufficientTrustLevel() {
+        setClientTrustLevel(client1Uuid, 0.5)
 
-    /**
-     * Test that we can retrieve product by EAN13 barcode.
-     */
-    @Test
-    fun retrieveProductByEan13Barcode() {
-        mockMvc().perform(
-                get(serviceEndpoint(""))
-                        .param("barcode", "12345678a"))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product1Uuid)))
-                .andExpect(jsonPath("$.product.name", `is`("Test product 1")))
-                .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
-                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
-    }
-
-    /**
-     * Test that we can retrieve product by UPC barcode.
-     */
-    @Test
-    fun retrieveProductByUPCBarcode() {
-        mockMvc().perform(
-                get(serviceEndpoint("/"))
-                        .param("barcode", "12345678b"))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.product.uuid", `is`(product2Uuid)))
-                .andExpect(jsonPath("$.product.name", `is`("Test product 2")))
-                .andExpect(jsonPath("$.product.categories", hasSize<Any>(0)))
-                .andExpect(jsonPath("$.product.labels", hasSize<Any>(0)))
-    }
-
-    /**
-     * Test that we can create a product with barcode, categories and labels.
-     */
-    @Test
-    fun createProduct() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
                         .param("clientUuid", client1Uuid)
@@ -134,61 +85,52 @@ class ProductServiceTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
-                .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
-                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
     }
 
     /**
-     * Test that we cannot create a product without barcode.
+     * Test that we can edit a product if we have sufficient trust level.
      */
     @Test
-    fun cannotCreateProductWithoutBarcode() {
+    fun editProductWhenSufficientTrusLevelt() {
+        setClientTrustLevel(client1Uuid, 0.7)
+        setProductCorrectnessTrust(product1Uuid, 0.4)
+
+        mockMvc().perform(
+                post(serviceEndpoint("/edit/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("productUuid", product1Uuid)
+                        .param("name", "Pepsi Cola"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.product.name", `is`("Pepsi Cola")))
+    }
+
+    /**
+     * Test that we cannot edit a product if we don't have sufficient trust level.
+     */
+    @Test
+    fun cannotEditProductWhenInsufficientTrustLevel() {
+        setClientTrustLevel(client1Uuid, 0.5)
+        setProductCorrectnessTrust(product1Uuid, 0.8)
+
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("/edit/"))
                         .param("clientUuid", client1Uuid)
-                        .param("name", "Coca Cola")
-                        .param("categoryUuidList", "${productCategory1Uuid}, ${productCategory2Uuid}")
-                        .param("labelUuidList", "${productLabel1Uuid}, ${productLabel2Uuid}"))
+                        .param("productUuid", product1Uuid)
+                        .param("name", "Pepsi Cola"))
     }
 
-    /**
-     * Test that we can create a product without categories.
-     */
-    @Test
-    fun createProductWithoutCategories() {
-        mockMvc().perform(
-                post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1Uuid)
-                        .param("name", "Coca Cola")
-                        .param("barcode", "12345678")
-                        .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
-                        .param("labelUuidList", "${productLabel1Uuid}, ${productLabel2Uuid}"))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
-                .andExpect(jsonPath("$.product.categories", hasSize<Any>(0)))
-                .andExpect(jsonPath("$.product.labels", hasSize<Any>(2)))
+    private fun setClientTrustLevel(clientUuid: String, trustLevel: Double) {
+        val client = clientRepository!!.findByUuid(clientUuid)
+        client!!.trustLevel = trustLevel
+        clientRepository.save(client)
     }
 
-    /**
-     * Test that we can create a product without labels.
-     */
-    @Test
-    fun createProductWithoutLabels() {
-        mockMvc().perform(
-                post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1Uuid)
-                        .param("name", "Coca Cola")
-                        .param("barcode", "12345678")
-                        .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
-                        .param("categoryUuidList", "${productCategory1Uuid}, ${productCategory2Uuid}"))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
-                .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
-                .andExpect(jsonPath("$.product.labels", hasSize<Any>(0)))
+    private fun setProductCorrectnessTrust(productUuid: String, correctnessTrust: Double) {
+        val product = productRepository!!.findByUuidAndEnabled(productUuid)
+        product!!.correctnessTrust = correctnessTrust
+        productRepository.save(product)
     }
 }
