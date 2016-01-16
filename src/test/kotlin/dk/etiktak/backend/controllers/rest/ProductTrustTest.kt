@@ -28,6 +28,7 @@ package dk.etiktak.backend.controllers.rest
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.trust.TrustVoteType
 import org.hamcrest.Matchers.*
 import org.junit.Before
 import org.junit.Test
@@ -38,6 +39,7 @@ import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.util.Assert
 import org.springframework.web.util.NestedServletException
 
 @RunWith(SpringJUnit4ClassRunner::class)
@@ -122,15 +124,83 @@ class ProductTrustTest : BaseRestTest() {
                         .param("name", "Pepsi Cola"))
     }
 
+    /**
+     * Test that a client cannot trust vote more than once on same product.
+     */
+    @Test
+    fun cannotTrustVoteMoreThanOnceOnSameProduct() {
+        mockMvc().perform(
+                post(serviceEndpoint("/trust/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("productUuid", product1Uuid)
+                        .param("vote", TrustVoteType.Trusted.name))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+
+        exception.expect(NestedServletException::class.java)
+        mockMvc().perform(
+                post(serviceEndpoint("/trust/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("productUuid", product1Uuid)
+                        .param("vote", TrustVoteType.Trusted.name))
+    }
+
+    /**
+     * Test that client trust level and product correctness trust is updated when voted on product.
+     */
+    @Test
+    fun clientTrustLevelAndProductCorrectnessTrustIsUpdatedOnReceivingNewProductVote() {
+        Assert.isTrue(
+                clientTrustLevel(client1Uuid) == 0.0,
+                "Client trust level expected to be 0.0, but was ${clientTrustLevel(client1Uuid)}"
+        )
+        Assert.isTrue(
+                productTrustLevel(product1Uuid) == 0.0,
+                "Product trust level expected to be 0.0, but was ${productTrustLevel(product1Uuid)}"
+        )
+
+        // Perform 10 trusted votes and 10 not-trusted votes on product
+        for (i in 1..20) {
+            val clientUuid = createAndSaveClient()
+            mockMvc().perform(
+                    post(serviceEndpoint("/trust/"))
+                            .param("clientUuid", clientUuid)
+                            .param("productUuid", product1Uuid)
+                            .param("vote", if (i <= 10) TrustVoteType.Trusted.name else TrustVoteType.NotTrusted.name))
+                    .andExpect(status().isOk)
+                    .andExpect(content().contentType(jsonContentType))
+                    .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+        }
+
+        Assert.isTrue(
+                clientTrustLevel(client1Uuid) > 0.0 && clientTrustLevel(client1Uuid) < 1.0,
+                "Client trust level expected to be between 0.0 and 1.0, but was ${clientTrustLevel(client1Uuid)}"
+        )
+        Assert.isTrue(
+                productTrustLevel(product1Uuid) > 0.0 && productTrustLevel(product1Uuid) < 1.0,
+                "Product trust level expected to be between 0.0 and 1.0, but was ${productTrustLevel(product1Uuid)}"
+        )
+    }
+
+
     private fun setClientTrustLevel(clientUuid: String, trustLevel: Double) {
         val client = clientRepository!!.findByUuid(clientUuid)
         client!!.trustLevel = trustLevel
         clientRepository.save(client)
     }
 
+    private fun clientTrustLevel(clientUuid: String): Double {
+        return clientRepository!!.findByUuid(clientUuid)!!.trustLevel
+    }
+
     private fun setProductCorrectnessTrust(productUuid: String, correctnessTrust: Double) {
         val product = productRepository!!.findByUuidAndEnabled(productUuid)
         product!!.correctnessTrust = correctnessTrust
         productRepository.save(product)
+    }
+
+    private fun productTrustLevel(productUuid: String): Double {
+        return productRepository!!.findByUuidAndEnabled(productUuid)!!.correctnessTrust
     }
 }

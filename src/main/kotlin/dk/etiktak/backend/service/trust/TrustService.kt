@@ -57,15 +57,31 @@ open class TrustService @Autowired constructor(
      * @param product   Product
      * @return          Correctness trust score
      */
-    open fun votedCorrectnessTrustScoreForProduct(product: Product): Double {
+    open fun correctnessTrustForProduct(product: Product): Double {
         val trustedVotesCount = productTrustVoteRepository.countByVoteAndProductUuid(TrustVoteType.Trusted, product.uuid)
         val untrustedVotesCount = productTrustVoteRepository.countByVoteAndProductUuid(TrustVoteType.NotTrusted, product.uuid)
         val totalVotesCount = trustedVotesCount + untrustedVotesCount
 
         if (totalVotesCount > 0) {
-            return trustedVotesCount.toDouble() / totalVotesCount
+            val votedCorrectnessTrust = trustedVotesCount.toDouble() / totalVotesCount
+            val votedCorrectnessTrustWeight = 0.5 // TODO!
+
+            val creatorCorrectnessTrust = product.initialCorrectnessTrust
+            val creatorCorrectnessTrustWeight = 1.0 - votedCorrectnessTrustWeight
+
+            return (votedCorrectnessTrust * votedCorrectnessTrustWeight) + (creatorCorrectnessTrust * creatorCorrectnessTrustWeight)
         } else {
-            return 0.0
+            return product.initialCorrectnessTrust
         }
+    }
+
+    /**
+     * Recalculates client trust level.
+     *
+     * @param client        Client
+     * @param modifyValues  Function called with modified client
+     */
+    open fun recalculateClientTrustLevel(client: Client, modifyValues: (Client) -> Unit = {}) {
+        // TODO!
     }
 }

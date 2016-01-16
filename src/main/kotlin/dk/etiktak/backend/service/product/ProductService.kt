@@ -118,6 +118,8 @@ open class ProductService @Autowired constructor(
         val product = Product()
         product.uuid = CryptoUtil().uuid()
         product.creator = client
+        product.initialCorrectnessTrust = client.trustLevel
+        product.correctnessTrust = product.initialCorrectnessTrust
         product.name = name
         product.barcode = barcode
         product.barcodeType = barcodeType ?: Product.BarcodeType.UNKNOWN
@@ -173,6 +175,8 @@ open class ProductService @Autowired constructor(
         val product = Product()
         product.uuid = CryptoUtil().uuid()
         product.creator = client
+        product.initialCorrectnessTrust = client.trustLevel
+        product.correctnessTrust = product.initialCorrectnessTrust
         product.name = ""
         product.barcode = barcode
         product.barcodeType = barcodeType ?: Product.BarcodeType.UNKNOWN
@@ -204,51 +208,61 @@ open class ProductService @Autowired constructor(
         trustService.assertSufficientTrustToEditProduct(client, product)
 
         // Create history product
+        var modifiedClient = client
         var modifiedProduct = product
-        createHistoryProduct(client, product, modifyValues = {product -> modifiedProduct = product})
+
+        createHistoryProduct(client, product, modifyValues = {client, product -> modifiedClient = client; modifiedProduct = product})
 
         // Modify fields
         modifiedProduct.name = name ?: modifiedProduct.name
 
         // Save it all
-        var modifiedClient = clientRepository.save(client)
+        modifiedClient = clientRepository.save(modifiedClient)
         modifiedProduct = productRepository.save(modifiedProduct)
 
         modifyValues(modifiedClient, modifiedProduct)
     }
 
     @ClientVerified
-    open fun createHistoryProduct(client: Client, product: Product, modifyValues: (Product) -> Unit = {}) : Product {
+    open fun createHistoryProduct(client: Client, product: Product, modifyValues: (Client, Product) -> Unit = {client, product -> Unit}) : Product {
 
         // Create product
         val historyProduct = Product()
         historyProduct.uuid = CryptoUtil().uuid()
         historyProduct.enabled = false
+
+        // Duplicate relevant fields
         historyProduct.creator = product.creator
         historyProduct.barcode = product.barcode
         historyProduct.barcodeType = product.barcodeType
-        historyProduct.correctnessTrust = client.trustLevel
-
-        // Duplicate relevant fields
         historyProduct.name = product.name
+        historyProduct.initialCorrectnessTrust = product.initialCorrectnessTrust
         historyProduct.correctnessTrust = product.correctnessTrust
-        historyProduct.votedCorrectnessTrust = trustService.votedCorrectnessTrustScoreForProduct(product)
 
-        // Move creator from original product to history product
+        // Move creator to history product
         client.editedProducts.remove(product)
         client.editedProducts.add(historyProduct)
+
+        for (trustVote in product.correctnessTrustVotes) {
+            product.correctnessTrustVotes.remove(trustVote)
+            historyProduct.correctnessTrustVotes.add(trustVote)
+        }
 
         // Glue it together
         product.creator = client
         product.productHistory = historyProduct
 
         // Save it all
-        productRepository.save(historyProduct)
+        val modifiedClient = clientRepository.save(client)
+        val modifiedHistoryProduct = productRepository.save(historyProduct)
         val modifiedProduct = productRepository.save(product)
 
-        modifyValues(modifiedProduct)
+        // Move trust votes to history product
+        historyProduct.correctnessTrustVotes.addAll(product.correctnessTrustVotes)
 
-        return historyProduct
+        modifyValues(modifiedClient, modifiedProduct)
+
+        return modifiedHistoryProduct
     }
 
     /**
@@ -374,7 +388,6 @@ open class ProductService @Autowired constructor(
         modifyValues(modifiedProductScan)
     }
 
-
     /**
      * Creates a product scan, glues it together with product and client, and saves it all.
      *
@@ -444,8 +457,11 @@ open class ProductService @Autowired constructor(
         val modifiedClient = clientRepository.save(client)
 
         // Recalculate trust
-        modifiedProduct.votedCorrectnessTrust = trustService.votedCorrectnessTrustScoreForProduct(product)
+        modifiedProduct.correctnessTrust = trustService.correctnessTrustForProduct(product)
         modifiedProduct = productRepository.save(product)
+
+        // Recalculate product creator trust level
+        trustService.recalculateClientTrustLevel(product.creator)
 
         modifyValues(modifiedClient, modifiedProduct)
 

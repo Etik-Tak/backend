@@ -146,7 +146,7 @@ class ProductRestController @Autowired constructor(
 
         productService.assignCategoryToProduct(client, product, productCategory)
 
-        return okMap()
+        return productOkMap(product)
     }
 
     @RequestMapping(value = "/assign/label/", method = arrayOf(RequestMethod.POST))
@@ -160,7 +160,7 @@ class ProductRestController @Autowired constructor(
 
         productService.assignLabelToProduct(client, product, productLabel)
 
-        return okMap()
+        return productOkMap(product)
     }
 
     @RequestMapping(value = "/assign/company/", method = arrayOf(RequestMethod.POST))
@@ -174,7 +174,7 @@ class ProductRestController @Autowired constructor(
 
         productService.assignCompanyToProduct(client, product, company)
 
-        return okMap()
+        return productOkMap(product)
     }
 
     @RequestMapping(value = "/trust/", method = arrayOf(RequestMethod.POST))
@@ -187,7 +187,7 @@ class ProductRestController @Autowired constructor(
 
         productService.trustVoteProduct(client, product, vote)
 
-        return okMap()
+        return productOkMap(product)
     }
 
     fun productOkMap(product: Product): HashMap<String, Any> {
