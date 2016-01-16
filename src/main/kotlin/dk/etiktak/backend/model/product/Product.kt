@@ -79,8 +79,8 @@ class Product constructor() : BaseModel() {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var correctnessTrustVotes: MutableList<ProductTrustVote> = ArrayList()
 
-    @OneToOne(cascade = arrayOf(CascadeType.ALL))
-    var productHistory: Product? = null
+    @Column(name = "product_history_uuid")
+    var productHistoryUuid: String? = null
 
     @NotNull
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)

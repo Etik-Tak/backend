@@ -28,6 +28,7 @@ package dk.etiktak.backend.controllers.rest
 import com.jayway.jsonpath.JsonPath
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.recommendation.RecommendationScore
+import dk.etiktak.backend.repository.changelog.ChangeLogRepository
 import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelClientRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelFollowerRepository
@@ -43,6 +44,7 @@ import dk.etiktak.backend.repository.recommendation.ProductRecommendationReposit
 import dk.etiktak.backend.repository.recommendation.RecommendationRepository
 import dk.etiktak.backend.repository.trust.CompanyTrustVoteRepository
 import dk.etiktak.backend.repository.trust.ProductTrustVoteRepository
+import dk.etiktak.backend.repository.trust.StoreTrustVoteRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository
@@ -135,6 +137,9 @@ open class BaseRestTest {
     val companyTrustVoteRepository: CompanyTrustVoteRepository? = null
 
     @Autowired
+    val storeTrustVoteRepository: StoreTrustVoteRepository? = null
+
+    @Autowired
     val clientRepository: ClientRepository? = null
 
     @Autowired
@@ -176,6 +181,9 @@ open class BaseRestTest {
     @Autowired
     val productLabelRecommendationRepository: ProductLabelRecommendationRepository? = null
 
+    @Autowired
+    val changeLogRepository: ChangeLogRepository? = null
+
     @get:Rule
     public val exception = ExpectedException.none()
 
@@ -196,6 +204,7 @@ open class BaseRestTest {
 
 
     fun cleanRepository() {
+        storeTrustVoteRepository!!.deleteAll()
         companyTrustVoteRepository!!.deleteAll()
         productTrustVoteRepository!!.deleteAll()
 
@@ -224,6 +233,8 @@ open class BaseRestTest {
 
         mobileNumberRepository!!.deleteAll()
         smsVerificationRepository!!.deleteAll()
+
+        changeLogRepository!!.deleteAll()
     }
 
     fun createAndSaveProduct(clientUuid: String, barcode: String, barcodeType: Product.BarcodeType, name: String = "Test product"): String {

@@ -126,11 +126,10 @@ class ProductRestController @Autowired constructor(
             @RequestParam productUuid: String,
             @RequestParam(required = false) name: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
-
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 
-        productService.editProduct(client, product, name, modifyValues = {modifiedClient, modifiedProduct -> product = modifiedProduct})
+        productService.editProduct(client, product, name, modifyValues = {modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
 
         return productOkMap(product)
     }
@@ -140,11 +139,12 @@ class ProductRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam categoryUuid: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
-        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
-        val productCategory = productCategoryService.getProductCategoryByUuid(categoryUuid) ?: return notFoundMap("Product category")
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
+        var productCategory = productCategoryService.getProductCategoryByUuid(categoryUuid) ?: return notFoundMap("Product category")
 
-        productService.assignCategoryToProduct(client, product, productCategory)
+        productService.assignCategoryToProduct(client, product, productCategory,
+                modifyValues = {modifiedClient, modifiedProduct, modifiedProductCategory -> client = modifiedClient; product = modifiedProduct; productCategory = modifiedProductCategory})
 
         return productOkMap(product)
     }
@@ -154,11 +154,12 @@ class ProductRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam labelUuid: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
-        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
-        val productLabel = productLabelService.getProductLabelByUuid(labelUuid) ?: return notFoundMap("Product label")
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
+        var productLabel = productLabelService.getProductLabelByUuid(labelUuid) ?: return notFoundMap("Product label")
 
-        productService.assignLabelToProduct(client, product, productLabel)
+        productService.assignLabelToProduct(client, product, productLabel,
+                modifyValues = {modifiedClient, modifiedProduct, modifiedProductLabel -> client = modifiedClient; product = modifiedProduct; productLabel = modifiedProductLabel})
 
         return productOkMap(product)
     }
@@ -168,11 +169,12 @@ class ProductRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam companyUuid: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
-        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
-        val company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
+        var company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
 
-        productService.assignCompanyToProduct(client, product, company)
+        productService.assignCompanyToProduct(client, product, company,
+                modifyValues = {modifiedClient, modifiedProduct, modifiedCompany -> client = modifiedClient; product = modifiedProduct; company = modifiedCompany})
 
         return productOkMap(product)
     }
@@ -182,10 +184,11 @@ class ProductRestController @Autowired constructor(
             @RequestParam clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam vote: TrustVoteType): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
-        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 
-        productService.trustVoteProduct(client, product, vote)
+        productService.trustVoteProduct(client, product, vote,
+                modifyValues = {modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
 
         return productOkMap(product)
     }
