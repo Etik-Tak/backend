@@ -214,6 +214,8 @@ open class ProductService @Autowired constructor(
         createHistoryProduct(client, product, modifyValues = {client, product -> modifiedClient = client; modifiedProduct = product})
 
         // Modify fields
+        modifiedProduct.initialCorrectnessTrust = client.trustLevel
+        modifiedProduct.correctnessTrust = modifiedProduct.initialCorrectnessTrust
         modifiedProduct.name = name ?: modifiedProduct.name
 
         // Save it all

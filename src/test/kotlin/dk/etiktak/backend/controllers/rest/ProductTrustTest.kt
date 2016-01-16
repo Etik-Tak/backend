@@ -186,6 +186,32 @@ class ProductTrustTest : BaseRestTest() {
         )
     }
 
+    /**
+     * Editing a product will reset correctness trust to client's trust level
+     */
+    @Test
+    fun correctnessTrustResetToClientsTrustLevelWhenEditing() {
+
+        // Initial product trust level 0.0
+        Assert.isTrue(
+                productTrustLevel(product1Uuid) == 0.0,
+                "Product trust level expected to be 0.0, but was ${productTrustLevel(product1Uuid)}"
+        )
+
+        setClientTrustLevel(client2Uuid, 0.5)
+
+        mockMvc().perform(
+                post(serviceEndpoint("/edit/"))
+                        .param("clientUuid", client2Uuid)
+                        .param("productUuid", product1Uuid)
+                        .param("name", "Pepsi Cola"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.product.correctnessTrust", `is`(0.5)))
+    }
+
+
 
     private fun setClientTrustLevel(clientUuid: String, trustLevel: Double) {
         val client = clientRepository!!.findByUuid(clientUuid)
