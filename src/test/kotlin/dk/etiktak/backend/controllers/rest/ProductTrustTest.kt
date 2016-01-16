@@ -151,6 +151,8 @@ class ProductTrustTest : BaseRestTest() {
      */
     @Test
     fun clientTrustLevelAndProductCorrectnessTrustIsUpdatedOnReceivingNewProductVote() {
+
+        // Check initial trust values all 0.0
         Assert.isTrue(
                 clientTrustLevel(client1Uuid) == 0.0,
                 "Client trust level expected to be 0.0, but was ${clientTrustLevel(client1Uuid)}"
@@ -173,6 +175,7 @@ class ProductTrustTest : BaseRestTest() {
                     .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
         }
 
+        // Check trust values updated to between 0.0 and 1.0
         Assert.isTrue(
                 clientTrustLevel(client1Uuid) > 0.0 && clientTrustLevel(client1Uuid) < 1.0,
                 "Client trust level expected to be between 0.0 and 1.0, but was ${clientTrustLevel(client1Uuid)}"
