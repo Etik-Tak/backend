@@ -124,13 +124,28 @@ class ProductTrustTest : BaseRestTest() {
     }
 
     /**
+     * Test that a client can trust vote a product.
+     */
+    @Test
+    fun trustVoteProduct() {
+        mockMvc().perform(
+                post(serviceEndpoint("/trust/"))
+                        .param("clientUuid", client2Uuid)
+                        .param("productUuid", product1Uuid)
+                        .param("vote", TrustVote.TrustVoteType.Trusted.name))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+    }
+
+    /**
      * Test that a client cannot trust vote more than once on same product.
      */
     @Test
     fun cannotTrustVoteMoreThanOnceOnSameProduct() {
         mockMvc().perform(
                 post(serviceEndpoint("/trust/"))
-                        .param("clientUuid", client1Uuid)
+                        .param("clientUuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -140,9 +155,25 @@ class ProductTrustTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/trust/"))
+                        .param("clientUuid", client2Uuid)
+                        .param("productUuid", product1Uuid)
+                        .param("vote", TrustVote.TrustVoteType.Trusted.name))
+    }
+
+    /**
+     * Test that a client cannot vote on products he edited himself.
+     */
+    @Test
+    fun cannotTrustVoteOwnProduct() {
+        exception.expect(NestedServletException::class.java)
+        mockMvc().perform(
+                post(serviceEndpoint("/trust/"))
                         .param("clientUuid", client1Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
     }
 
     /**

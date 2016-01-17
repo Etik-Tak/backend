@@ -107,9 +107,15 @@ open class TrustService @Autowired constructor(
     @ClientVerified
     open fun trustVoteItem(client: Client, trustItem: TrustItem, vote: TrustVote.TrustVoteType, modifyValues: (Client, TrustItem) -> Unit = { client, trustItem -> Unit}): TrustVote {
 
-        // Clients can only vote once on same item
+        // Clients cannot vote on their "own" item
         Assert.isTrue(
-                trustVoteRepository.findByClientUuidAndTrustItemUuid(client.uuid, trustItem.uuid) == null,
+                !trustItem.creator.uuid.equals(client.uuid),
+                "Client with uuid ${client.uuid} cannot vote on his own item with uuid ${trustItem.uuid}"
+        )
+
+        // Clients can only vote once on same item
+        Assert.isNull(
+                trustVoteRepository.findByClientUuidAndTrustItemUuid(client.uuid, trustItem.uuid),
                 "Client with uuid ${client.uuid} already trust voted trust item with uuid ${trustItem.uuid}"
         )
 
@@ -179,6 +185,7 @@ open class TrustService @Autowired constructor(
      * @param modifyValues  Function called with modified client
      */
     open fun recalculateClientTrustLevel(client: Client, modifyValues: (Client) -> Unit = {}) {
+
         // TODO!
     }
 }
