@@ -24,14 +24,13 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a company.
+ * Represents an actual physical store.
  */
 
 package dk.etiktak.backend.model.company
 
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.location.Location
-import dk.etiktak.backend.model.trust.StoreTrustVote
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -54,12 +53,9 @@ class Store constructor() : BaseModel() {
     @OneToOne(cascade = arrayOf(CascadeType.ALL))
     var location: Location = Location()
 
-    @Column(name = "correctness_trust")
-    var correctnessTrust: Double = 0.0
-
     @NotNull
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    var correctnessTrustVotes: MutableList<StoreTrustVote> = ArrayList()
+    @Column(name = "trustItemUuid")
+    var trustItemUuid: String = ""
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "company_id")

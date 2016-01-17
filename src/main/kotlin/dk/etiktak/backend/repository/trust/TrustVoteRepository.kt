@@ -25,13 +25,13 @@
 
 package dk.etiktak.backend.repository.trust
 
-import dk.etiktak.backend.model.trust.StoreTrustVote
-import dk.etiktak.backend.model.trust.TrustVoteType
+import dk.etiktak.backend.model.trust.TrustVote
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface StoreTrustVoteRepository : PagingAndSortingRepository<StoreTrustVote, Long> {
-    fun findByVote(vote: TrustVoteType): List<StoreTrustVote>
-    fun findByStoreUuid(uuid: String): List<StoreTrustVote>
+interface TrustVoteRepository : PagingAndSortingRepository<TrustVote, Long> {
+    fun findByVote(vote: TrustVote.TrustVoteType): List<TrustVote>
+    fun findByClientUuid(uuid: String): List<TrustVote>
+    fun findByClientUuidAndTrustItemUuid(clientUuid: String, trustItemUuid: String): TrustVote?
 }

@@ -23,20 +23,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Represents a trust vote for a store, i.e. if the store info is correct or not.
- */
+package dk.etiktak.backend.repository.trust
 
-package dk.etiktak.backend.model.trust
+import dk.etiktak.backend.model.trust.TrustItem
+import dk.etiktak.backend.model.trust.TrustVote
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-import dk.etiktak.backend.model.company.Store
-import javax.persistence.*
+@Repository
+interface TrustItemRepository : PagingAndSortingRepository<TrustItem, Long> {
+    fun findByUuid(uuid: String): TrustItem?
+    fun findByCreatorUuid(uuid: String): TrustItem?
+    fun findByUuidAndCreatorUuid(uuid: String, clientUuid: String): TrustItem?
 
-@Entity
-@DiscriminatorValue("Store")
-class StoreTrustVote : TrustVote() {
-
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "store_id")
-    var store = Store()
+    fun countByUuidAndTrustVotesVote(uuid: String, voteType: TrustVote.TrustVoteType): Long
 }

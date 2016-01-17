@@ -28,7 +28,7 @@ package dk.etiktak.backend.controllers.rest
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.trust.TrustVoteType
+import dk.etiktak.backend.model.trust.TrustVote
 import org.hamcrest.Matchers.*
 import org.junit.Before
 import org.junit.Test
@@ -36,7 +36,6 @@ import org.junit.runner.RunWith
 import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.util.Assert
@@ -95,7 +94,7 @@ class ProductTrustTest : BaseRestTest() {
     @Test
     fun editProductWhenSufficientTrusLevelt() {
         setClientTrustLevel(client1Uuid, 0.7)
-        setProductCorrectnessTrust(product1Uuid, 0.4)
+        setProductTrustScore(product1Uuid, 0.4)
 
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
@@ -114,7 +113,7 @@ class ProductTrustTest : BaseRestTest() {
     @Test
     fun cannotEditProductWhenInsufficientTrustLevel() {
         setClientTrustLevel(client1Uuid, 0.5)
-        setProductCorrectnessTrust(product1Uuid, 0.8)
+        setProductTrustScore(product1Uuid, 0.8)
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
@@ -133,7 +132,7 @@ class ProductTrustTest : BaseRestTest() {
                 post(serviceEndpoint("/trust/"))
                         .param("clientUuid", client1Uuid)
                         .param("productUuid", product1Uuid)
-                        .param("vote", TrustVoteType.Trusted.name))
+                        .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -143,14 +142,14 @@ class ProductTrustTest : BaseRestTest() {
                 post(serviceEndpoint("/trust/"))
                         .param("clientUuid", client1Uuid)
                         .param("productUuid", product1Uuid)
-                        .param("vote", TrustVoteType.Trusted.name))
+                        .param("vote", TrustVote.TrustVoteType.Trusted.name))
     }
 
     /**
-     * Test that client trust level and product correctness trust is updated when voted on product.
+     * Test that client trust level and product trust score is updated when voted on product.
      */
     @Test
-    fun clientTrustLevelAndProductCorrectnessTrustIsUpdatedOnReceivingNewProductVote() {
+    fun clientTrustLevelAndProductTrustScoreIsUpdatedOnReceivingNewProductVote() {
 
         // Check initial trust values all 0.0
         Assert.isTrue(
@@ -169,7 +168,7 @@ class ProductTrustTest : BaseRestTest() {
                     post(serviceEndpoint("/trust/"))
                             .param("clientUuid", clientUuid)
                             .param("productUuid", product1Uuid)
-                            .param("vote", if (i <= 10) TrustVoteType.Trusted.name else TrustVoteType.NotTrusted.name))
+                            .param("vote", if (i <= 10) TrustVote.TrustVoteType.Trusted.name else TrustVote.TrustVoteType.NotTrusted.name))
                     .andExpect(status().isOk)
                     .andExpect(content().contentType(jsonContentType))
                     .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -187,19 +186,21 @@ class ProductTrustTest : BaseRestTest() {
     }
 
     /**
-     * Editing a product will reset correctness trust to client's trust level
+     * Editing a product will reset trust score to client's trust level
      */
     @Test
-    fun correctnessTrustResetToClientsTrustLevelWhenEditing() {
+    fun trustScoreResetsToClientsTrustLevelWhenEditing() {
 
-        // Initial product trust level 0.0
+        // Initial product trust score 0.0
         Assert.isTrue(
                 productTrustLevel(product1Uuid) == 0.0,
                 "Product trust level expected to be 0.0, but was ${productTrustLevel(product1Uuid)}"
         )
 
+        // Set client trust level to 0.5
         setClientTrustLevel(client2Uuid, 0.5)
 
+        // Edit product
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
                         .param("clientUuid", client2Uuid)
@@ -208,7 +209,7 @@ class ProductTrustTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.product.correctnessTrust", `is`(0.5)))
+                .andExpect(jsonPath("$.product.trustScore", `is`(0.5)))
     }
 
 
@@ -223,13 +224,16 @@ class ProductTrustTest : BaseRestTest() {
         return clientRepository!!.findByUuid(clientUuid)!!.trustLevel
     }
 
-    private fun setProductCorrectnessTrust(productUuid: String, correctnessTrust: Double) {
-        val product = productRepository!!.findByUuidAndEnabled(productUuid)
-        product!!.correctnessTrust = correctnessTrust
-        productRepository.save(product)
+    private fun setProductTrustScore(productUuid: String, trustScore: Double) {
+        val product = productRepository!!.findByUuid(productUuid)!!
+        val trustItem = trustItemRepository!!.findByUuid(product.trustItemUuid)!!
+        trustItem.trustScore = trustScore
+        trustItemRepository.save(trustItem)
     }
 
     private fun productTrustLevel(productUuid: String): Double {
-        return productRepository!!.findByUuidAndEnabled(productUuid)!!.correctnessTrust
+        val product = productRepository!!.findByUuid(productUuid)!!
+        val trustItem = trustItemRepository!!.findByUuid(product.trustItemUuid)!!
+        return trustItem.trustScore
     }
 }

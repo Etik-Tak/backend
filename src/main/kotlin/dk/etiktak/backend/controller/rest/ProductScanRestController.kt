@@ -66,7 +66,7 @@ class ProductScanRestController @Autowired constructor(
                         .add("product", hashMapOf<String, Any>()
                                 .add("uuid", productScanResult.product.uuid)
                                 .add("name", productScanResult.product.name)
-                                .add("correctnessTrust", productScanResult.product.correctnessTrust)
+                                .add("trustScore", productService.productTrustItem(productScanResult.product).trustScore)
                                 .add("categories", productScanResult.product.productCategories, { category -> hashMapOf<String, Any>()
                                         .add("uuid", category.uuid)
                                         .add("name", category.name) })

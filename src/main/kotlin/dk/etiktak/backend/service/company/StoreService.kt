@@ -28,16 +28,17 @@ package dk.etiktak.backend.service.company
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.company.Store
 import dk.etiktak.backend.model.location.Location
-import dk.etiktak.backend.model.trust.StoreTrustVote
-import dk.etiktak.backend.model.trust.TrustVoteType
+import dk.etiktak.backend.model.trust.TrustItem
+import dk.etiktak.backend.model.trust.TrustVote
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.company.StoreRepository
 import dk.etiktak.backend.repository.location.LocationRepository
-import dk.etiktak.backend.repository.trust.StoreTrustVoteRepository
+import dk.etiktak.backend.repository.trust.TrustItemRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.security.ClientValid
 import dk.etiktak.backend.service.security.ClientVerified
+import dk.etiktak.backend.service.trust.TrustService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -51,7 +52,8 @@ open class StoreService @Autowired constructor(
         private val storeRepository: StoreRepository,
         private val locationRepository: LocationRepository,
         private val clientRepository: ClientRepository,
-        private val trustVoteRepository: StoreTrustVoteRepository) {
+        private val trustItemRepository: TrustItemRepository,
+        private val trustService: TrustService) {
 
     private val logger = LoggerFactory.getLogger(StoreService::class.java)
 
@@ -89,6 +91,12 @@ open class StoreService @Autowired constructor(
         store.uuid = CryptoUtil().uuid()
         store.name = name
         store.location = location
+        // TODO! Creator
+
+        // Create trust item
+        var modifiedClient = client
+        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Store, store.uuid, modifyValues = {client -> modifiedClient = client})
+        store.trustItemUuid = trustItem.uuid
 
         // Glue it together
         company.stores.add(store)
@@ -97,10 +105,8 @@ open class StoreService @Autowired constructor(
         var modifiedCompany = companyRepository.save(company)
         var modifiedStore = storeRepository.save(store)
 
-        // Trust vote store
-        var modifiedClient = client
-
-        trustVoteStore(client, modifiedStore, TrustVoteType.Trusted, modifyValues = { client, store -> modifiedClient = client; modifiedStore = store })
+        // Update trust
+        trustService.updateTrust(trustItem)
 
         modifyValues(modifiedClient, modifiedCompany)
 
@@ -115,15 +121,21 @@ open class StoreService @Autowired constructor(
      * @param name          Name of store
      * @param latitude      Store latitude
      * @param longitude     Store longitude
-     * @param modifyValues  Function called with modified store
+     * @param modifyValues  Function called with modified client and store
      */
     @ClientVerified
-    open fun editStore(client: Client, store: Store, name: String?, latitude: Double?, longitude: Double?, modifyValues: (Store) -> Unit = {}) {
+    open fun editStore(client: Client, store: Store, name: String?, latitude: Double?, longitude: Double?, modifyValues: (Client, Store) -> Unit = {client, store -> Unit}) {
+
+        // Check sufficient trust
+        trustService.assertSufficientTrustToEditTrustItem(client, storeTrustItem(store))
+
+        // Create new trust item
+        var modifiedClient = client
+        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Store, store.uuid, modifyValues = {client -> modifiedClient = client})
+        store.trustItemUuid = trustItem.uuid
 
         // Modify values
-        name?.let {
-            store.name = name
-        }
+        store.name = name ?: store.name
 
         val oldLocation = store.location
         val location = if (latitude != null && longitude != null) Location(latitude, longitude) else null
@@ -138,14 +150,14 @@ open class StoreService @Autowired constructor(
             locationRepository.delete(oldLocation)
         }
 
-        // Recalculate trust
-        recalculateCorrectnessTrust(modifiedStore, modifyValues = {recalculatedStore -> modifiedStore = recalculatedStore})
+        // Update trust
+        trustService.updateTrust(trustItem)
 
-        modifyValues(modifiedStore)
+        modifyValues(modifiedClient, modifiedStore)
     }
 
     /**
-     * Trust vote store correctness.
+     * Trust vote store.
      *
      * @param client        Client
      * @param company       Store
@@ -154,39 +166,18 @@ open class StoreService @Autowired constructor(
      * @return              Trust vote
      */
     @ClientValid
-    open fun trustVoteStore(client: Client, store: Store, vote: TrustVoteType, modifyValues: (Client, Store) -> Unit = {client, store -> Unit}): StoreTrustVote {
-
-        // Create trust vote
-        val storeTrustVote = StoreTrustVote()
-        storeTrustVote.client = client
-        storeTrustVote.store = store
-        storeTrustVote.vote = vote
-
-        // Glue it together
-        store.correctnessTrustVotes.add(storeTrustVote)
-        client.storeTrustVotes.add(storeTrustVote)
-
-        // Save it all
-        val modifiedStoreTrustVote = trustVoteRepository.save(storeTrustVote)
-        var modifiedStore = storeRepository.save(store)
-        val modifiedClient = clientRepository.save(client)
-
-        // Recalculate trust
-        recalculateCorrectnessTrust(modifiedStore, modifyValues = {recalculatedStore -> modifiedStore = recalculatedStore})
-
-        modifyValues(modifiedClient, modifiedStore)
-
-        return modifiedStoreTrustVote
+    open fun trustVoteStore(client: Client, store: Store, vote: TrustVote.TrustVoteType, modifyValues: (Client) -> Unit = {}): TrustVote {
+        return trustService.trustVoteItem(client, storeTrustItem(store), vote,
+                modifyValues = {modifiedClient, trustItem -> modifyValues(modifiedClient)})
     }
 
     /**
-     * Recalculates store correctness trust.
+     * Returns the trust item of the given store.
      *
-     * @param store          Store
-     * @param modifyValues   Function called with modified store
+     * @param store     Store
+     * @return          Trust item
      */
-    open fun recalculateCorrectnessTrust(store: Store, modifyValues: (Store) -> Unit = {}) {
-
-        // TODO! Calculate trust
+    open fun storeTrustItem(store: Store): TrustItem {
+        return trustItemRepository.findByUuid(store.trustItemUuid)!!
     }
 }

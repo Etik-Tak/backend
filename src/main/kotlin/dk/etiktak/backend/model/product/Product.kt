@@ -33,8 +33,6 @@ import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.ProductRecommendation
-import dk.etiktak.backend.model.trust.ProductTrustVote
-import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -57,9 +55,6 @@ class Product constructor() : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Column(name = "enabled")
-    var enabled = true
-
     @Column(name = "barcode")
     var barcode: String = ""
 
@@ -69,18 +64,9 @@ class Product constructor() : BaseModel() {
     @Column(name = "name")
     var name: String = ""
 
-    @Column(name = "correctness_trust")
-    var correctnessTrust: Double = 0.0
-
-    @Column(name = "initial_correctness_trust")
-    var initialCorrectnessTrust: Double = 0.0
-
     @NotNull
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    var correctnessTrustVotes: MutableList<ProductTrustVote> = ArrayList()
-
-    @Column(name = "product_history_uuid")
-    var productHistoryUuid: String? = null
+    @Column(name = "trustItemUuid")
+    var trustItemUuid: String = ""
 
     @NotNull
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
@@ -115,10 +101,6 @@ class Product constructor() : BaseModel() {
 
     @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var creator = Client()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

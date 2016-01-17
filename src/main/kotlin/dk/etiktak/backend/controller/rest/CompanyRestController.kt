@@ -24,22 +24,16 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Rest controller responsible for handling product lifecycle.
+ * Rest controller responsible for handling company lifecycle.
  */
 
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.company.Company
-import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductCategory
-import dk.etiktak.backend.model.product.ProductLabel
-import dk.etiktak.backend.model.trust.TrustVoteType
+import dk.etiktak.backend.model.trust.TrustVote
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
-import dk.etiktak.backend.service.product.ProductCategoryService
-import dk.etiktak.backend.service.product.ProductLabelService
-import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -75,11 +69,11 @@ class CompanyRestController @Autowired constructor(
             @RequestParam companyUuid: String,
             @RequestParam(required = false) name: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
-
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
 
-        companyService.editCompany(client, company, name, modifyValues = {modifiedCompany -> company = modifiedCompany})
+        companyService.editCompany(client, company, name,
+                modifyValues = {modifiedClient, modifiedCompany -> client = modifiedClient; company = modifiedCompany})
 
         return companyOkMap(company)
     }
@@ -88,7 +82,7 @@ class CompanyRestController @Autowired constructor(
     fun trustVoteCompany(
             @RequestParam clientUuid: String,
             @RequestParam companyUuid: String,
-            @RequestParam vote: TrustVoteType): HashMap<String, Any> {
+            @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         val company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
 
@@ -102,6 +96,6 @@ class CompanyRestController @Autowired constructor(
                 .add("company", hashMapOf<String, Any>()
                         .add("uuid", company.uuid)
                         .add("name", company.name)
-                        .add("correctnessTrust", company.correctnessTrust))
+                        .add("trustScore", companyService.companyTrustItem(company)))
     }
 }

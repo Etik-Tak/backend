@@ -33,8 +33,6 @@ import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.recommendation.CompanyRecommendation
-import dk.etiktak.backend.model.trust.CompanyTrustVote
-import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -54,12 +52,9 @@ class Company constructor() : BaseModel() {
     @Column(name = "name")
     var name: String = ""
 
-    @Column(name = "correctness_trust")
-    var correctnessTrust: Double = 0.0
-
     @NotNull
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    var correctnessTrustVotes: MutableList<CompanyTrustVote> = ArrayList()
+    @Column(name = "trustItemUuid")
+    var trustItemUuid: String = ""
 
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
     var recommendations: MutableList<CompanyRecommendation> = ArrayList()

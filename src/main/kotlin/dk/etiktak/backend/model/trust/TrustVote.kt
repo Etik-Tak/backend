@@ -37,9 +37,13 @@ import javax.persistence.*
 
 @Entity(name = "trust_votes")
 @Table(uniqueConstraints = arrayOf(
-        UniqueConstraint(columnNames = arrayOf("client_id", "product_id"))))
+        UniqueConstraint(columnNames = arrayOf("client_id", "trust_item_id"))))
 open class TrustVote constructor() : BaseModel() {
 
+    enum class TrustVoteType {
+        Trusted,
+        NotTrusted
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "trust_vote_id")
@@ -48,6 +52,10 @@ open class TrustVote constructor() : BaseModel() {
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
     var client = Client()
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "trust_item_id")
+    var trustItem = TrustItem()
 
     @Column(name = "vote")
     var vote = TrustVoteType.Trusted
@@ -71,9 +79,4 @@ open class TrustVote constructor() : BaseModel() {
         creationTime = now
         modificationTime = now
     }
-}
-
-enum class TrustVoteType {
-    Trusted,
-    NotTrusted
 }

@@ -24,19 +24,75 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a trust vote for a company, i.e. if the company info is correct or not.
+ * Represents a trust item, fx. a product or a company.
  */
 
 package dk.etiktak.backend.model.trust
 
-import dk.etiktak.backend.model.company.Company
+import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.user.Client
+import org.springframework.format.annotation.DateTimeFormat
+import java.util.*
 import javax.persistence.*
+import javax.validation.constraints.NotNull
 
-@Entity
-@DiscriminatorValue("Company")
-class CompanyTrustVote : TrustVote() {
+@Entity(name = "trust_items")
+open class TrustItem constructor() : BaseModel() {
+
+    enum class TrustItemType {
+        Unknown,
+        Product,
+        ProductCategory,
+        ProductLabel,
+        Company,
+        Store
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "trust_item_id")
+    var id: Long = 0
+
+    @Column(name = "uuid", nullable = false, unique = true)
+    var uuid: String = ""
 
     @ManyToOne(optional = true)
-    @JoinColumn(name = "company_id")
-    var company = Company()
+    @JoinColumn(name = "client_id")
+    var creator = Client()
+
+    @Column(name = "trust_uuid", nullable = false)
+    var trustUuid: String = ""
+
+    @Column(name = "type", nullable = false)
+    var type = TrustItemType.Unknown
+
+    @NotNull
+    @OneToMany(mappedBy = "trustItem", fetch = FetchType.LAZY)
+    var trustVotes: MutableList<TrustVote> = ArrayList()
+
+    @Column(name = "trust_score")
+    var trustScore: Double = 0.0
+
+    @Column(name = "initial_trust_score")
+    var initialTrustScore: Double = 0.0
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var creationTime = Date()
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var modificationTime = Date()
+
+
+
+    @PreUpdate
+    fun preUpdate() {
+        modificationTime = Date()
+    }
+
+    @PrePersist
+    fun prePersist() {
+        val now = Date()
+        creationTime = now
+        modificationTime = now
+    }
 }

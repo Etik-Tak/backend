@@ -140,7 +140,7 @@ open class ProductScanTest : BaseRestTest() {
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.scan.product.uuid", notNullValue()))
                 .andExpect(jsonPath("$.scan.product.name", `is`("")))
-                .andExpect(jsonPath("$.scan.product.correctnessTrust", `is`(0.0)))
+                .andExpect(jsonPath("$.scan.product.trustScore", `is`(0.0)))
                 .andReturn().response.contentAsString
         val productUuid = JsonPath.read<String>(json, "$.scan.product.uuid")
 
@@ -154,7 +154,7 @@ open class ProductScanTest : BaseRestTest() {
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.scan.product.uuid", `is`(productUuid)))
                 .andExpect(jsonPath("$.scan.product.name", `is`("")))
-                .andExpect(jsonPath("$.scan.product.correctnessTrust", `is`(0.0)))
+                .andExpect(jsonPath("$.scan.product.trustScore", `is`(0.0)))
     }
 
     /**

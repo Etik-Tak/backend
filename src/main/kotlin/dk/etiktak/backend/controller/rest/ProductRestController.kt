@@ -34,7 +34,7 @@ import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
-import dk.etiktak.backend.model.trust.TrustVoteType
+import dk.etiktak.backend.model.trust.TrustVote
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.product.ProductCategoryService
@@ -183,12 +183,11 @@ class ProductRestController @Autowired constructor(
     fun trustVoteProduct(
             @RequestParam clientUuid: String,
             @RequestParam productUuid: String,
-            @RequestParam vote: TrustVoteType): HashMap<String, Any> {
+            @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 
-        productService.trustVoteProduct(client, product, vote,
-                modifyValues = {modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
+        productService.trustVoteProduct(client, product, vote)
 
         return productOkMap(product)
     }
@@ -198,7 +197,7 @@ class ProductRestController @Autowired constructor(
                 .add("product", hashMapOf<String, Any>()
                         .add("uuid", product.uuid)
                         .add("name", product.name)
-                        .add("correctnessTrust", product.correctnessTrust)
+                        .add("trustScore", productService.productTrustItem(product).trustScore)
                         .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
                                 .add("uuid", category.uuid)
                                 .add("name", category.name) })
