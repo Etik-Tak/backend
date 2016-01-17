@@ -199,7 +199,7 @@ class ProductTrustTest : BaseRestTest() {
                     post(serviceEndpoint("/trust/"))
                             .param("clientUuid", clientUuid)
                             .param("productUuid", product1Uuid)
-                            .param("vote", if (i <= 10) TrustVote.TrustVoteType.Trusted.name else TrustVote.TrustVoteType.NotTrusted.name))
+                            .param("vote", if (i % 2 == 0) TrustVote.TrustVoteType.Trusted.name else TrustVote.TrustVoteType.NotTrusted.name))
                     .andExpect(status().isOk)
                     .andExpect(content().contentType(jsonContentType))
                     .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))

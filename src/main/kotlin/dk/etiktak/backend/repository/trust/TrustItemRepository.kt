@@ -27,14 +27,17 @@ package dk.etiktak.backend.repository.trust
 
 import dk.etiktak.backend.model.trust.TrustItem
 import dk.etiktak.backend.model.trust.TrustVote
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
 interface TrustItemRepository : PagingAndSortingRepository<TrustItem, Long> {
     fun findByUuid(uuid: String): TrustItem?
-    fun findByCreatorUuid(uuid: String): TrustItem?
-    fun findByUuidAndCreatorUuid(uuid: String, clientUuid: String): TrustItem?
+
+    fun findByCreatorUuid(uuid: String, pageable: Pageable): List<TrustItem>
+    fun findByTrustVotesClientUuid(uuid: String, pageable: Pageable): List<TrustItem>
+    fun findByCreatorUuidOrTrustVotesClientUuid(trustItemCreatorUuid: String, trustVoteClientUuid: String, pageable: Pageable): List<TrustItem>
 
     fun countByUuidAndTrustVotesVote(uuid: String, voteType: TrustVote.TrustVoteType): Long
 }

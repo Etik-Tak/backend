@@ -35,6 +35,8 @@ import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
@@ -151,27 +153,39 @@ open class TrustService @Autowired constructor(
      */
     open fun updateTrust(trustItem: TrustItem, modifyValues: (TrustItem) -> Unit = {}) {
 
-        // Update trust item
-        val trustedVotesCount = trustItemRepository.countByUuidAndTrustVotesVote(trustItem.uuid, TrustVote.TrustVoteType.Trusted)
-        val untrustedVotesCount = trustItemRepository.countByUuidAndTrustVotesVote(trustItem.uuid, TrustVote.TrustVoteType.NotTrusted)
+        // Count votes
+        val trustedVotesCount = trustItemRepository.countByUuidAndTrustVotesVote(trustItem.uuid, TrustVote.TrustVoteType.Trusted).toDouble()
+        val untrustedVotesCount = trustItemRepository.countByUuidAndTrustVotesVote(trustItem.uuid, TrustVote.TrustVoteType.NotTrusted).toDouble()
         val totalVotesCount = trustedVotesCount + untrustedVotesCount
 
+        // Update trust item
         if (totalVotesCount > 0) {
-            val votedTrustScore = trustedVotesCount.toDouble() / totalVotesCount
-            val votedTrustScoreWeight = 0.5 // TODO!
+
+            // Voted trust score is simply the percentage of trusted votes out of total number of votes.
+            // Weight has linear growth up until 75% weight, which happens when reaching 15 votes
+            val votedTrustScore = trustedVotesCount / totalVotesCount
+            val votedTrustScoreWeight = Math.min(totalVotesCount / 20.0, 0.75)
 
             val initialTrustScore = trustItem.initialTrustScore
             val initialTrustScoreWeight = 1.0 - votedTrustScoreWeight
 
+            // Calculate trust by linearly interpolating between initial trust and voted trust
             trustItem.trustScore = (votedTrustScore * votedTrustScoreWeight) + (initialTrustScore * initialTrustScoreWeight)
+
         } else {
+
+            // Use initial trust if no votes
             trustItem.trustScore = trustItem.initialTrustScore
         }
 
+        // Save trust item
         val modifiedTrustItem = trustItemRepository.save(trustItem)
 
+        // Recalculate creators trust level
+        recalculateClientTrustLevel(modifiedTrustItem.creator)
+
         // Recalculate all vote contributers trust level
-        for (trustVote in trustItem.trustVotes) {
+        for (trustVote in modifiedTrustItem.trustVotes) {
             recalculateClientTrustLevel(trustVote.client)
         }
 
@@ -185,7 +199,31 @@ open class TrustService @Autowired constructor(
      * @param modifyValues  Function called with modified client
      */
     open fun recalculateClientTrustLevel(client: Client, modifyValues: (Client) -> Unit = {}) {
+        val historySize = 100
 
-        // TODO!
+        // Find trust items created by or contributed to (voted on) by client
+        val trustItems = trustItemRepository.findByCreatorUuidOrTrustVotesClientUuid(
+                client.uuid,
+                client.uuid,
+                PageRequest(0, historySize, Sort(Sort.Direction.ASC, listOf("creationTime"))))
+
+        if (trustItems.size == 0) {
+            modifyValues(client)
+            return
+        }
+
+        // Calculate trust level from trust items
+        var trustLevel = 0.0
+        for (trustItem in trustItems) {
+            trustLevel += trustItem.trustScore
+        }
+        trustLevel /= trustItems.size
+
+        // Update client
+        client.trustLevel = trustLevel
+
+        val modifiedClient = clientRepository.save(client)
+
+        modifyValues(modifiedClient)
     }
 }
