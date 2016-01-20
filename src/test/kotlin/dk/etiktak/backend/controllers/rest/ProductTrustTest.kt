@@ -29,6 +29,7 @@ import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.trust.TrustVote
+import dk.etiktak.backend.service.trust.TrustService
 import org.hamcrest.Matchers.*
 import org.junit.Before
 import org.junit.Test
@@ -68,12 +69,10 @@ class ProductTrustTest : BaseRestTest() {
     }
 
     /**
-     * Test that we can create a product if we have sufficient trust level.
+     * Test that we can create a product with initial trust level.
      */
     @Test
-    fun createProductWhenSufficientTrustLevel() {
-        setClientTrustLevel(client1Uuid, 0.5)
-
+    fun createProductWithInitialTrustLevel() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
                         .param("clientUuid", client1Uuid)
@@ -182,18 +181,18 @@ class ProductTrustTest : BaseRestTest() {
     @Test
     fun clientTrustLevelAndProductTrustScoreIsUpdatedOnReceivingNewProductVote() {
 
+        var currentClientTrust = clientTrustLevel(client1Uuid)
+        var currentProductTrust = productTrustLevel(product1Uuid)
+
         // Check initial trust values all 0.0
         Assert.isTrue(
-                clientTrustLevel(client1Uuid) == 0.0,
-                "Client trust level expected to be 0.0, but was ${clientTrustLevel(client1Uuid)}"
+                currentClientTrust == TrustService.initialClientTrustLevel,
+                "Client trust level expected to be ${TrustService.initialClientTrustLevel}, but was ${clientTrustLevel(client1Uuid)}"
         )
         Assert.isTrue(
-                productTrustLevel(product1Uuid) == 0.0,
-                "Product trust level expected to be 0.0, but was ${productTrustLevel(product1Uuid)}"
+                currentProductTrust == TrustService.initialClientTrustLevel,
+                "Product trust level expected to be ${TrustService.initialClientTrustLevel}, but was ${productTrustLevel(product1Uuid)}"
         )
-
-        var currentClientTrust = 0.0
-        var currentProductTrust = 0.0
 
         // Perform 20 trusted votes on product and see that trust increases
         for (i in 1..20) {
@@ -256,14 +255,14 @@ class ProductTrustTest : BaseRestTest() {
     @Test
     fun trustScoreResetsToClientsTrustLevelWhenEditing() {
 
-        // Initial product trust score 0.0
+        // Initial product trust score 0.5
         Assert.isTrue(
-                productTrustLevel(product1Uuid) == 0.0,
-                "Product trust level expected to be 0.0, but was ${productTrustLevel(product1Uuid)}"
+                productTrustLevel(product1Uuid) == TrustService.initialClientTrustLevel,
+                "Product trust level expected to be ${TrustService.initialClientTrustLevel}, but was ${productTrustLevel(product1Uuid)}"
         )
 
-        // Set client trust level to 0.5
-        setClientTrustLevel(client2Uuid, 0.5)
+        // Set client trust level to 0.7
+        setClientTrustLevel(client2Uuid, 0.7)
 
         // Edit product
         mockMvc().perform(
@@ -274,7 +273,7 @@ class ProductTrustTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.product.trustScore", `is`(0.5)))
+                .andExpect(jsonPath("$.product.trustScore", `is`(0.7)))
     }
 
 

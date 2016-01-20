@@ -50,6 +50,10 @@ open class TrustService @Autowired constructor(
 
     private val logger = LoggerFactory.getLogger(TrustService::class.java)
 
+    companion object {
+        val initialClientTrustLevel = 0.5
+    }
+
     /**
      * Checks that client has succicient trust to edit given trust item.
      *
@@ -84,6 +88,7 @@ open class TrustService @Autowired constructor(
         trustItem.type = TrustItem.TrustItemType.Product
         trustItem.trustUuid = trustUuid
         trustItem.initialTrustScore = client.trustLevel
+        trustItem.trustScore= trustItem.initialTrustScore
 
         // Glue it together
         client.trustItems.add(trustItem)
@@ -154,17 +159,17 @@ open class TrustService @Autowired constructor(
     open fun updateTrust(trustItem: TrustItem, modifyValues: (TrustItem) -> Unit = {}) {
 
         // Count votes
-        val trustedVotesCount = trustItemRepository.countByUuidAndTrustVotesVote(trustItem.uuid, TrustVote.TrustVoteType.Trusted).toDouble()
-        val untrustedVotesCount = trustItemRepository.countByUuidAndTrustVotesVote(trustItem.uuid, TrustVote.TrustVoteType.NotTrusted).toDouble()
+        val trustedVotesCount = trustItemRepository.countByUuidAndTrustVotesVote(trustItem.uuid, TrustVote.TrustVoteType.Trusted)
+        val untrustedVotesCount = trustItemRepository.countByUuidAndTrustVotesVote(trustItem.uuid, TrustVote.TrustVoteType.NotTrusted)
         val totalVotesCount = trustedVotesCount + untrustedVotesCount
 
         // Update trust item
         if (totalVotesCount > 0) {
 
             // Voted trust score is simply the percentage of trusted votes out of total number of votes.
-            // Weight has linear growth up until 75% weight, which happens when reaching 15 votes
-            val votedTrustScore = trustedVotesCount / totalVotesCount
-            val votedTrustScoreWeight = Math.min(totalVotesCount / 20.0, 0.75)
+            // Weight has linear growth up until 20 votes, reaching its maximum at 95%.
+            val votedTrustScore = trustedVotesCount.toDouble() / totalVotesCount.toDouble()
+            val votedTrustScoreWeight = linearGrowthTrustWeight(totalVotesCount)
 
             val initialTrustScore = trustItem.initialTrustScore
             val initialTrustScoreWeight = 1.0 - votedTrustScoreWeight
@@ -201,23 +206,60 @@ open class TrustService @Autowired constructor(
     open fun recalculateClientTrustLevel(client: Client, modifyValues: (Client) -> Unit = {}) {
         val historySize = 100
 
-        // Find trust items created by or contributed to (voted on) by client
-        val trustItems = trustItemRepository.findByCreatorUuidOrTrustVotesClientUuid(
-                client.uuid,
+        // Reset total score and weight
+        var totalScore = 0.0
+        var totalWeight = 0.0
+
+        // Initial trust level
+        totalScore += initialClientTrustLevel
+        totalWeight += 1.0
+
+        // Find trust items created by client
+        val createdTrustItems = trustItemRepository.findByCreatorUuid(
                 client.uuid,
                 PageRequest(0, historySize, Sort(Sort.Direction.ASC, listOf("creationTime"))))
 
-        if (trustItems.size == 0) {
-            modifyValues(client)
-            return
+        // Find trust contributed to (voted on) by client
+        val votedTrustItems = trustItemRepository.findByTrustVotesClientUuid(
+                client.uuid,
+                PageRequest(0, historySize, Sort(Sort.Direction.ASC, listOf("creationTime"))))
+
+        // Add trust from items created by client
+        for (trustItem in createdTrustItems) {
+            totalScore += trustItem.trustScore
+            totalWeight += 1.0
         }
 
-        // Calculate trust level from trust items
-        var trustLevel = 0.0
-        for (trustItem in trustItems) {
-            trustLevel += trustItem.trustScore
+        // Add trust from items contributed to (voted on) by client
+        for (trustItem in votedTrustItems) {
+
+            // Count trusted and not-trusted votes
+            val trustedVoteCount = trustVoteRepository.countByVoteAndTrustItemUuid(TrustVote.TrustVoteType.Trusted, trustItem.uuid)
+            val notTrustedVoteCount = trustVoteRepository.countByVoteAndTrustItemUuid(TrustVote.TrustVoteType.NotTrusted, trustItem.uuid)
+
+            // If none, ignore trust item
+            if (trustedVoteCount == 0L && notTrustedVoteCount == 0L) {
+                continue
+            }
+
+            // Find client's trust vote
+            val actualVote = trustVoteRepository.findByClientUuidAndTrustItemUuid(client.uuid, trustItem.uuid)!!
+
+            // Calculate weight
+            val ratio = Math.min(trustedVoteCount, notTrustedVoteCount).toDouble() / Math.max(trustedVoteCount, notTrustedVoteCount).toDouble()
+            val weight = Math.pow(1.0 - ratio, 3.0) * linearGrowthTrustWeight(trustedVoteCount + notTrustedVoteCount)
+
+            // Calculate score
+            val majorityVoteType = if (trustedVoteCount > notTrustedVoteCount) TrustVote.TrustVoteType.Trusted else TrustVote.TrustVoteType.NotTrusted
+            val score = if (actualVote.vote == majorityVoteType) 1.0 else 0.0
+
+            // Add to total
+            totalScore += score * weight
+            totalWeight += weight
         }
-        trustLevel /= trustItems.size
+
+        // Average on trust contributions
+        val trustLevel = totalScore / totalWeight
 
         // Update client
         client.trustLevel = trustLevel
@@ -225,5 +267,18 @@ open class TrustService @Autowired constructor(
         val modifiedClient = clientRepository.save(client)
 
         modifyValues(modifiedClient)
+    }
+
+    /**
+     * Calculates the weight of the voted trust.
+     *
+     * @param votesCount  Number of trust votes
+     * @return            Weight of voted trust from 0 to 1
+     */
+    open fun linearGrowthTrustWeight(votesCount: Long): Double {
+        val votedTrustWeightMax = 0.95
+        val votedTrustWeightGrowth = votedTrustWeightMax / 20.0
+
+        return Math.min(votesCount * votedTrustWeightGrowth, votedTrustWeightMax)
     }
 }

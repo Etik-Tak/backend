@@ -34,4 +34,6 @@ interface TrustVoteRepository : PagingAndSortingRepository<TrustVote, Long> {
     fun findByVote(vote: TrustVote.TrustVoteType): List<TrustVote>
     fun findByClientUuid(uuid: String): List<TrustVote>
     fun findByClientUuidAndTrustItemUuid(clientUuid: String, trustItemUuid: String): TrustVote?
+
+    fun countByVoteAndTrustItemUuid(vote: TrustVote.TrustVoteType, uuid: String): Long
 }
