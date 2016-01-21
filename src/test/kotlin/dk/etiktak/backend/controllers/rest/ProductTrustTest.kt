@@ -184,7 +184,7 @@ class ProductTrustTest : BaseRestTest() {
         var currentClientTrust = clientTrustLevel(client1Uuid)
         var currentProductTrust = productTrustLevel(product1Uuid)
 
-        // Check initial trust values all 0.0
+        // Check initial trust values
         Assert.isTrue(
                 currentClientTrust == TrustService.initialClientTrustLevel,
                 "Client trust level expected to be ${TrustService.initialClientTrustLevel}, but was ${clientTrustLevel(client1Uuid)}"
@@ -203,8 +203,6 @@ class ProductTrustTest : BaseRestTest() {
                             .param("productUuid", product1Uuid)
                             .param("vote", TrustVote.TrustVoteType.Trusted.name))
                     .andExpect(status().isOk)
-                    .andExpect(content().contentType(jsonContentType))
-                    .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
 
             // Check that trust values have increased
             Assert.isTrue(
@@ -230,8 +228,6 @@ class ProductTrustTest : BaseRestTest() {
                             .param("productUuid", product1Uuid)
                             .param("vote", TrustVote.TrustVoteType.NotTrusted.name))
                     .andExpect(status().isOk)
-                    .andExpect(content().contentType(jsonContentType))
-                    .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
 
             // Check that trust values have decreased
             Assert.isTrue(
@@ -246,6 +242,69 @@ class ProductTrustTest : BaseRestTest() {
             // Update trust
             currentClientTrust = clientTrustLevel(client1Uuid)
             currentProductTrust = productTrustLevel(product1Uuid)
+        }
+    }
+
+    /**
+     * Test that client trust level is updated when other clients votes on product the client in question has voted on.
+     */
+    @Test
+    fun clientTrustLevelIsUpdatedWhenReceivingNewProductVoteOnSameProductAsVotedOnByClient() {
+
+        var currentClientTrust = clientTrustLevel(client1Uuid)
+
+        // Check initial trust values
+        Assert.isTrue(
+                currentClientTrust == TrustService.initialClientTrustLevel,
+                "Client trust level expected to be ${TrustService.initialClientTrustLevel}, but was ${clientTrustLevel(client1Uuid)}"
+        )
+
+        // Trust vote product
+        mockMvc().perform(
+                post(serviceEndpoint("/trust/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("productUuid", product2Uuid)
+                        .param("vote", TrustVote.TrustVoteType.Trusted.name))
+                .andExpect(status().isOk)
+
+        // Perform 20 trusted votes on product and see that trust increases
+        for (i in 1..20) {
+            val clientUuid = createAndSaveClient()
+            mockMvc().perform(
+                    post(serviceEndpoint("/trust/"))
+                            .param("clientUuid", clientUuid)
+                            .param("productUuid", product2Uuid)
+                            .param("vote", TrustVote.TrustVoteType.Trusted.name))
+                    .andExpect(status().isOk)
+
+            // Check that trust values have increased
+            Assert.isTrue(
+                    clientTrustLevel(client1Uuid) >= currentClientTrust,
+                    "Client trust level expected to increase from ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}. Iteration ${i}."
+            )
+
+            // Update trust
+            currentClientTrust = clientTrustLevel(client1Uuid)
+        }
+
+        // Perform 20 not-trusted votes on product and see that trust decreases
+        for (i in 1..20) {
+            val clientUuid = createAndSaveClient()
+            mockMvc().perform(
+                    post(serviceEndpoint("/trust/"))
+                            .param("clientUuid", clientUuid)
+                            .param("productUuid", product2Uuid)
+                            .param("vote", TrustVote.TrustVoteType.NotTrusted.name))
+                    .andExpect(status().isOk)
+
+            // Check that trust values have decreased
+            Assert.isTrue(
+                    clientTrustLevel(client1Uuid) <= currentClientTrust,
+                    "Client trust level expected to decrease from ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}. Iteration ${i}."
+            )
+
+            // Update trust
+            currentClientTrust = clientTrustLevel(client1Uuid)
         }
     }
 
