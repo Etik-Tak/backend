@@ -335,6 +335,77 @@ class ProductTrustTest : BaseRestTest() {
                 .andExpect(jsonPath("$.product.trustScore", `is`(0.7)))
     }
 
+    /**
+     * Test that client trust level is NOT updated when a clients product edit is overwritten (re-edited) and the
+     * product receives new votes.
+     */
+    @Test
+    fun clientTrustLevelNotUpdatedWhenClientEditOverwrittenAndProductReceivesNewVotes() {
+
+        // Edit product
+        mockMvc().perform(
+                post(serviceEndpoint("/edit/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("productUuid", product2Uuid)
+                        .param("name", "Pepsi Cola"))
+                .andExpect(status().isOk)
+
+        var currentClientTrust = clientTrustLevel(client1Uuid)
+
+        // Perform 20 not-trusted votes on product and see that trust decreases
+        for (i in 1..20) {
+            val clientUuid = createAndSaveClient()
+            mockMvc().perform(
+                    post(serviceEndpoint("/trust/"))
+                            .param("clientUuid", clientUuid)
+                            .param("productUuid", product2Uuid)
+                            .param("vote", TrustVote.TrustVoteType.NotTrusted.name))
+                    .andExpect(status().isOk)
+
+            // Check that trust values have decreased
+            Assert.isTrue(
+                    clientTrustLevel(client1Uuid) <= currentClientTrust,
+                    "Client trust level expected to decrease from ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}. Iteration ${i}."
+            )
+
+            // Update trust
+            currentClientTrust = clientTrustLevel(client1Uuid)
+        }
+
+        // Make another client edit product
+        mockMvc().perform(
+                post(serviceEndpoint("/edit/"))
+                        .param("clientUuid", client2Uuid)
+                        .param("productUuid", product2Uuid)
+                        .param("name", "Pepsi Cola"))
+                .andExpect(status().isOk)
+
+        // Check trust unaffected
+        Assert.isTrue(
+                clientTrustLevel(client1Uuid) == currentClientTrust,
+                "Client trust level expected to be the same as before edit: ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}"
+        )
+
+        // Perform 20 trusted votes on product and see that trust stays the same
+        for (i in 1..20) {
+            val clientUuid = createAndSaveClient()
+            mockMvc().perform(
+                    post(serviceEndpoint("/trust/"))
+                            .param("clientUuid", clientUuid)
+                            .param("productUuid", product2Uuid)
+                            .param("vote", TrustVote.TrustVoteType.Trusted.name))
+                    .andExpect(status().isOk)
+
+            // Check that trust values have increased
+            Assert.isTrue(
+                    clientTrustLevel(client1Uuid) == currentClientTrust,
+                    "Client trust level expected to be the same as before vote: ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}"
+            )
+
+            // Update trust
+            currentClientTrust = clientTrustLevel(client1Uuid)
+        }
+    }
 
 
     private fun setClientTrustLevel(clientUuid: String, trustLevel: Double) {
