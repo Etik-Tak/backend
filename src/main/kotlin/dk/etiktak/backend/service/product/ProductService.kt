@@ -31,6 +31,7 @@ import dk.etiktak.backend.model.location.Location
 import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.contribution.ProductCategoryContributionRepository
 import dk.etiktak.backend.repository.contribution.ProductCompanyContributionRepository
 import dk.etiktak.backend.repository.contribution.ProductLabelContributionRepository
@@ -63,6 +64,7 @@ open class ProductService @Autowired constructor(
         private val productCategoryContributionRepository: ProductCategoryContributionRepository,
         private val productLabelContributionRepository: ProductLabelContributionRepository,
         private val productCompanyContributionRepository: ProductCompanyContributionRepository,
+        private val companyRepository: CompanyRepository,
         private val contributionService: ContributionService) {
 
     private val logger = LoggerFactory.getLogger(ProductService::class.java)
@@ -386,12 +388,12 @@ open class ProductService @Autowired constructor(
         productCompanyContribution.company = company
 
         // Glue it together
-        //company.productContributions.add(productCompanyContribution)
+        company.productContributions.add(productCompanyContribution)
         product.contributions.add(productCompanyContribution)
         client.contributions.add(productCompanyContribution)
 
         // Save it all
-        //company = companyRepository.save(company)
+        company = companyRepository.save(company)
         client = clientRepository.save(client)
         product = productRepository.save(product)
         productCompanyContribution = productCompanyContributionRepository.save(productCompanyContribution)
@@ -509,15 +511,54 @@ open class ProductService @Autowired constructor(
     }
 
     /**
+     * Returns the product name contribution which is currently active.
+     *
+     * @param product   Product
+     * @return          Product name contribution
+     */
+    open fun productNameContribution(product: Product): ProductNameContribution? {
+        val contributions = productNameContributionRepository.findByProductUuidAndEnabled(product.uuid)
+        return contributionService.uniqueContribution(contributions)
+    }
+
+    /**
      * Returns the name of a product.
      *
      * @param product   Product
      * @return          Name of product
      */
     open fun productName(product: Product): String? {
-        val contributions = productNameContributionRepository.findByProductUuidAndEnabled(product.uuid)
-        return contributionService.uniqueContribution(contributions)?.name
+        return productNameContribution(product)?.name
     }
+
+    /**
+     * Returns whether the given client can edit the name of the product.
+     *
+     * @param client    Client
+     * @param product   Product
+     * @return          Yes,if the given client can edit the name of the product, or else false
+     */
+    open fun canEditProductName(client: Client, product: Product): Boolean {
+        return contributionService.hasSufficientTrustToEditContribution(client, productNameContribution(product))
+    }
+
+    /**
+     * Trust votes product name.
+     *
+     * @param client          Client
+     * @param product         Product
+     * @param vote            Vote
+     * @param modifyValues    Function called with modified client
+     * @return                Trust vote
+     */
+    open fun trustVoteProductName(client: Client, product: Product, vote: TrustVote.TrustVoteType, modifyValues: (Client) -> Unit = {}): TrustVote {
+        val contribution = productNameContribution(product)!!
+        return contributionService.trustVoteItem(client, contribution, vote, modifyValues = {client, contribution -> modifyValues(client)})
+    }
+
+
+
+
 
     /**
      * Returns the categories of a product.

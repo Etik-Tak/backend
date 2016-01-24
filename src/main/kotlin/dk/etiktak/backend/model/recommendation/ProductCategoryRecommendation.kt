@@ -29,7 +29,7 @@
 
 package dk.etiktak.backend.model.recommendation
 
-import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.product.ProductCategory
 import javax.persistence.*
 
 @Entity
@@ -38,5 +38,5 @@ class ProductCategoryRecommendation : Recommendation() {
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "product_category_id")
-    var productCategory = ProductLabel()
+    var productCategory = ProductCategory()
 }

@@ -36,7 +36,6 @@ import javax.persistence.*
 @DiscriminatorValue("ProductCategory")
 class ProductCategoryContribution : ProductContribution() {
 
-    @Column(name = "product_category", nullable = true)
     @ManyToOne(optional = true)
     @JoinColumn(name = "product_category_id")
     var productCategory = ProductCategory()

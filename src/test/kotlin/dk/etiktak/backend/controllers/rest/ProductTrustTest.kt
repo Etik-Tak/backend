@@ -28,7 +28,6 @@ package dk.etiktak.backend.controllers.rest
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.trust.TrustItem
 import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.service.trust.ContributionService
 import org.hamcrest.Matchers.*
@@ -94,7 +93,7 @@ class ProductTrustTest : BaseRestTest() {
     @Test
     fun editProductWhenSufficientTrusLevelt() {
         setClientTrustLevel(client1Uuid, 0.7)
-        setProductTrustScore(product1Uuid, 0.4)
+        setProductNameTrustScore(product1Uuid, 0.4)
 
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
@@ -113,7 +112,7 @@ class ProductTrustTest : BaseRestTest() {
     @Test
     fun cannotEditProductWhenInsufficientTrustLevel() {
         setClientTrustLevel(client1Uuid, 0.5)
-        setProductTrustScore(product1Uuid, 0.8)
+        setProductNameTrustScore(product1Uuid, 0.8)
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
@@ -183,7 +182,7 @@ class ProductTrustTest : BaseRestTest() {
     fun clientTrustLevelAndProductTrustScoreIsUpdatedOnReceivingNewProductVote() {
 
         var currentClientTrust = clientTrustLevel(client1Uuid)
-        var currentProductTrust = productTrustLevel(product1Uuid)
+        var currentProductTrust = productNameTrustLevel(product1Uuid)
 
         // Check initial trust values
         Assert.isTrue(
@@ -192,7 +191,7 @@ class ProductTrustTest : BaseRestTest() {
         )
         Assert.isTrue(
                 currentProductTrust == ContributionService.initialClientTrustLevel,
-                "Product trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${productTrustLevel(product1Uuid)}"
+                "Product trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${productNameTrustLevel(product1Uuid)}"
         )
 
         // Perform 20 trusted votes on product and see that trust increases
@@ -211,13 +210,13 @@ class ProductTrustTest : BaseRestTest() {
                     "Client trust level expected to increase from ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}. Iteration ${i}."
             )
             Assert.isTrue(
-                    productTrustLevel(product1Uuid) >= currentProductTrust,
-                    "Product trust level expected to increase from ${currentProductTrust}, but was ${productTrustLevel(product1Uuid)}. Iteration ${i}."
+                    productNameTrustLevel(product1Uuid) >= currentProductTrust,
+                    "Product trust level expected to increase from ${currentProductTrust}, but was ${productNameTrustLevel(product1Uuid)}. Iteration ${i}."
             )
 
             // Update trust
             currentClientTrust = clientTrustLevel(client1Uuid)
-            currentProductTrust = productTrustLevel(product1Uuid)
+            currentProductTrust = productNameTrustLevel(product1Uuid)
         }
 
         // Perform 20 not-trusted votes on product and see that trust decreases
@@ -236,13 +235,13 @@ class ProductTrustTest : BaseRestTest() {
                     "Client trust level expected to decrease from ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}. Iteration ${i}."
             )
             Assert.isTrue(
-                    productTrustLevel(product1Uuid) <= currentProductTrust,
-                    "Product trust level expected to decrease from ${currentProductTrust}, but was ${productTrustLevel(product1Uuid)}. Iteration ${i}."
+                    productNameTrustLevel(product1Uuid) <= currentProductTrust,
+                    "Product trust level expected to decrease from ${currentProductTrust}, but was ${productNameTrustLevel(product1Uuid)}. Iteration ${i}."
             )
 
             // Update trust
             currentClientTrust = clientTrustLevel(client1Uuid)
-            currentProductTrust = productTrustLevel(product1Uuid)
+            currentProductTrust = productNameTrustLevel(product1Uuid)
         }
     }
 
@@ -317,8 +316,8 @@ class ProductTrustTest : BaseRestTest() {
 
         // Initial product trust score 0.5
         Assert.isTrue(
-                productTrustLevel(product1Uuid) == ContributionService.initialClientTrustLevel,
-                "Product trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${productTrustLevel(product1Uuid)}"
+                productNameTrustLevel(product1Uuid) == ContributionService.initialClientTrustLevel,
+                "Product trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${productNameTrustLevel(product1Uuid)}"
         )
 
         // Set client trust level to 0.7
@@ -436,16 +435,16 @@ class ProductTrustTest : BaseRestTest() {
         return clientRepository!!.findByUuid(clientUuid)!!.trustLevel
     }
 
-    private fun setProductTrustScore(productUuid: String, trustScore: Double) {
+    private fun setProductNameTrustScore(productUuid: String, trustScore: Double) {
         val product = productRepository!!.findByUuid(productUuid)!!
-        val trustItem = trustItemRepository!!.findByUuid(product.trustItemUuid)!!
-        trustItem.trustScore = trustScore
-        trustItemRepository.save(trustItem)
+        val contribution = productNameContributionRepository!!.findByProductUuidAndEnabled(product.uuid)[0]
+        contribution.trustScore = trustScore
+        productNameContributionRepository.save(contribution)
     }
 
-    private fun productTrustLevel(productUuid: String): Double {
+    private fun productNameTrustLevel(productUuid: String): Double {
         val product = productRepository!!.findByUuid(productUuid)!!
-        val trustItem = trustItemRepository!!.findByUuid(product.trustItemUuid)!!
-        return trustItem.trustScore
+        val contribution = productNameContributionRepository!!.findByProductUuidAndEnabled(product.uuid)[0]
+        return contribution.trustScore
     }
 }

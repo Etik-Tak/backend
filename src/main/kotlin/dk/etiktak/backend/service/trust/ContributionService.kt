@@ -53,6 +53,21 @@ open class ContributionService @Autowired constructor(
     }
 
     /**
+     * Returns whether the given client has succicient trust to edit given contribution.
+     *
+     * @param client        Client
+     * @param contribution  Contribution
+     * @return              True, if client can edit contribution, or else false. If contribution is null, true is returned
+     */
+    open fun hasSufficientTrustToEditContribution(client: Client, contribution: Contribution?): Boolean {
+        if (contribution != null) {
+            return client.trustLevel >= contribution.trustScore - TrustScoreContributionDelta
+        } else {
+            return true
+        }
+    }
+
+    /**
      * Checks that client has succicient trust to edit given contribution.
      *
      * @param client        Client
@@ -60,7 +75,7 @@ open class ContributionService @Autowired constructor(
      */
     open fun assertSufficientTrustToEditContribution(client: Client, contribution: Contribution) {
         Assert.isTrue(
-                client.trustLevel >= contribution.trustScore - TrustScoreContributionDelta,
+                hasSufficientTrustToEditContribution(client, contribution),
                 "Client with UUID ${client.uuid} does not have sufficient trust level to edit contribution with UUID ${contribution.uuid}. " +
                         "Client trust: ${client.trustLevel}. " +
                         "Contribution score: ${contribution.trustScore}."

@@ -30,7 +30,7 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
-import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import org.springframework.beans.factory.annotation.Autowired
@@ -65,7 +65,7 @@ class ProductCategoryRestController @Autowired constructor(
         return productCategoryOkMap(productCategory)
     }
 
-    fun productCategoryOkMap(productCategory: ProductLabel): HashMap<String, Any> {
+    fun productCategoryOkMap(productCategory: ProductCategory): HashMap<String, Any> {
         return okMap()
                 .add("productCategory", hashMapOf<String, Any>()
                         .add("uuid", productCategory.uuid)

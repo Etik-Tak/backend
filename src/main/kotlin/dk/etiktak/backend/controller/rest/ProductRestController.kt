@@ -33,8 +33,8 @@ import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductLabel
-import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.contribution.TrustVote
+import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.product.ProductCategoryService
@@ -59,11 +59,12 @@ class ProductRestController @Autowired constructor(
             @RequestParam(required = false) barcode: String? = null): HashMap<String, Any> {
         uuid?.let {
             val product = productService.getProductByUuid(uuid) ?: return notFoundMap("Product")
-            return productOkMap(product)
+            return okMap().add(product, client = null, productService = productService)
         }
+
         barcode?.let {
             val product = productService.getProductByBarcode(barcode) ?: return notFoundMap("Product")
-            return productOkMap(product)
+            return okMap().add(product, client = null, productService = productService)
         }
         return notFoundMap("Product")
     }
@@ -81,7 +82,7 @@ class ProductRestController @Autowired constructor(
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
         // List of product categories
-        val productCategories = ArrayList<ProductLabel>()
+        val productCategories = ArrayList<ProductCategory>()
         categoryUuidList?.let {
             for (productCategoryUuid in categoryUuidList) {
                 val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: continue
@@ -117,7 +118,7 @@ class ProductRestController @Autowired constructor(
                 productLabels,
                 companies)
 
-        return productOkMap(product)
+        return okMap().add(product, client, productService)
     }
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
@@ -131,7 +132,7 @@ class ProductRestController @Autowired constructor(
 
         productService.editProductName(client, product, name, modifyValues = { modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
 
-        return productOkMap(product)
+        return okMap().add(product, client, productService)
     }
 
     @RequestMapping(value = "/assign/category/", method = arrayOf(RequestMethod.POST))
@@ -146,7 +147,7 @@ class ProductRestController @Autowired constructor(
         productService.assignCategoryToProduct(client, product, productCategory,
                 modifyValues = {modifiedClient, modifiedProduct, modifiedProductCategory -> client = modifiedClient; product = modifiedProduct; productCategory = modifiedProductCategory})
 
-        return productOkMap(product)
+        return okMap().add(product, client, productService)
     }
 
     @RequestMapping(value = "/assign/label/", method = arrayOf(RequestMethod.POST))
@@ -161,7 +162,7 @@ class ProductRestController @Autowired constructor(
         productService.assignLabelToProduct(client, product, productLabel,
                 modifyValues = { modifiedClient, modifiedProduct, modifiedProductLabel -> client = modifiedClient; product = modifiedProduct; productLabel = modifiedProductLabel})
 
-        return productOkMap(product)
+        return okMap().add(product, client, productService)
     }
 
     @RequestMapping(value = "/assign/company/", method = arrayOf(RequestMethod.POST))
@@ -176,10 +177,10 @@ class ProductRestController @Autowired constructor(
         productService.assignCompanyToProduct(client, product, company,
                 modifyValues = {modifiedClient, modifiedProduct, modifiedCompany -> client = modifiedClient; product = modifiedProduct; company = modifiedCompany})
 
-        return productOkMap(product)
+        return okMap().add(product, client, productService)
     }
 
-    @RequestMapping(value = "/trust/", method = arrayOf(RequestMethod.POST))
+    @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
             @RequestParam clientUuid: String,
             @RequestParam productUuid: String,
@@ -187,22 +188,8 @@ class ProductRestController @Autowired constructor(
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 
-        productService.trustVoteProduct(client, product, vote)
+        productService.trustVoteProductName(client, product, vote)
 
-        return productOkMap(product)
-    }
-
-    fun productOkMap(product: Product): HashMap<String, Any> {
-        return okMap()
-                .add("product", hashMapOf<String, Any>()
-                        .add("uuid", product.uuid)
-                        .add("name", product.name)
-                        .add("trustScore", XXX
-                        .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
-                                .add("uuid", category.uuid)
-                                .add("name", category.name) })
-                        .add("labels", product.productLabels, { label -> hashMapOf<String, Any>()
-                                .add("uuid", label.uuid)
-                                .add("name", label.name) }))
+        return okMap().add(product, client, productService)
     }
 }

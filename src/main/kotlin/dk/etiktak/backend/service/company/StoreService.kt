@@ -29,7 +29,9 @@ import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.company.Store
 import dk.etiktak.backend.model.contribution.StoreCompanyContribution
 import dk.etiktak.backend.model.contribution.StoreNameContribution
+import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.company.StoreRepository
 import dk.etiktak.backend.repository.contribution.StoreCompanyContributionRepository
 import dk.etiktak.backend.repository.contribution.StoreNameContributionRepository
@@ -48,6 +50,7 @@ import org.springframework.util.Assert
 open class StoreService @Autowired constructor(
         private val storeRepository: StoreRepository,
         private val clientRepository: ClientRepository,
+        private val companyRepository: CompanyRepository,
         private val contributionService: ContributionService,
         private val storeNameContributionRepository: StoreNameContributionRepository,
         private val storeCompanyContributionRepository: StoreCompanyContributionRepository) {
@@ -180,12 +183,12 @@ open class StoreService @Autowired constructor(
         storeCompanyContribution.company = company
 
         // Glue it together
-        //company.productContributions.add(productCompanyContribution)
+        company.storeContributions.add(storeCompanyContribution)
         store.contributions.add(storeCompanyContribution)
         client.contributions.add(storeCompanyContribution)
 
         // Save it all
-        //company = companyRepository.save(company)
+        company = companyRepository.save(company)
         client = clientRepository.save(client)
         store = storeRepository.save(store)
         storeCompanyContribution = storeCompanyContributionRepository.save(storeCompanyContribution)
@@ -199,14 +202,49 @@ open class StoreService @Autowired constructor(
     }
 
     /**
+     * Returns the store name contribution which is currently active.
+     *
+     * @param store     Store
+     * @return          Store name contribution
+     */
+    open fun storeNameContribution(store: Store): StoreNameContribution? {
+        val contributions = storeNameContributionRepository.findByStoreUuidAndEnabled(store.uuid)
+        return contributionService.uniqueContribution(contributions)
+    }
+
+    /**
      * Returns the name of a store.
      *
      * @param store     Store
      * @return          Name of store
      */
     open fun storeName(store: Store): String? {
-        val contributions = storeNameContributionRepository.findByStoreUuidAndEnabled(store.uuid)
-        return contributionService.uniqueContribution(contributions)?.name
+        return storeNameContribution(store)?.name
+    }
+
+    /**
+     * Returns whether the given client can edit the name of the store.
+     *
+     * @param client    Client
+     * @param store     Store
+     * @return          Yes,if the given client can edit the name of the store, or else false
+     */
+    open fun canEditStoreName(client: Client, store: Store): Boolean {
+        return contributionService.hasSufficientTrustToEditContribution(client, storeNameContribution(store))
+    }
+
+    /**
+     * Trust votes store name.
+     *
+     * @param client          Client
+     * @param store           Store
+     * @param vote            Vote
+     * @param modifyValues    Function called with modified client
+     * @return                Trust vote
+     */
+    open fun trustVoteStoreName(client: Client, store: Store, vote: TrustVote.TrustVoteType, modifyValues: (Client) -> Unit = {}): TrustVote {
+        val contribution = storeNameContribution(store)!!
+        return contributionService.trustVoteItem(client, contribution, vote, modifyValues = {client, contribution -> modifyValues(client)})
     }
 
     /**

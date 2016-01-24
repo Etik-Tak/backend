@@ -27,7 +27,7 @@ package dk.etiktak.backend.service.recommendation
 
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.model.user.Client
@@ -38,8 +38,8 @@ import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.recommendation.ProductCategoryRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
-import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.infochannel.InfoChannelService
+import dk.etiktak.backend.service.product.ProductService
 import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
@@ -59,7 +59,8 @@ open class RecommendationService @Autowired constructor(
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
         private val infoChannelService: InfoChannelService,
-        private val infoChannelRepository: InfoChannelRepository) {
+        private val infoChannelRepository: InfoChannelRepository,
+        private val productService: ProductService) {
 
     private val logger = LoggerFactory.getLogger(RecommendationService::class.java)
 
@@ -87,11 +88,11 @@ open class RecommendationService @Autowired constructor(
                 infoChannelListToUuidList(infoChannels)
         )
         val productCategoryRecommendations = productCategoryRecommendationRepository.findByProductCategoryUuidInAndInfoChannelUuidIn(
-                productCategoryListToUuidList(product.productCategories),
+                productCategoryListToUuidList(productService.productCategories(product)),
                 infoChannelListToUuidList(infoChannels)
         )
         val productLabelRecommendations = productLabelRecommendationRepository.findByProductLabelUuidInAndInfoChannelUuidIn(
-                productLabelListToUuidList(product.productLabels),
+                productLabelListToUuidList(productService.productLabels(product)),
                 infoChannelListToUuidList(infoChannels)
         )
 
@@ -149,8 +150,8 @@ open class RecommendationService @Autowired constructor(
      * @return                 Created recommendation
      */
     @ClientVerified
-    open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductLabel,
-                                  modifyValues: (InfoChannel, ProductLabel) -> Unit = { infoChannel, productCategory -> Unit}): Recommendation {
+    open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductCategory,
+                                  modifyValues: (InfoChannel, ProductCategory) -> Unit = { infoChannel, productCategory -> Unit}): Recommendation {
 
         // Security checks
         Assert.isTrue(
@@ -242,7 +243,7 @@ open class RecommendationService @Autowired constructor(
         return infoChannelUuids
     }
 
-    open fun productCategoryListToUuidList(productCategories: Set<ProductLabel>): List<String> {
+    open fun productCategoryListToUuidList(productCategories: List<ProductCategory>): List<String> {
         val productCategoryUuids: MutableList<String> = ArrayList()
         for (productCategory in productCategories) {
             productCategoryUuids.add(productCategory.uuid)
@@ -250,7 +251,7 @@ open class RecommendationService @Autowired constructor(
         return productCategoryUuids
     }
 
-    open fun productLabelListToUuidList(productLabels: Set<ProductLabel>): List<String> {
+    open fun productLabelListToUuidList(productLabels: List<ProductLabel>): List<String> {
         val productLabelUuids: MutableList<String> = ArrayList()
         for (productLabel in productLabels) {
             productLabelUuids.add(productLabel.uuid)

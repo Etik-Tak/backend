@@ -30,7 +30,6 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
-import dk.etiktak.backend.model.location.Location
 import dk.etiktak.backend.model.recommendation.CompanyRecommendation
 import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
 import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
@@ -63,16 +62,7 @@ class ProductScanRestController @Autowired constructor(
         return okMap()
                 .add("scan", hashMapOf<String, Any>()
                         .add("uuid", productScanResult.productScan.uuid)
-                        .add("product", hashMapOf<String, Any>()
-                                .add("uuid", productScanResult.product.uuid)
-                                .add("name", productScanResult.product.name)
-                                .add("trustScore", XXX)
-                                .add("categories", productScanResult.product.productCategories, { category -> hashMapOf<String, Any>()
-                                        .add("uuid", category.uuid)
-                                        .add("name", category.name) })
-                                .add("labels", productScanResult.product.productLabels, { label -> hashMapOf<String, Any>()
-                                        .add("uuid", label.uuid)
-                                        .add("name", label.name) }))
+                        .add(productScanResult.product, client, productService)
                         .add("recommendations", productScanResult.recommendations, { recommendation -> hashMapOf<String, Any>()
                                 .add("uuid", recommendation.uuid)
                                 .add("summary", recommendation.summary)

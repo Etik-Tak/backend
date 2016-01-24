@@ -52,7 +52,7 @@ class ProductCategory constructor() : BaseModel() {
     @Column(name = "name")
     var name: String = ""
 
-    @OneToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "productCategory", fetch = FetchType.LAZY)
     var contributions: MutableList<ProductCategoryContribution> = ArrayList()
 
     @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)

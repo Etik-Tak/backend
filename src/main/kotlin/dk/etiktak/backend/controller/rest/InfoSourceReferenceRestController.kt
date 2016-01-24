@@ -32,9 +32,10 @@ package dk.etiktak.backend.controller.rest
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.service.client.ClientService
+import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
 import dk.etiktak.backend.service.infosource.InfoSourceReferenceService
 import dk.etiktak.backend.service.infosource.InfoSourceService
@@ -53,6 +54,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
         private val productService: ProductService,
         private val productCategoryService: ProductCategoryService,
         private val productLabelService: ProductLabelService,
+        private val companyService: CompanyService,
         private val infoChannelService: InfoChannelService,
         private val clientService: ClientService) : BaseRestController() {
 
@@ -103,7 +105,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid) ?: return notFoundMap("Info source reference")
 
-        val productCategories: MutableList<ProductLabel> = ArrayList()
+        val productCategories: MutableList<ProductCategory> = ArrayList()
         for (productCategoryUuid in productCategoryUuids) {
             val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: continue
             productCategories.add(productCategory)
@@ -154,6 +156,6 @@ class InfoSourceReferenceRestController @Autowired constructor(
                                 .add("name", label.name) })
                         .add("companies", infoSourceReference.companies, { company -> hashMapOf<String, Any>()
                                 .add("uuid", company.uuid)
-                                .add("name", company.name) }))
+                                .add("name", companyService.companyName(company)) }))
     }
 }

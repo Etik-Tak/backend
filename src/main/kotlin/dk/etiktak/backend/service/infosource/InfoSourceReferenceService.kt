@@ -30,7 +30,7 @@ import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
@@ -180,8 +180,8 @@ open class InfoSourceReferenceService @Autowired constructor(
      * @param modifyValues          Function called with modified info source reference and product categories
      */
     @ClientVerified
-    open fun assignProductCategoriesToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productCategories: List<ProductLabel>,
-                                                          modifyValues: (InfoSourceReference, List<ProductLabel>) -> Unit = { infoSourceReference, productCategories -> Unit}) {
+    open fun assignProductCategoriesToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productCategories: List<ProductCategory>,
+                                                          modifyValues: (InfoSourceReference, List<ProductCategory>) -> Unit = { infoSourceReference, productCategories -> Unit}) {
 
         // Validate ownership to info channel
         Assert.isTrue(
@@ -196,7 +196,7 @@ open class InfoSourceReferenceService @Autowired constructor(
 
         // Save it all
         val modifiedInfoSourceReference = infoSourceReferenceRepository.save(infoSourceReference)
-        val modifiedProductCategories: MutableList<ProductLabel> = ArrayList()
+        val modifiedProductCategories: MutableList<ProductCategory> = ArrayList()
         for (productCategory in productCategories) {
             modifiedProductCategories.add(productCategoryRepository.save(productCategory))
         }

@@ -32,6 +32,7 @@ package dk.etiktak.backend.controller.rest
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.contribution.TrustVote
+import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import org.springframework.beans.factory.annotation.Autowired
@@ -48,7 +49,7 @@ class CompanyRestController @Autowired constructor(
     fun getCompany(
             @RequestParam uuid: String): HashMap<String, Any> {
         val company = companyService.getCompanyByUuid(uuid) ?: return notFoundMap("Company")
-        return companyOkMap(company)
+        return okMap().add(company, client = null, companyService = companyService)
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
@@ -60,22 +61,24 @@ class CompanyRestController @Autowired constructor(
 
         val company = companyService.createCompany(client, name)
 
-        return companyOkMap(company)
+        return okMap().add(company, client, companyService)
     }
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editCompany(
             @RequestParam clientUuid: String,
             @RequestParam companyUuid: String,
-            @RequestParam(required = false) name: String): HashMap<String, Any> {
+            @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
 
-        companyService.editCompany(client, company, name,
-                modifyValues = {modifiedClient, modifiedCompany -> client = modifiedClient; company = modifiedCompany})
+        name?.let {
+            companyService.editCompanyName(client, company, name,
+                    modifyValues = { modifiedClient, modifiedCompany -> client = modifiedClient; company = modifiedCompany })
+        }
 
-        return companyOkMap(company)
+        return okMap().add(company, client, companyService)
     }
 
     @RequestMapping(value = "/trust/", method = arrayOf(RequestMethod.POST))
@@ -86,16 +89,8 @@ class CompanyRestController @Autowired constructor(
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         val company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
 
-        companyService.trustVoteCompany(client, company, vote)
+        companyService.trustVoteCompanyName(client, company, vote)
 
         return okMap()
-    }
-
-    fun companyOkMap(company: Company): HashMap<String, Any> {
-        return okMap()
-                .add("company", hashMapOf<String, Any>()
-                        .add("uuid", company.uuid)
-                        .add("name", company.name)
-                        .add("trustScore", XXX)
     }
 }

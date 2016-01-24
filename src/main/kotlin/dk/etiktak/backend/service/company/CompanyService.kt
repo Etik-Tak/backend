@@ -27,6 +27,7 @@ package dk.etiktak.backend.service.company
 
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.contribution.CompanyNameContribution
+import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.contribution.CompanyNameContributionRepository
@@ -140,13 +141,48 @@ open class CompanyService @Autowired constructor(
     }
 
     /**
+     * Returns the company name contribution which is currently active.
+     *
+     * @param company   Company
+     * @return          Company name contribution
+     */
+    open fun companyNameContribution(company: Company): CompanyNameContribution? {
+        val contributions = companyNameContributionRepository.findByCompanyUuidAndEnabled(company.uuid)
+        return contributionService.uniqueContribution(contributions)
+    }
+
+    /**
      * Returns the name of a company.
      *
      * @param company   Company
      * @return          Name of company
      */
     open fun companyName(company: Company): String? {
-        val contributions = companyNameContributionRepository.findByCompanyUuidAndEnabled(company.uuid)
-        return contributionService.uniqueContribution(contributions)?.name
+        return companyNameContribution(company)?.name
+    }
+
+    /**
+     * Returns whether the given client can edit the name of the company.
+     *
+     * @param client    Client
+     * @param company   Company
+     * @return          Yes,if the given client can edit the name of the company, or else false
+     */
+    open fun canEditCompanyName(client: Client, company: Company): Boolean {
+        return contributionService.hasSufficientTrustToEditContribution(client, companyNameContribution(company))
+    }
+
+    /**
+     * Trust votes company name.
+     *
+     * @param client          Client
+     * @param company         Company
+     * @param vote            Vote
+     * @param modifyValues    Function called with modified client
+     * @return                Trust vote
+     */
+    open fun trustVoteCompanyName(client: Client, company: Company, vote: TrustVote.TrustVoteType, modifyValues: (Client) -> Unit = {}): TrustVote {
+        val contribution = companyNameContribution(company)!!
+        return contributionService.trustVoteItem(client, contribution, vote, modifyValues = {client, contribution -> modifyValues(client)})
     }
 }

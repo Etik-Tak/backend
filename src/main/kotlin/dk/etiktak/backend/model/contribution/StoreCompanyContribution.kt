@@ -36,7 +36,6 @@ import javax.persistence.*
 @DiscriminatorValue("CompanyStore")
 class StoreCompanyContribution : StoreContribution() {
 
-    @Column(name = "store_company", nullable = true)
     @ManyToOne(optional = true)
     @JoinColumn(name = "company_id")
     var company = Company()

@@ -42,7 +42,8 @@ import dk.etiktak.backend.repository.recommendation.ProductCategoryRecommendatio
 import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.RecommendationRepository
-import dk.etiktak.backend.repository.trust.TrustItemRepository
+import dk.etiktak.backend.repository.contribution.ContributionRepository
+import dk.etiktak.backend.repository.contribution.ProductNameContributionRepository
 import dk.etiktak.backend.repository.contribution.TrustVoteRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
@@ -133,7 +134,10 @@ open class BaseRestTest {
     val trustVoteRepository: TrustVoteRepository? = null
 
     @Autowired
-    val trustItemRepository: TrustItemRepository? = null
+    val contributionRepository: ContributionRepository? = null
+
+    @Autowired
+    val productNameContributionRepository: ProductNameContributionRepository? = null
 
     @Autowired
     val clientRepository: ClientRepository? = null
@@ -201,7 +205,7 @@ open class BaseRestTest {
 
     fun cleanRepository() {
         trustVoteRepository!!.deleteAll()
-        trustItemRepository!!.deleteAll()
+        contributionRepository!!.deleteAll()
 
         recommendationRepository!!.deleteAll()
         productRecommendationRepository!!.deleteAll()
