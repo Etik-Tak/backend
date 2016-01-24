@@ -23,21 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.trust
+package dk.etiktak.backend.repository.contribution
 
-import dk.etiktak.backend.model.trust.TrustItem
-import dk.etiktak.backend.model.trust.TrustVote
-import org.springframework.data.domain.Pageable
+import dk.etiktak.backend.model.contribution.ProductLabelContribution
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface TrustItemRepository : PagingAndSortingRepository<TrustItem, Long> {
-    fun findByUuid(uuid: String): TrustItem?
-
-    fun findByCreatorUuid(uuid: String, pageable: Pageable): List<TrustItem>
-    fun findByTrustVotesClientUuid(uuid: String, pageable: Pageable): List<TrustItem>
-    fun findByCreatorUuidOrTrustVotesClientUuid(trustItemCreatorUuid: String, trustVoteClientUuid: String, pageable: Pageable): List<TrustItem>
-
-    fun countByUuidAndTrustVotesVote(uuid: String, voteType: TrustVote.TrustVoteType): Long
+interface ProductLabelContributionRepository : PagingAndSortingRepository<ProductLabelContribution, Long> {
+    fun findByUuid(uuid: String): ProductLabelContribution?
+    fun findByProductUuidAndEnabled(productUuid: String, enabled: Boolean = true): List<ProductLabelContribution>
+    fun findByProductUuidAndLabelUuidAndEnabled(productUuid: String, labelUuid: String, enabled: Boolean = true): List<ProductLabelContribution>
 }

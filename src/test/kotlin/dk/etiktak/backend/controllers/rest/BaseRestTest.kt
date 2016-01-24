@@ -43,7 +43,7 @@ import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRe
 import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.RecommendationRepository
 import dk.etiktak.backend.repository.trust.TrustItemRepository
-import dk.etiktak.backend.repository.trust.TrustVoteRepository
+import dk.etiktak.backend.repository.contribution.TrustVoteRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository

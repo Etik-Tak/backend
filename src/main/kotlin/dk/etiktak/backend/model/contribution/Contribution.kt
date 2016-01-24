@@ -24,57 +24,43 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a trust item, fx. a product or a company.
+ * Represents a contribution, e.g. product name or a product category.
  */
 
-package dk.etiktak.backend.model.trust
+package dk.etiktak.backend.model.contribution
 
 import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-@Entity(name = "trust_items")
-open class TrustItem constructor() : BaseModel() {
-
-    enum class TrustItemType {
-        Unknown,
-        Product,
-        ProductCategory,
-        ProductLabel,
-        Company,
-        Store
-    }
+@Entity(name = "contributions")
+open class Contribution constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "trust_item_id")
+    @Column(name = "product_contribution_id")
     var id: Long = 0
 
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @ManyToOne(optional = true)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
-    var creator = Client()
+    var client = Client()
 
-    @Column(name = "trust_uuid", nullable = false)
-    var trustUuid: String = ""
-
-    @Column(name = "type", nullable = false)
-    var type = TrustItemType.Unknown
+    @Column(name = "enabled", nullable = false)
+    var enabled: Boolean = true
 
     @NotNull
-    @OneToMany(mappedBy = "trustItem", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "contribution", fetch = FetchType.LAZY)
     var trustVotes: MutableList<TrustVote> = ArrayList()
 
     @Column(name = "trust_score")
     var trustScore: Double = 0.0
-
-    @Column(name = "initial_trust_score")
-    var initialTrustScore: Double = 0.0
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

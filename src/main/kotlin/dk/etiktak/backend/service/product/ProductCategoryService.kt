@@ -25,7 +25,7 @@
 
 package dk.etiktak.backend.service.product
 
-import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.user.ClientRepository
@@ -50,7 +50,7 @@ open class ProductCategoryService @Autowired constructor(
      * @param uuid  UUID
      * @return      Product category with given UUID
      */
-    open fun getProductCategoryByUuid(uuid: String): ProductCategory? {
+    open fun getProductCategoryByUuid(uuid: String): ProductLabel? {
         return productCategoryRepository.findByUuid(uuid)
     }
 
@@ -61,8 +61,8 @@ open class ProductCategoryService @Autowired constructor(
      * @return        Product category
      */
     @ClientVerified
-    open fun createProductCategory(client: Client, name: String): ProductCategory {
-        val productCategory = ProductCategory()
+    open fun createProductCategory(client: Client, name: String): ProductLabel {
+        val productCategory = ProductLabel()
         productCategory.uuid = CryptoUtil().uuid()
         productCategory.name = name
 

@@ -31,7 +31,7 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.company.Company
-import dk.etiktak.backend.model.trust.TrustVote
+import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import org.springframework.beans.factory.annotation.Autowired
@@ -96,6 +96,6 @@ class CompanyRestController @Autowired constructor(
                 .add("company", hashMapOf<String, Any>()
                         .add("uuid", company.uuid)
                         .add("name", company.name)
-                        .add("trustScore", companyService.companyTrustItem(company)))
+                        .add("trustScore", XXX)
     }
 }

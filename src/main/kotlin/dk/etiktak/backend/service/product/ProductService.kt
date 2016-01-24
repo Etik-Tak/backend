@@ -26,28 +26,28 @@
 package dk.etiktak.backend.service.product
 
 import dk.etiktak.backend.model.company.Company
+import dk.etiktak.backend.model.contribution.*
 import dk.etiktak.backend.model.location.Location
 import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.recommendation.Recommendation
-import dk.etiktak.backend.model.trust.TrustItem
-import dk.etiktak.backend.model.trust.TrustVote
 import dk.etiktak.backend.model.user.Client
-import dk.etiktak.backend.repository.company.CompanyRepository
+import dk.etiktak.backend.repository.contribution.ProductCategoryContributionRepository
+import dk.etiktak.backend.repository.contribution.ProductCompanyContributionRepository
+import dk.etiktak.backend.repository.contribution.ProductLabelContributionRepository
+import dk.etiktak.backend.repository.contribution.ProductNameContributionRepository
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.*
-import dk.etiktak.backend.repository.trust.TrustItemRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.recommendation.RecommendationService
 import dk.etiktak.backend.service.security.ClientValid
 import dk.etiktak.backend.service.security.ClientVerified
-import dk.etiktak.backend.service.trust.TrustService
+import dk.etiktak.backend.service.trust.ContributionService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
-import java.util.*
 
 @Service
 @Transactional
@@ -59,9 +59,11 @@ open class ProductService @Autowired constructor(
         private val locationRepository: LocationRepository,
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
-        private val companyRepository: CompanyRepository,
-        private val trustItemRepository: TrustItemRepository,
-        private val trustService: TrustService) {
+        private val productNameContributionRepository: ProductNameContributionRepository,
+        private val productCategoryContributionRepository: ProductCategoryContributionRepository,
+        private val productLabelContributionRepository: ProductLabelContributionRepository,
+        private val productCompanyContributionRepository: ProductCompanyContributionRepository,
+        private val contributionService: ContributionService) {
 
     private val logger = LoggerFactory.getLogger(ProductService::class.java)
 
@@ -98,7 +100,7 @@ open class ProductService @Autowired constructor(
     /**
      * Creates a new product.
      *
-     * @param client        Client
+     * @param inClient      Client
      * @param barcode       Barcode
      * @param barcodeType   Barcode type
      * @param name          Name of product
@@ -109,219 +111,297 @@ open class ProductService @Autowired constructor(
      * @return              Created product
      */
     @ClientVerified
-    open fun createProduct(client: Client, barcode: String, barcodeType: Product.BarcodeType?, name: String,
+    open fun createProduct(inClient: Client, barcode: String, barcodeType: Product.BarcodeType?, name: String,
                            categories: List<ProductCategory> = listOf(),
                            labels: List<ProductLabel> = listOf(),
                            companies: List<Company> = listOf(),
-                           modifyValues: (Client, List<ProductCategory>, List<ProductLabel>, List<Company>) -> Unit = {client, productCategories, productLabels, companies -> Unit}): Product {
+                           modifyValues: (Client, List<ProductCategory>, List<ProductLabel>, List<Company>) -> Unit = { client, productCategories, productLabels, companies -> Unit}): Product {
 
-        val product = Product()
+        var client = inClient
+
+        // Create product
+        var product = Product()
         product.uuid = CryptoUtil().uuid()
-        product.name = name
         product.barcode = barcode
         product.barcodeType = barcodeType ?: Product.BarcodeType.UNKNOWN
-        product.productCategories.addAll(categories)
-        product.productLabels.addAll(labels)
-        product.companies.addAll(companies)
 
-        // Create trust item
-        var modifiedClient = client
-        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Product, product.uuid, modifyValues = {client -> modifiedClient = client})
-        product.trustItemUuid = trustItem.uuid
+        product = productRepository.save(product)
 
-        // Glue it together
+        // Create name contribution
+        editProductName(client, product, name,
+                modifyValues = {modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
+
+        // Assign categories
+        var modifiedCategories: MutableList<ProductCategory> = arrayListOf()
         for (productCategory in categories) {
-            productCategory.products.add(product)
+            assignCategoryToProduct(client, product, productCategory,
+                    modifyValues = {modifiedClient, modifiedProduct, modifiedCategory -> client = modifiedClient; product = modifiedProduct; modifiedCategories.add(modifiedCategory) })
         }
+
+        // Assign labels
+        var modifiedLabels: MutableList<ProductLabel> = arrayListOf()
         for (productLabel in labels) {
-            productLabel.products.add(product)
+            assignLabelToProduct(client, product, productLabel,
+                    modifyValues = { modifiedClient, modifiedProduct, modifiedLabel -> client = modifiedClient; product = modifiedProduct; modifiedLabels.add(modifiedLabel)})
         }
+
+        // Assign companies
+        var modifiedCompanies: MutableList<Company> = arrayListOf()
         for (company in companies) {
-            company.products.add(product)
+            assignCompanyToProduct(client, product, company,
+                    modifyValues = {modifiedClient, modifiedProduct, modifiedCompany -> client = modifiedClient; product = modifiedProduct; modifiedCompanies.add(modifiedCompany)})
         }
 
-        // Save it all
-        val modifiedProductCategories: MutableList<ProductCategory> = ArrayList()
-        for (productCategory in categories) {
-            modifiedProductCategories.add(productCategoryRepository.save(productCategory))
-        }
+        modifyValues(client, modifiedCategories, modifiedLabels, modifiedCompanies)
 
-        val modifiedProductLabels: MutableList<ProductLabel> = ArrayList()
-        for (productLabel in labels) {
-            modifiedProductLabels.add(productLabelRepository.save(productLabel))
-        }
-
-        val modifiedCompanies: MutableList<Company> = ArrayList()
-        for (company in companies) {
-            modifiedCompanies.add(companyRepository.save(company))
-        }
-
-        modifiedClient = clientRepository.save(modifiedClient)
-        var modifiedProduct = productRepository.save(product)
-
-        modifyValues(modifiedClient, modifiedProductCategories, modifiedProductLabels, modifiedCompanies)
-
-        // Update trust
-        trustService.updateTrust(trustItem)
-
-        return modifiedProduct
+        return product
     }
 
     /**
      * Creates a new empty product.
      *
-     * @param client        Client
+     * @param inClient      Client
      * @param barcode       Barcode
      * @param barcodeType   Barcode type
      * @param modifyValues  Function called with modified client
      * @return              Created product
      */
-    open fun createEmptyProduct(client: Client, barcode: String, barcodeType: Product.BarcodeType?,
+    open fun createEmptyProduct(inClient: Client, barcode: String, barcodeType: Product.BarcodeType?,
                                 modifyValues: (Client) -> Unit = {}): Product {
 
-        val product = Product()
+        var client = inClient
+
+        // Create product
+        var product = Product()
         product.uuid = CryptoUtil().uuid()
-        product.name = ""
         product.barcode = barcode
         product.barcodeType = barcodeType ?: Product.BarcodeType.UNKNOWN
 
-        // Create trust item
-        var modifiedClient = client
-        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Product, product.uuid, modifyValues = {client -> modifiedClient = client})
-        product.trustItemUuid = trustItem.uuid
+        product = productRepository.save(product)
 
-        // Save it all
-        modifiedClient = clientRepository.save(modifiedClient)
-        var modifiedProduct = productRepository.save(product)
+        // Create name contribution
+        editProductName(client, product, "",
+                modifyValues = {modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
 
-        // Update trust
-        trustService.updateTrust(trustItem)
+        modifyValues(client)
 
-        modifyValues(modifiedClient)
-
-        return modifiedProduct
+        return product
     }
 
     /**
-     * Edits a product.
+     * Edits a product name.
      *
-     * @param client        Client
-     * @param product       Product
+     * @param inClient      Client
+     * @param inProduct     Product
      * @param name          Name of product
      * @param modifyValues  Function called with modified client and product
+     * @return              Product name contribution
      */
     @ClientVerified
-    open fun editProduct(client: Client, product: Product, name: String?, modifyValues: (Client, Product) -> Unit = {client, product -> Unit}) {
+    open fun editProductName(inClient: Client, inProduct: Product, name: String?, modifyValues: (Client, Product) -> Unit = { client, product -> Unit}): ProductNameContribution {
 
-        // Check sufficient trust
-        trustService.assertSufficientTrustToEditTrustItem(client, productTrustItem(product))
+        var client = inClient
+        var product = inProduct
 
-        // Create new trust item
-        var modifiedClient = client
-        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Product, product.uuid, modifyValues = {client -> modifiedClient = client})
-        product.trustItemUuid = trustItem.uuid
+        // Get current name contribution
+        val contributions = productNameContributionRepository.findByProductUuidAndEnabled(product.uuid)
+        val currentContribution = contributionService.uniqueContribution(contributions)
 
-        // Modify fields
-        product.name = name ?: product.name
+        currentContribution?.let {
+
+            // Check sufficient trust
+            contributionService.assertSufficientTrustToEditContribution(client, currentContribution)
+
+            // Disable current contribution
+            currentContribution.enabled = false
+            productNameContributionRepository.save(currentContribution)
+        }
+
+        // Create name contribution
+        var productNameContribution = ProductNameContribution()
+        productNameContribution.uuid = CryptoUtil().uuid()
+        productNameContribution.client = client
+        productNameContribution.name = name
+
+        // Glue it together
+        product.contributions.add(productNameContribution)
+        client.contributions.add(productNameContribution)
 
         // Save it all
-        modifiedClient = clientRepository.save(modifiedClient)
-        var modifiedProduct = productRepository.save(product)
+        client = clientRepository.save(client)
+        product = productRepository.save(product)
+        productNameContribution = productNameContributionRepository.save(productNameContribution)
 
         // Update trust
-        trustService.updateTrust(trustItem)
+        contributionService.updateTrust(productNameContribution)
 
-        modifyValues(modifiedClient, modifiedProduct)
+        modifyValues(client, product)
+
+        return productNameContribution
     }
 
     /**
      * Assigns a category to a product.
      *
-     * @param client            Client
-     * @param product           Product
-     * @param productCategory   Product category
-     * @param modifyValues      Function called with modified client, product and product category
+     * @param inClient            Client
+     * @param inProduct           Product
+     * @param inProductCategory   Product category
+     * @param modifyValues        Function called with modified client, product and product category
+     * @return                    Product category contribution
      */
     @ClientVerified
-    open fun assignCategoryToProduct(client: Client, product: Product, productCategory: ProductCategory, modifyValues: (Client, Product, ProductCategory) -> Unit = {client, product, productCategory -> Unit}) {
+    open fun assignCategoryToProduct(inClient: Client, inProduct: Product, inProductCategory: ProductCategory, modifyValues: (Client, Product, ProductCategory) -> Unit = { client, product, productCategory -> Unit}): ProductCategoryContribution {
 
-        // Check sufficient trust
-        trustService.assertSufficientTrustToEditTrustItem(client, productTrustItem(product))
+        var client = inClient
+        var product = inProduct
+        var productCategory = inProductCategory
 
-        // Create new trust item
-        var modifiedClient = client
-        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Product, product.uuid, modifyValues = {client -> modifiedClient = client})
-        product.trustItemUuid = trustItem.uuid
+        // Get current category contribution
+        val contributions = productCategoryContributionRepository.findByProductUuidAndCategoryUuidAndEnabled(product.uuid, productCategory.uuid)
+        val currentContribution = contributionService.uniqueContribution(contributions)
 
-        // Add product category
-        product.productCategories.add(productCategory)
-        productCategory.products.add(product)
+        currentContribution?.let {
+
+            // Make sure it's disabled
+            Assert.isTrue(
+                    !currentContribution.enabled,
+                    "Cannot assign product category with UUID ${productCategory.uuid} to product with UUID ${product.uuid}; it's already there and enabled!"
+            )
+        }
+
+        // Create category contribution
+        var productCategoryContribution = ProductCategoryContribution()
+        productCategoryContribution.uuid = CryptoUtil().uuid()
+        productCategoryContribution.client = client
+        productCategoryContribution.productCategory = productCategory
+
+        // Glue it together
+        productCategory.contributions.add(productCategoryContribution)
+        product.contributions.add(productCategoryContribution)
+        client.contributions.add(productCategoryContribution)
 
         // Save it all
-        var modifiedProductCategory = productCategoryRepository.save(productCategory)
-        var modifiedProduct = productRepository.save(product)
+        productCategory = productCategoryRepository.save(productCategory)
+        client = clientRepository.save(client)
+        product = productRepository.save(product)
+        productCategoryContribution = productCategoryContributionRepository.save(productCategoryContribution)
 
-        modifyValues(modifiedClient, modifiedProduct, modifiedProductCategory)
+        // Update trust
+        contributionService.updateTrust(productCategoryContribution)
+
+        modifyValues(client, product, productCategory)
+
+        return productCategoryContribution
     }
 
     /**
-     * Assigns a label to a product.
+     * Assigns a category to a product.
      *
-     * @param client            Client
-     * @param product           Product
-     * @param productLabel      Product label
-     * @param modifyValues      Function called with modified client, product and product label
+     * @param inClient            Client
+     * @param inProduct           Product
+     * @param inProductLabel      Product category
+     * @param modifyValues        Function called with modified client, product and product label
+     * @return                    Product label contribution
      */
     @ClientVerified
-    open fun assignLabelToProduct(client: Client, product: Product, productLabel: ProductLabel, modifyValues: (Client, Product, ProductLabel) -> Unit = {client, product, productLabel -> Unit}) {
+    open fun assignLabelToProduct(inClient: Client, inProduct: Product, inProductLabel: ProductLabel, modifyValues: (Client, Product, ProductLabel) -> Unit = { client, product, productLabel -> Unit}): ProductLabelContribution {
 
-        // Check sufficient trust
-        trustService.assertSufficientTrustToEditTrustItem(client, productTrustItem(product))
+        var client = inClient
+        var product = inProduct
+        var productLabel = inProductLabel
 
-        // Create new trust item
-        var modifiedClient = client
-        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Product, product.uuid, modifyValues = {client -> modifiedClient = client})
-        product.trustItemUuid = trustItem.uuid
+        // Get current label contribution
+        val contributions = productLabelContributionRepository.findByProductUuidAndLabelUuidAndEnabled(product.uuid, productLabel.uuid)
+        val currentContribution = contributionService.uniqueContribution(contributions)
 
-        // Add product label
-        product.productLabels.add(productLabel)
-        productLabel.products.add(product)
+        currentContribution?.let {
+
+            // Make sure it's disabled
+            Assert.isTrue(
+                    !currentContribution.enabled,
+                    "Cannot assign product label with UUID ${currentContribution.uuid} to product with UUID ${product.uuid}; it's already there and enabled!"
+            )
+        }
+
+        // Create label contribution
+        var productLabelContribution = ProductLabelContribution()
+        productLabelContribution.uuid = CryptoUtil().uuid()
+        productLabelContribution.client = client
+        productLabelContribution.productLabel = productLabel
+
+        // Glue it together
+        productLabel.contributions.add(productLabelContribution)
+        product.contributions.add(productLabelContribution)
+        client.contributions.add(productLabelContribution)
 
         // Save it all
-        var modifiedProductLabel = productLabelRepository.save(productLabel)
-        var modifiedProduct = productRepository.save(product)
+        productLabel = productLabelRepository.save(productLabel)
+        client = clientRepository.save(client)
+        product = productRepository.save(product)
+        productLabelContribution = productLabelContributionRepository.save(productLabelContribution)
 
-        modifyValues(modifiedClient, modifiedProduct, modifiedProductLabel)
+        // Update trust
+        contributionService.updateTrust(productLabelContribution)
+
+        modifyValues(client, product, productLabel)
+
+        return productLabelContribution
     }
+
 
     /**
      * Assigns a company to a product.
      *
-     * @param client            Client
-     * @param product           Product
-     * @param company           Company
-     * @param modifyValues      Function called with modified client, product and product label
+     * @param inClient            Client
+     * @param inProduct           Product
+     * @param inCompany           Company
+     * @param modifyValues        Function called with modified client, product and company
+     * @return                    Product company contribution
      */
     @ClientVerified
-    open fun assignCompanyToProduct(client: Client, product: Product, company: Company, modifyValues: (Client, Product, Company) -> Unit = {client, product, company -> Unit}) {
+    open fun assignCompanyToProduct(inClient: Client, inProduct: Product, inCompany: Company, modifyValues: (Client, Product, Company) -> Unit = { client, product, company -> Unit}): ProductCompanyContribution {
 
-        // Check sufficient trust
-        trustService.assertSufficientTrustToEditTrustItem(client, productTrustItem(product))
+        var client = inClient
+        var product = inProduct
+        var company = inCompany
 
-        // Create new trust item
-        var modifiedClient = client
-        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Product, product.uuid, modifyValues = {client -> modifiedClient = client})
-        product.trustItemUuid = trustItem.uuid
+        // Get current company contribution
+        val contributions = productCompanyContributionRepository.findByProductUuidAndEnabled(product.uuid)
+        val currentContribution = contributionService.uniqueContribution(contributions)
 
-        // Add company
-        product.companies.add(company)
-        company.products.add(product)
+        currentContribution?.let {
+
+            // Check sufficient trust
+            contributionService.assertSufficientTrustToEditContribution(client, currentContribution)
+
+            // Disable current contribution
+            currentContribution.enabled = false
+            productCompanyContributionRepository.save(currentContribution)
+        }
+
+        // Create company contribution
+        var productCompanyContribution = ProductCompanyContribution()
+        productCompanyContribution.uuid = CryptoUtil().uuid()
+        productCompanyContribution.client = client
+        productCompanyContribution.company = company
+
+        // Glue it together
+        //company.productContributions.add(productCompanyContribution)
+        product.contributions.add(productCompanyContribution)
+        client.contributions.add(productCompanyContribution)
 
         // Save it all
-        var modifiedCompany = companyRepository.save(company)
-        var modifiedProduct = productRepository.save(product)
+        //company = companyRepository.save(company)
+        client = clientRepository.save(client)
+        product = productRepository.save(product)
+        productCompanyContribution = productCompanyContributionRepository.save(productCompanyContribution)
 
-        modifyValues(modifiedClient, modifiedProduct, modifiedCompany)
+        // Update trust
+        contributionService.updateTrust(productCompanyContribution)
+
+        modifyValues(client, product, company)
+
+        return productCompanyContribution
     }
 
     /**
@@ -429,28 +509,47 @@ open class ProductService @Autowired constructor(
     }
 
     /**
-     * Trust vote product.
+     * Returns the name of a product.
      *
-     * @param client        Client
-     * @param product       Product
-     * @param vote          Vote
-     * @param modifyValues  Function called with modified client
-     * @return              Trust vote
+     * @param product   Product
+     * @return          Name of product
      */
-    @ClientVerified
-    open fun trustVoteProduct(client: Client, product: Product, vote: TrustVote.TrustVoteType, modifyValues: (Client) -> Unit = {}): TrustVote {
-        return trustService.trustVoteItem(client, productTrustItem(product), vote,
-                modifyValues = {modifiedClient, trustItem -> modifyValues(modifiedClient)})
+    open fun productName(product: Product): String? {
+        val contributions = productNameContributionRepository.findByProductUuidAndEnabled(product.uuid)
+        return contributionService.uniqueContribution(contributions)?.name
     }
 
     /**
-     * Returns the trust item of the given product.
+     * Returns the categories of a product.
      *
      * @param product   Product
-     * @return          Trust item
+     * @return          Product categories
      */
-    open fun productTrustItem(product: Product): TrustItem {
-        return trustItemRepository.findByUuid(product.trustItemUuid)!!
+    open fun productCategories(product: Product): List<ProductCategory> {
+        val contributions = productCategoryContributionRepository.findByProductUuidAndEnabled(product.uuid)
+        return contributions.map { contribution -> contribution.productCategory }
+    }
+
+    /**
+     * Returns the labels of a product.
+     *
+     * @param product   Product
+     * @return          Product labels
+     */
+    open fun productLabels(product: Product): List<ProductLabel> {
+        val contributions = productLabelContributionRepository.findByProductUuidAndEnabled(product.uuid)
+        return contributions.map { contribution -> contribution.productLabel }
+    }
+
+    /**
+     * Returns the company of a product.
+     *
+     * @param product   Product
+     * @return          Company
+     */
+    open fun productCompany(product: Product): Company? {
+        val contributions = productCompanyContributionRepository.findByProductUuidAndEnabled(product.uuid)
+        return contributionService.uniqueContribution(contributions)?.company
     }
 }
 

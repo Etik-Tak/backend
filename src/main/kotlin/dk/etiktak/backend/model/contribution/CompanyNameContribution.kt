@@ -24,60 +24,17 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product label.
+ * Represents a company name contribution.
  */
 
-package dk.etiktak.backend.model.product
+package dk.etiktak.backend.model.contribution
 
-import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.contribution.ProductLabelContribution
-import dk.etiktak.backend.model.infosource.InfoSourceReference
-import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
-import dk.etiktak.backend.model.user.Client
-import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
 import javax.persistence.*
 
-@Entity(name = "product_labels")
-class ProductLabel constructor() : BaseModel() {
+@Entity
+@DiscriminatorValue("CompanyName")
+class CompanyNameContribution : CompanyContribution() {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_label_id")
-    var id: Long = 0
-
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
-
-    @Column(name = "name")
+    @Column(name = "company_name", nullable = true)
     var name: String = ""
-
-    @OneToMany(mappedBy = "productLabels", fetch = FetchType.LAZY)
-    var contributions: MutableList<ProductLabelContribution> = ArrayList()
-
-    @ManyToMany(mappedBy = "productLabels", fetch = FetchType.LAZY)
-    var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
-
-    @OneToMany(mappedBy = "productLabel", fetch = FetchType.LAZY)
-    var recommendations: MutableList<ProductLabelRecommendation> = ArrayList()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
-    }
 }

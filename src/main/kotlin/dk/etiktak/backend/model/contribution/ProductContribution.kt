@@ -24,59 +24,20 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a trust vote, fx. if the item in question is correct or not.
+ * Represents a product contribution, e.g. name or a category.
  */
 
-package dk.etiktak.backend.model.trust
+package dk.etiktak.backend.model.contribution
 
-import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.user.Client
-import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
+import dk.etiktak.backend.model.product.Product
 import javax.persistence.*
 
-@Entity(name = "trust_votes")
-@Table(uniqueConstraints = arrayOf(
-        UniqueConstraint(columnNames = arrayOf("client_id", "trust_item_id"))))
-open class TrustVote constructor() : BaseModel() {
+@Entity
+@DiscriminatorValue("ProductContribution")
+open class ProductContribution : Contribution() {
 
-    enum class TrustVoteType {
-        Trusted,
-        NotTrusted
-    }
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "trust_vote_id")
-    var id: Long = 0
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var client = Client()
-
+    @Column(name = "product", nullable = true)
     @ManyToOne(optional = true)
-    @JoinColumn(name = "trust_item_id")
-    var trustItem = TrustItem()
-
-    @Column(name = "vote")
-    var vote = TrustVoteType.Trusted
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
-    }
+    @JoinColumn(name = "product_id")
+    var product = Product()
 }

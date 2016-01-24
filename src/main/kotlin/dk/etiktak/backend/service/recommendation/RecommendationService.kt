@@ -27,7 +27,7 @@ package dk.etiktak.backend.service.recommendation
 
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.model.user.Client
@@ -149,8 +149,8 @@ open class RecommendationService @Autowired constructor(
      * @return                 Created recommendation
      */
     @ClientVerified
-    open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductCategory,
-                                  modifyValues: (InfoChannel, ProductCategory) -> Unit = {infoChannel, productCategory -> Unit}): Recommendation {
+    open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductLabel,
+                                  modifyValues: (InfoChannel, ProductLabel) -> Unit = { infoChannel, productCategory -> Unit}): Recommendation {
 
         // Security checks
         Assert.isTrue(
@@ -242,7 +242,7 @@ open class RecommendationService @Autowired constructor(
         return infoChannelUuids
     }
 
-    open fun productCategoryListToUuidList(productCategories: Set<ProductCategory>): List<String> {
+    open fun productCategoryListToUuidList(productCategories: Set<ProductLabel>): List<String> {
         val productCategoryUuids: MutableList<String> = ArrayList()
         for (productCategory in productCategories) {
             productCategoryUuids.add(productCategory.uuid)

@@ -24,13 +24,13 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product.
+ * Represents a product. Actual information is aggregrated from the contributions.
  */
 
 package dk.etiktak.backend.model.product
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.company.Company
+import dk.etiktak.backend.model.contribution.ProductContribution
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.ProductRecommendation
 import org.springframework.format.annotation.DateTimeFormat
@@ -61,40 +61,13 @@ class Product constructor() : BaseModel() {
     @Column(name = "barcode_type")
     var barcodeType = BarcodeType.UNKNOWN
 
-    @Column(name = "name")
-    var name: String = ""
-
-    @NotNull
-    @Column(name = "trustItemUuid")
-    var trustItemUuid: String = ""
-
     @NotNull
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="product_productCategory",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
-    @Column(name = "product_categories")
-    var productCategories: MutableSet<ProductCategory> = HashSet()
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="product_productLabel",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_label_id", referencedColumnName="product_label_id")))
-    @Column(name = "product_labels")
-    var productLabels: MutableSet<ProductLabel> = HashSet()
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="product_company",
-            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="company_id", referencedColumnName="company_id")))
-    @Column(name = "companies")
-    var companies: MutableSet<Company> = HashSet()
+    @NotNull
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    var contributions: MutableList<ProductContribution> = ArrayList()
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var recommendations: MutableList<ProductRecommendation> = ArrayList()

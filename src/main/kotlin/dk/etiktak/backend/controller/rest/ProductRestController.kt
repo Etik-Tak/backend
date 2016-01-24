@@ -32,9 +32,9 @@ package dk.etiktak.backend.controller.rest
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
-import dk.etiktak.backend.model.trust.TrustVote
+import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.product.ProductCategoryService
@@ -81,7 +81,7 @@ class ProductRestController @Autowired constructor(
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
         // List of product categories
-        val productCategories = ArrayList<ProductCategory>()
+        val productCategories = ArrayList<ProductLabel>()
         categoryUuidList?.let {
             for (productCategoryUuid in categoryUuidList) {
                 val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: continue
@@ -129,7 +129,7 @@ class ProductRestController @Autowired constructor(
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 
-        productService.editProduct(client, product, name, modifyValues = {modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
+        productService.editProductName(client, product, name, modifyValues = { modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
 
         return productOkMap(product)
     }
@@ -159,7 +159,7 @@ class ProductRestController @Autowired constructor(
         var productLabel = productLabelService.getProductLabelByUuid(labelUuid) ?: return notFoundMap("Product label")
 
         productService.assignLabelToProduct(client, product, productLabel,
-                modifyValues = {modifiedClient, modifiedProduct, modifiedProductLabel -> client = modifiedClient; product = modifiedProduct; productLabel = modifiedProductLabel})
+                modifyValues = { modifiedClient, modifiedProduct, modifiedProductLabel -> client = modifiedClient; product = modifiedProduct; productLabel = modifiedProductLabel})
 
         return productOkMap(product)
     }
@@ -197,7 +197,7 @@ class ProductRestController @Autowired constructor(
                 .add("product", hashMapOf<String, Any>()
                         .add("uuid", product.uuid)
                         .add("name", product.name)
-                        .add("trustScore", productService.productTrustItem(product).trustScore)
+                        .add("trustScore", XXX
                         .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
                                 .add("uuid", category.uuid)
                                 .add("name", category.name) })

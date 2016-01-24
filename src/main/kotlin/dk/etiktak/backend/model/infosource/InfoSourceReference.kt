@@ -33,7 +33,7 @@ import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
@@ -86,7 +86,7 @@ class InfoSourceReference constructor() : BaseModel() {
             joinColumns=arrayOf(JoinColumn(name="info_source_reference_id", referencedColumnName="info_source_reference_id")),
             inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
     @Column(name = "product_categories")
-    var productCategories: MutableSet<ProductCategory> = HashSet()
+    var productCategories: MutableSet<ProductLabel> = HashSet()
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

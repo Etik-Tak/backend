@@ -30,6 +30,7 @@
 package dk.etiktak.backend.model.product
 
 import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.contribution.ProductCategoryContribution
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
 import dk.etiktak.backend.model.user.Client
@@ -51,8 +52,8 @@ class ProductCategory constructor() : BaseModel() {
     @Column(name = "name")
     var name: String = ""
 
-    @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
-    var products: MutableSet<Product> = HashSet()
+    @OneToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
+    var contributions: MutableList<ProductCategoryContribution> = ArrayList()
 
     @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()

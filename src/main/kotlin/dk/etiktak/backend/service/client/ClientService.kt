@@ -27,7 +27,7 @@ package dk.etiktak.backend.service.client
 
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.user.ClientRepository
-import dk.etiktak.backend.service.trust.TrustService
+import dk.etiktak.backend.service.trust.ContributionService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 open class ClientService @Autowired constructor(
         private val clientRepository: ClientRepository,
-        private val trustService: TrustService) {
+        private val contributionService: ContributionService) {
 
     private val logger = LoggerFactory.getLogger(ClientService::class.java)
 
@@ -59,7 +59,7 @@ open class ClientService @Autowired constructor(
         logger.info("Created new client with uuid: ${client.uuid}")
 
         // Update initial trust
-        trustService.recalculateClientTrustLevel(client, modifyValues = {modifiedClient -> client = modifiedClient})
+        contributionService.recalculateClientTrustLevel(client, modifyValues = { modifiedClient -> client = modifiedClient})
 
         return client
     }

@@ -32,7 +32,7 @@ package dk.etiktak.backend.controller.rest
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
@@ -103,7 +103,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         val infoSourceReference = infoSourceReferenceService.getInfoSourceReferenceByUuid(infoSourceReferenceUuid) ?: return notFoundMap("Info source reference")
 
-        val productCategories: MutableList<ProductCategory> = ArrayList()
+        val productCategories: MutableList<ProductLabel> = ArrayList()
         for (productCategoryUuid in productCategoryUuids) {
             val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: continue
             productCategories.add(productCategory)

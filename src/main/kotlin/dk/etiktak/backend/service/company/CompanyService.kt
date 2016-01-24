@@ -26,14 +26,13 @@
 package dk.etiktak.backend.service.company
 
 import dk.etiktak.backend.model.company.Company
-import dk.etiktak.backend.model.trust.TrustItem
-import dk.etiktak.backend.model.trust.TrustVote
+import dk.etiktak.backend.model.contribution.CompanyNameContribution
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
-import dk.etiktak.backend.repository.trust.TrustItemRepository
+import dk.etiktak.backend.repository.contribution.CompanyNameContributionRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.security.ClientVerified
-import dk.etiktak.backend.service.trust.TrustService
+import dk.etiktak.backend.service.trust.ContributionService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,8 +44,8 @@ import org.springframework.transaction.annotation.Transactional
 open class CompanyService @Autowired constructor(
         private val companyRepository: CompanyRepository,
         private val clientRepository: ClientRepository,
-        private val trustItemRepository: TrustItemRepository,
-        private val trustService: TrustService) {
+        private val companyNameContributionRepository: CompanyNameContributionRepository,
+        private val contributionService: ContributionService) {
 
     private val logger = LoggerFactory.getLogger(CompanyService::class.java)
 
@@ -61,93 +60,93 @@ open class CompanyService @Autowired constructor(
     }
 
     /**
-     * Creates a new product.
+     * Creates a new company.
      *
-     * @param client        Client
-     * @param name          Name of product
+     * @param inClient      Client
+     * @param name          Name of company
      * @param modifyValues  Function called with modified client
-     * @return              Created product
+     * @return              Created company
      */
     @ClientVerified
-    open fun createCompany(client: Client, name: String?, modifyValues: (Client) -> Unit = {}): Company {
+    open fun createCompany(inClient: Client, name: String, modifyValues: (Client) -> Unit = {}): Company {
+
+        var client = inClient
 
         // Create company
-        val company = Company()
+        var company = Company()
         company.uuid = CryptoUtil().uuid()
-        company.name = name ?: ""
-        // TODO! Creator
 
-        // Create trust item
-        var modifiedClient = client
-        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Company, company.uuid, modifyValues = {client -> modifiedClient = client})
-        company.trustItemUuid = trustItem.uuid
+        company = companyRepository.save(company)
 
-        // Save it all
-        var modifiedCompany = companyRepository.save(company)
+        // Create name contribution
+        editCompanyName(client, company, name,
+                modifyValues = {modifiedClient, modifiedCompany -> client = modifiedClient; company = modifiedCompany})
 
-        // Update trust
-        trustService.updateTrust(trustItem)
+        modifyValues(client)
 
-        modifyValues(modifiedClient)
-
-        return modifiedCompany
+        return company
     }
 
     /**
-     * Edits a company.
+     * Edits a company name.
      *
-     * @param client        Client
-     * @param company       Company
-     * @param name          Name of company
-     * @param modifyValues  Function called with modified client and company
+     * @param inClient        Client
+     * @param inCompany       Company
+     * @param name            Name of company
+     * @param modifyValues    Function called with modified client and company
+     * @return                Company name contribution
      */
     @ClientVerified
-    open fun editCompany(client: Client, company: Company, name: String?, modifyValues: (Client, Company) -> Unit = {client, company -> Unit}) {
+    open fun editCompanyName(inClient: Client, inCompany: Company, name: String, modifyValues: (Client, Company) -> Unit = {client, company -> Unit}): CompanyNameContribution {
 
-        // Check sufficient trust
-        trustService.assertSufficientTrustToEditTrustItem(client, companyTrustItem(company))
+        var client = inClient
+        var company = inCompany
 
-        // Create new trust item
-        var modifiedClient = client
-        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Company, company.uuid, modifyValues = {client -> modifiedClient = client})
-        company.trustItemUuid = trustItem.uuid
+        // Get current name contribution
+        val contributions = companyNameContributionRepository.findByCompanyUuidAndEnabled(company.uuid)
+        val currentContribution = contributionService.uniqueContribution(contributions)
 
-        // Modify values
-        name?.let {
-            company.name = name
+        currentContribution?.let {
+
+            // Check sufficient trust
+            contributionService.assertSufficientTrustToEditContribution(client, currentContribution)
+
+            // Disable current contribution
+            currentContribution.enabled = false
+            companyNameContributionRepository.save(currentContribution)
         }
 
+        // Create name contribution
+        var companyNameContribution = CompanyNameContribution()
+        companyNameContribution.uuid = CryptoUtil().uuid()
+        companyNameContribution.client = client
+        companyNameContribution.name = name
+
+        // Glue it together
+        company.contributions.add(companyNameContribution)
+        client.contributions.add(companyNameContribution)
+
         // Save it all
-        var modifiedCompany = companyRepository.save(company)
+        client = clientRepository.save(client)
+        company = companyRepository.save(company)
+        companyNameContribution = companyNameContributionRepository.save(companyNameContribution)
 
         // Update trust
-        trustService.updateTrust(trustItem)
+        contributionService.updateTrust(companyNameContribution)
 
-        modifyValues(modifiedClient, modifiedCompany)
+        modifyValues(client, company)
+
+        return companyNameContribution
     }
 
     /**
-     * Trust vote company.
-     *
-     * @param client        Client
-     * @param company       Company
-     * @param vote          Vote
-     * @param modifyValues  Function called with modified client
-     * @return              Trust vote
-     */
-    @ClientVerified
-    open fun trustVoteCompany(client: Client, company: Company, vote: TrustVote.TrustVoteType, modifyValues: (Client) -> Unit = {}): TrustVote {
-        return trustService.trustVoteItem(client, companyTrustItem(company), vote,
-                modifyValues = {modifiedClient, trustItem -> modifyValues(modifiedClient)})
-    }
-
-    /**
-     * Returns the trust item of the given company.
+     * Returns the name of a company.
      *
      * @param company   Company
-     * @return          Trust item
+     * @return          Name of company
      */
-    open fun companyTrustItem(company: Company): TrustItem {
-        return trustItemRepository.findByUuid(company.trustItemUuid)!!
+    open fun companyName(company: Company): String? {
+        val contributions = companyNameContributionRepository.findByCompanyUuidAndEnabled(company.uuid)
+        return contributionService.uniqueContribution(contributions)?.name
     }
 }

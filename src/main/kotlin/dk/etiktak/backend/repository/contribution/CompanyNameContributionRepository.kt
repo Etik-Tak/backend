@@ -23,17 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.trust
+package dk.etiktak.backend.repository.contribution
 
-import dk.etiktak.backend.model.trust.TrustVote
+import dk.etiktak.backend.model.contribution.CompanyNameContribution
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface TrustVoteRepository : PagingAndSortingRepository<TrustVote, Long> {
-    fun findByVote(vote: TrustVote.TrustVoteType): List<TrustVote>
-    fun findByClientUuid(uuid: String): List<TrustVote>
-    fun findByClientUuidAndTrustItemUuid(clientUuid: String, trustItemUuid: String): TrustVote?
-
-    fun countByVoteAndTrustItemUuid(vote: TrustVote.TrustVoteType, uuid: String): Long
+interface CompanyNameContributionRepository : PagingAndSortingRepository<CompanyNameContribution, Long> {
+    fun findByUuid(uuid: String): CompanyNameContribution?
+    fun findByCompanyUuidAndEnabled(companyUuid: String, enabled: Boolean = true): List<CompanyNameContribution>
 }

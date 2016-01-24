@@ -30,8 +30,9 @@
 package dk.etiktak.backend.model.company
 
 import dk.etiktak.backend.model.BaseModel
+import dk.etiktak.backend.model.contribution.CompanyContribution
 import dk.etiktak.backend.model.infosource.InfoSourceReference
-import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.contribution.ProductCompanyContribution
 import dk.etiktak.backend.model.recommendation.CompanyRecommendation
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -49,21 +50,18 @@ class Company constructor() : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Column(name = "name")
-    var name: String = ""
-
-    @NotNull
-    @Column(name = "trustItemUuid")
-    var trustItemUuid: String = ""
-
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
     var recommendations: MutableList<CompanyRecommendation> = ArrayList()
 
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
     var stores: MutableList<Store> = ArrayList()
 
-    @ManyToMany(mappedBy = "companies", fetch = FetchType.LAZY)
-    var products: MutableSet<Product> = HashSet()
+    @NotNull
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    var contributions: MutableList<CompanyContribution> = ArrayList()
+
+    //@OneToMany(mappedBy = "companies", fetch = FetchType.LAZY)
+    //var productContributions: MutableList<ProductCompanyContribution> = ArrayList()
 
     @ManyToMany(mappedBy = "companies", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()

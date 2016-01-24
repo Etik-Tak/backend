@@ -34,12 +34,12 @@
 package dk.etiktak.backend.model.user
 
 import dk.etiktak.backend.model.changelog.ChangeLog
+import dk.etiktak.backend.model.contribution.Contribution
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
 import dk.etiktak.backend.model.infochannel.InfoChannelFollower
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.*
-import dk.etiktak.backend.model.trust.TrustItem
-import dk.etiktak.backend.model.trust.TrustVote
+import dk.etiktak.backend.model.contribution.TrustVote
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -81,11 +81,12 @@ class Client constructor() {
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var followingInfoChannels: MutableList<InfoChannelFollower> = ArrayList()
 
-    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
-    var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
+    @NotNull
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
+    var contributions: MutableList<Contribution> = ArrayList()
 
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
-    var trustItems: MutableList<TrustItem> = ArrayList()
+    var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var trustVotes: MutableList<TrustVote> = ArrayList()

@@ -24,54 +24,20 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents an actual physical store.
+ * Represents a store contribution, e.g. name.
  */
 
-package dk.etiktak.backend.model.company
+package dk.etiktak.backend.model.contribution
 
-import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.contribution.StoreContribution
-import dk.etiktak.backend.model.location.Location
-import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
+import dk.etiktak.backend.model.company.Store
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 
-@Entity(name = "stores")
-class Store constructor() : BaseModel() {
+@Entity
+@DiscriminatorValue("StoreContribution")
+open class StoreContribution : Contribution() {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "store_id")
-    var id: Long = 0
-
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
-
-    @OneToOne(cascade = arrayOf(CascadeType.ALL))
-    var location: Location = Location()
-
-    @NotNull
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    var contributions: MutableList<StoreContribution> = ArrayList()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
-    }
+    @Column(name = "store", nullable = true)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "store_id")
+    var store = Store()
 }

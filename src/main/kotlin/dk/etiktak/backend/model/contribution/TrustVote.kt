@@ -24,42 +24,41 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a product label.
+ * Represents a trust vote, fx. if the item in question is correct or not.
  */
 
-package dk.etiktak.backend.model.product
+package dk.etiktak.backend.model.contribution
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.contribution.ProductLabelContribution
-import dk.etiktak.backend.model.infosource.InfoSourceReference
-import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
-@Entity(name = "product_labels")
-class ProductLabel constructor() : BaseModel() {
+@Entity(name = "trust_votes")
+@Table(uniqueConstraints = arrayOf(
+        UniqueConstraint(columnNames = arrayOf("client_id", "trust_item_id"))))
+open class TrustVote constructor() : BaseModel() {
 
+    enum class TrustVoteType {
+        Trusted,
+        NotTrusted
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "product_label_id")
+    @Column(name = "trust_vote_id")
     var id: Long = 0
 
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var client = Client()
 
-    @Column(name = "name")
-    var name: String = ""
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "contribution_id")
+    var contribution = Contribution()
 
-    @OneToMany(mappedBy = "productLabels", fetch = FetchType.LAZY)
-    var contributions: MutableList<ProductLabelContribution> = ArrayList()
-
-    @ManyToMany(mappedBy = "productLabels", fetch = FetchType.LAZY)
-    var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
-
-    @OneToMany(mappedBy = "productLabel", fetch = FetchType.LAZY)
-    var recommendations: MutableList<ProductLabelRecommendation> = ArrayList()
+    @Column(name = "vote")
+    var vote = TrustVoteType.Trusted
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

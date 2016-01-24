@@ -23,55 +23,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Represents an actual physical store.
- */
+package dk.etiktak.backend.repository.contribution
 
-package dk.etiktak.backend.model.company
+import dk.etiktak.backend.model.contribution.Contribution
+import dk.etiktak.backend.model.contribution.TrustVote
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.contribution.StoreContribution
-import dk.etiktak.backend.model.location.Location
-import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
-import javax.persistence.*
-import javax.validation.constraints.NotNull
+@Repository
+interface ContributionRepository : PagingAndSortingRepository<Contribution, Long> {
+    fun findByUuid(uuid: String): Contribution?
 
-@Entity(name = "stores")
-class Store constructor() : BaseModel() {
+    fun findByClientUuid(clientUuid: String): List<Contribution>
+    fun findByTrustVotesClientUuid(clientUuid: String): List<Contribution>
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "store_id")
-    var id: Long = 0
-
-    @Column(name = "uuid", nullable = false, unique = true)
-    var uuid: String = ""
-
-    @OneToOne(cascade = arrayOf(CascadeType.ALL))
-    var location: Location = Location()
-
-    @NotNull
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    var contributions: MutableList<StoreContribution> = ArrayList()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var creationTime = Date()
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    var modificationTime = Date()
-
-
-
-    @PreUpdate
-    fun preUpdate() {
-        modificationTime = Date()
-    }
-
-    @PrePersist
-    fun prePersist() {
-        val now = Date()
-        creationTime = now
-        modificationTime = now
-    }
+    fun countByUuidAndTrustVotesVote(uuid: String, trustVoteType: TrustVote.TrustVoteType): Long
 }

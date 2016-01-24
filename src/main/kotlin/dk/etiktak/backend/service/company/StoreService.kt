@@ -27,33 +27,30 @@ package dk.etiktak.backend.service.company
 
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.company.Store
-import dk.etiktak.backend.model.location.Location
-import dk.etiktak.backend.model.trust.TrustItem
-import dk.etiktak.backend.model.trust.TrustVote
+import dk.etiktak.backend.model.contribution.StoreCompanyContribution
+import dk.etiktak.backend.model.contribution.StoreNameContribution
 import dk.etiktak.backend.model.user.Client
-import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.company.StoreRepository
-import dk.etiktak.backend.repository.location.LocationRepository
-import dk.etiktak.backend.repository.trust.TrustItemRepository
+import dk.etiktak.backend.repository.contribution.StoreCompanyContributionRepository
+import dk.etiktak.backend.repository.contribution.StoreNameContributionRepository
 import dk.etiktak.backend.repository.user.ClientRepository
-import dk.etiktak.backend.service.security.ClientValid
 import dk.etiktak.backend.service.security.ClientVerified
-import dk.etiktak.backend.service.trust.TrustService
+import dk.etiktak.backend.service.trust.ContributionService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.Assert
 
 @Service
 @Transactional
 open class StoreService @Autowired constructor(
-        private val companyRepository: CompanyRepository,
         private val storeRepository: StoreRepository,
-        private val locationRepository: LocationRepository,
         private val clientRepository: ClientRepository,
-        private val trustItemRepository: TrustItemRepository,
-        private val trustService: TrustService) {
+        private val contributionService: ContributionService,
+        private val storeNameContributionRepository: StoreNameContributionRepository,
+        private val storeCompanyContributionRepository: StoreCompanyContributionRepository) {
 
     private val logger = LoggerFactory.getLogger(StoreService::class.java)
 
@@ -70,114 +67,156 @@ open class StoreService @Autowired constructor(
     /**
      * Creates a new store.
      *
-     * @param client        Client
+     * @param inClient      Client
      * @param name          Name of store
-     * @param latitude      Latitude
-     * @param longitude     Longitude
-     * @param company       Company
-     * @param modifyValues  Function called with modified client and company
+     * @param modifyValues  Function called with modified client
      * @return              Created store
      */
     @ClientVerified
-    open fun createStore(client: Client, name: String, latitude: Double, longitude: Double, company: Company, modifyValues: (Client, Company) -> Unit = {client, company -> Unit}): Store {
+    open fun createStore(inClient: Client, name: String, modifyValues: (Client) -> Unit = {}): Store {
 
-        // Create location
-        val location = locationRepository.save(Location(latitude, longitude))
-        locationRepository.save(location)
+        var client = inClient
 
         // Create store
-        val store = Store()
-        store.company = company
+        var store = Store()
         store.uuid = CryptoUtil().uuid()
-        store.name = name
-        store.location = location
-        // TODO! Creator
 
-        // Create trust item
-        var modifiedClient = client
-        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Store, store.uuid, modifyValues = {client -> modifiedClient = client})
-        store.trustItemUuid = trustItem.uuid
+        store = storeRepository.save(store)
 
-        // Glue it together
-        company.stores.add(store)
+        // Create name contribution
+        editStoreName(client, store, name,
+                modifyValues = {modifiedClient, modifiedStore -> client = modifiedClient; store = modifiedStore})
 
-        // Save it all
-        var modifiedCompany = companyRepository.save(company)
-        var modifiedStore = storeRepository.save(store)
+        modifyValues(client)
 
-        // Update trust
-        trustService.updateTrust(trustItem)
-
-        modifyValues(modifiedClient, modifiedCompany)
-
-        return modifiedStore
+        return store
     }
 
     /**
-     * Edits a store.
+     * Edits a store name.
      *
-     * @param client        Client
-     * @param store         Store
-     * @param name          Name of store
-     * @param latitude      Store latitude
-     * @param longitude     Store longitude
-     * @param modifyValues  Function called with modified client and store
+     * @param inClient        Client
+     * @param inStore         Store
+     * @param name            Name of store
+     * @param modifyValues    Function called with modified client and store
+     * @return                Store name contribution
      */
     @ClientVerified
-    open fun editStore(client: Client, store: Store, name: String?, latitude: Double?, longitude: Double?, modifyValues: (Client, Store) -> Unit = {client, store -> Unit}) {
+    open fun editStoreName(inClient: Client, inStore: Store, name: String, modifyValues: (Client, Store) -> Unit = {client, store -> Unit}): StoreNameContribution {
 
-        // Check sufficient trust
-        trustService.assertSufficientTrustToEditTrustItem(client, storeTrustItem(store))
+        var client = inClient
+        var store = inStore
 
-        // Create new trust item
-        var modifiedClient = client
-        val trustItem = trustService.createTrustItem(client, TrustItem.TrustItemType.Store, store.uuid, modifyValues = {client -> modifiedClient = client})
-        store.trustItemUuid = trustItem.uuid
+        // Get current name contribution
+        val contributions = storeNameContributionRepository.findByStoreUuidAndEnabled(store.uuid)
+        val currentContribution = contributionService.uniqueContribution(contributions)
 
-        // Modify values
-        store.name = name ?: store.name
+        currentContribution?.let {
 
-        val oldLocation = store.location
-        val location = if (latitude != null && longitude != null) Location(latitude, longitude) else null
-        if (location != null) {
-            store.location = location
+            // Check sufficient trust
+            contributionService.assertSufficientTrustToEditContribution(client, currentContribution)
+
+            // Disable current contribution
+            currentContribution.enabled = false
+            storeNameContributionRepository.save(currentContribution)
         }
+
+        // Create name contribution
+        var storeNameContribution = StoreNameContribution()
+        storeNameContribution.uuid = CryptoUtil().uuid()
+        storeNameContribution.client = client
+        storeNameContribution.name = name
+
+        // Glue it together
+        store.contributions.add(storeNameContribution)
+        client.contributions.add(storeNameContribution)
 
         // Save it all
-        var modifiedStore = storeRepository.save(store)
-        if (location != null) {
-            locationRepository.save(location)
-            locationRepository.delete(oldLocation)
-        }
+        client = clientRepository.save(client)
+        store = storeRepository.save(store)
+        storeNameContribution = storeNameContributionRepository.save(storeNameContribution)
 
         // Update trust
-        trustService.updateTrust(trustItem)
+        contributionService.updateTrust(storeNameContribution)
 
-        modifyValues(modifiedClient, modifiedStore)
+        modifyValues(client, store)
+
+        return storeNameContribution
     }
 
     /**
-     * Trust vote store.
+     * Assigns a company to a store.
      *
-     * @param client        Client
-     * @param company       Store
-     * @param vote          Vote
-     * @param modifyValues  Function called with modified client and store
-     * @return              Trust vote
+     * @param inClient            Client
+     * @param inStore             Store
+     * @param inCompany           Company
+     * @param modifyValues        Function called with modified client, product and company
+     * @return                    Product company contribution
      */
-    @ClientValid
-    open fun trustVoteStore(client: Client, store: Store, vote: TrustVote.TrustVoteType, modifyValues: (Client) -> Unit = {}): TrustVote {
-        return trustService.trustVoteItem(client, storeTrustItem(store), vote,
-                modifyValues = {modifiedClient, trustItem -> modifyValues(modifiedClient)})
+    @ClientVerified
+    open fun assignCompanyToProduct(inClient: Client, inStore: Store, inCompany: Company, modifyValues: (Client, Store, Company) -> Unit = { client, store, company -> Unit}): StoreCompanyContribution {
+
+        var client = inClient
+        var store = inStore
+        var company = inCompany
+
+        // Get current company contribution
+        val contributions = storeCompanyContributionRepository.findByStoreUuidAndEnabled(store.uuid)
+        val currentContribution = contributionService.uniqueContribution(contributions)
+
+        currentContribution?.let {
+
+            // Make sure it's disabled
+            Assert.isTrue(
+                    !currentContribution.enabled,
+                    "Cannot assign company with UUID ${currentContribution.uuid} to store with UUID ${store.uuid}; it's already there and enabled!"
+            )
+        }
+
+        // Create company contribution
+        var storeCompanyContribution = StoreCompanyContribution()
+        storeCompanyContribution.uuid = CryptoUtil().uuid()
+        storeCompanyContribution.client = client
+        storeCompanyContribution.company = company
+
+        // Glue it together
+        //company.productContributions.add(productCompanyContribution)
+        store.contributions.add(storeCompanyContribution)
+        client.contributions.add(storeCompanyContribution)
+
+        // Save it all
+        //company = companyRepository.save(company)
+        client = clientRepository.save(client)
+        store = storeRepository.save(store)
+        storeCompanyContribution = storeCompanyContributionRepository.save(storeCompanyContribution)
+
+        // Update trust
+        contributionService.updateTrust(storeCompanyContribution)
+
+        modifyValues(client, store, company)
+
+        return storeCompanyContribution
     }
 
     /**
-     * Returns the trust item of the given store.
+     * Returns the name of a store.
      *
      * @param store     Store
-     * @return          Trust item
+     * @return          Name of store
      */
-    open fun storeTrustItem(store: Store): TrustItem {
-        return trustItemRepository.findByUuid(store.trustItemUuid)!!
+    open fun storeName(store: Store): String? {
+        val contributions = storeNameContributionRepository.findByStoreUuidAndEnabled(store.uuid)
+        return contributionService.uniqueContribution(contributions)?.name
+    }
+
+    /**
+     * Returns the company of a store.
+     *
+     * @param store     Store
+     * @return          Company
+     */
+    open fun storeCompany(store: Store): Company? {
+        val contributions = storeCompanyContributionRepository.findByStoreUuidAndEnabled(store.uuid)
+        return contributionService.uniqueContribution(contributions)?.company
     }
 }
