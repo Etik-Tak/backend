@@ -33,7 +33,7 @@ import dk.etiktak.backend.model.company.Company
 import javax.persistence.*
 
 @Entity
-@DiscriminatorValue("ProductCompany")
+@DiscriminatorValue("Company")
 class ProductCompanyContribution : ProductContribution() {
 
     @ManyToOne(optional = true)

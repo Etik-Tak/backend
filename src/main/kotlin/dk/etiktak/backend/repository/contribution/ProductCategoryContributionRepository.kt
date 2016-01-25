@@ -33,5 +33,5 @@ import org.springframework.stereotype.Repository
 interface ProductCategoryContributionRepository: PagingAndSortingRepository<ProductCategoryContribution, Long> {
     fun findByUuid(uuid: String): ProductCategoryContribution?
     fun findByProductUuidAndEnabled(productUuid: String, enabled: Boolean = true): List<ProductCategoryContribution>
-    fun findByProductUuidAndCategoryUuidAndEnabled(productUuid: String, categoryUuid: String, enabled: Boolean = true): List<ProductCategoryContribution>
+    fun findByProductUuidAndProductCategoryUuidAndEnabled(productUuid: String, categoryUuid: String, enabled: Boolean = true): List<ProductCategoryContribution>
 }

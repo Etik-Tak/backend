@@ -48,8 +48,15 @@ class Store constructor() : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
+    @Column(name = "name")
+    var name: String = ""
+
     @OneToOne(cascade = arrayOf(CascadeType.ALL))
     var location: Location = Location()
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "company_id")
+    var company = Company()
 
     @NotNull
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)

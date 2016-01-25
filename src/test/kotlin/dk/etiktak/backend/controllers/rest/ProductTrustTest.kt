@@ -128,7 +128,7 @@ class ProductTrustTest : BaseRestTest() {
     @Test
     fun trustVoteProduct() {
         mockMvc().perform(
-                post(serviceEndpoint("/trust/"))
+                post(serviceEndpoint("/trust/name/"))
                         .param("clientUuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -143,7 +143,7 @@ class ProductTrustTest : BaseRestTest() {
     @Test
     fun cannotTrustVoteMoreThanOnceOnSameProduct() {
         mockMvc().perform(
-                post(serviceEndpoint("/trust/"))
+                post(serviceEndpoint("/trust/name/"))
                         .param("clientUuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -153,7 +153,7 @@ class ProductTrustTest : BaseRestTest() {
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/trust/"))
+                post(serviceEndpoint("/trust/name/"))
                         .param("clientUuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -166,7 +166,7 @@ class ProductTrustTest : BaseRestTest() {
     fun cannotTrustVoteOwnProduct() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/trust/"))
+                post(serviceEndpoint("/trust/name/"))
                         .param("clientUuid", client1Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -198,7 +198,7 @@ class ProductTrustTest : BaseRestTest() {
         for (i in 1..20) {
             val clientUuid = createAndSaveClient()
             mockMvc().perform(
-                    post(serviceEndpoint("/trust/"))
+                    post(serviceEndpoint("/trust/name/"))
                             .param("clientUuid", clientUuid)
                             .param("productUuid", product1Uuid)
                             .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -223,7 +223,7 @@ class ProductTrustTest : BaseRestTest() {
         for (i in 1..20) {
             val clientUuid = createAndSaveClient()
             mockMvc().perform(
-                    post(serviceEndpoint("/trust/"))
+                    post(serviceEndpoint("/trust/name/"))
                             .param("clientUuid", clientUuid)
                             .param("productUuid", product1Uuid)
                             .param("vote", TrustVote.TrustVoteType.NotTrusted.name))
@@ -261,7 +261,7 @@ class ProductTrustTest : BaseRestTest() {
 
         // Trust vote product
         mockMvc().perform(
-                post(serviceEndpoint("/trust/"))
+                post(serviceEndpoint("/trust/name/"))
                         .param("clientUuid", client1Uuid)
                         .param("productUuid", product2Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -271,7 +271,7 @@ class ProductTrustTest : BaseRestTest() {
         for (i in 1..20) {
             val clientUuid = createAndSaveClient()
             mockMvc().perform(
-                    post(serviceEndpoint("/trust/"))
+                    post(serviceEndpoint("/trust/name/"))
                             .param("clientUuid", clientUuid)
                             .param("productUuid", product2Uuid)
                             .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -291,7 +291,7 @@ class ProductTrustTest : BaseRestTest() {
         for (i in 1..20) {
             val clientUuid = createAndSaveClient()
             mockMvc().perform(
-                    post(serviceEndpoint("/trust/"))
+                    post(serviceEndpoint("/trust/name/"))
                             .param("clientUuid", clientUuid)
                             .param("productUuid", product2Uuid)
                             .param("vote", TrustVote.TrustVoteType.NotTrusted.name))
@@ -332,7 +332,7 @@ class ProductTrustTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.product.trustScore", `is`(0.7)))
+                .andExpect(jsonPath("$.product.editableItems.name.trustScore", `is`(0.7)))
     }
 
     /**
@@ -356,7 +356,7 @@ class ProductTrustTest : BaseRestTest() {
         for (i in 1..20) {
             val clientUuid = createAndSaveClient()
             mockMvc().perform(
-                    post(serviceEndpoint("/trust/"))
+                    post(serviceEndpoint("/trust/name/"))
                             .param("clientUuid", clientUuid)
                             .param("productUuid", product2Uuid)
                             .param("vote", TrustVote.TrustVoteType.NotTrusted.name))
@@ -390,7 +390,7 @@ class ProductTrustTest : BaseRestTest() {
         for (i in 1..20) {
             val clientUuid = createAndSaveClient()
             mockMvc().perform(
-                    post(serviceEndpoint("/trust/"))
+                    post(serviceEndpoint("/trust/name/"))
                             .param("clientUuid", clientUuid)
                             .param("productUuid", product2Uuid)
                             .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -412,7 +412,7 @@ class ProductTrustTest : BaseRestTest() {
         for (i in 1..count) {
             val clientUuid = createAndSaveClient()
             mockMvc().perform(
-                    post(serviceEndpoint("/trust/"))
+                    post(serviceEndpoint("/trust/name/"))
                             .param("clientUuid", clientUuid)
                             .param("productUuid", productUuid)
                             .param("vote", trustVoteType.name))

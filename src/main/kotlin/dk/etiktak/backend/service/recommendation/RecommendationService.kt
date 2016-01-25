@@ -59,8 +59,7 @@ open class RecommendationService @Autowired constructor(
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
         private val infoChannelService: InfoChannelService,
-        private val infoChannelRepository: InfoChannelRepository,
-        private val productService: ProductService) {
+        private val infoChannelRepository: InfoChannelRepository) {
 
     private val logger = LoggerFactory.getLogger(RecommendationService::class.java)
 
@@ -88,11 +87,11 @@ open class RecommendationService @Autowired constructor(
                 infoChannelListToUuidList(infoChannels)
         )
         val productCategoryRecommendations = productCategoryRecommendationRepository.findByProductCategoryUuidInAndInfoChannelUuidIn(
-                productCategoryListToUuidList(productService.productCategories(product)),
+                productCategoryListToUuidList(product.productCategories),
                 infoChannelListToUuidList(infoChannels)
         )
         val productLabelRecommendations = productLabelRecommendationRepository.findByProductLabelUuidInAndInfoChannelUuidIn(
-                productLabelListToUuidList(productService.productLabels(product)),
+                productLabelListToUuidList(product.productLabels),
                 infoChannelListToUuidList(infoChannels)
         )
 
@@ -243,7 +242,7 @@ open class RecommendationService @Autowired constructor(
         return infoChannelUuids
     }
 
-    open fun productCategoryListToUuidList(productCategories: List<ProductCategory>): List<String> {
+    open fun productCategoryListToUuidList(productCategories: Set<ProductCategory>): List<String> {
         val productCategoryUuids: MutableList<String> = ArrayList()
         for (productCategory in productCategories) {
             productCategoryUuids.add(productCategory.uuid)
@@ -251,7 +250,7 @@ open class RecommendationService @Autowired constructor(
         return productCategoryUuids
     }
 
-    open fun productLabelListToUuidList(productLabels: List<ProductLabel>): List<String> {
+    open fun productLabelListToUuidList(productLabels: Set<ProductLabel>): List<String> {
         val productLabelUuids: MutableList<String> = ArrayList()
         for (productLabel in productLabels) {
             productLabelUuids.add(productLabel.uuid)

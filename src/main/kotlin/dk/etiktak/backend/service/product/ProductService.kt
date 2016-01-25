@@ -200,7 +200,7 @@ open class ProductService @Autowired constructor(
      * @return              Product name contribution
      */
     @ClientVerified
-    open fun editProductName(inClient: Client, inProduct: Product, name: String?, modifyValues: (Client, Product) -> Unit = { client, product -> Unit}): ProductNameContribution {
+    open fun editProductName(inClient: Client, inProduct: Product, name: String, modifyValues: (Client, Product) -> Unit = { client, product -> Unit}): ProductNameContribution {
 
         var client = inClient
         var product = inProduct
@@ -219,10 +219,14 @@ open class ProductService @Autowired constructor(
             productNameContributionRepository.save(currentContribution)
         }
 
+        // Edit name
+        product.name = name
+
         // Create name contribution
         var productNameContribution = ProductNameContribution()
         productNameContribution.uuid = CryptoUtil().uuid()
         productNameContribution.client = client
+        productNameContribution.product = product
         productNameContribution.name = name
 
         // Glue it together
@@ -259,7 +263,7 @@ open class ProductService @Autowired constructor(
         var productCategory = inProductCategory
 
         // Get current category contribution
-        val contributions = productCategoryContributionRepository.findByProductUuidAndCategoryUuidAndEnabled(product.uuid, productCategory.uuid)
+        val contributions = productCategoryContributionRepository.findByProductUuidAndProductCategoryUuidAndEnabled(product.uuid, productCategory.uuid)
         val currentContribution = contributionService.uniqueContribution(contributions)
 
         currentContribution?.let {
@@ -271,10 +275,15 @@ open class ProductService @Autowired constructor(
             )
         }
 
+        // Assign category
+        product.productCategories.add(productCategory)
+        productCategory.products.add(product)
+
         // Create category contribution
         var productCategoryContribution = ProductCategoryContribution()
         productCategoryContribution.uuid = CryptoUtil().uuid()
         productCategoryContribution.client = client
+        productCategoryContribution.product = product
         productCategoryContribution.productCategory = productCategory
 
         // Glue it together
@@ -313,7 +322,7 @@ open class ProductService @Autowired constructor(
         var productLabel = inProductLabel
 
         // Get current label contribution
-        val contributions = productLabelContributionRepository.findByProductUuidAndLabelUuidAndEnabled(product.uuid, productLabel.uuid)
+        val contributions = productLabelContributionRepository.findByProductUuidAndProductLabelUuidAndEnabled(product.uuid, productLabel.uuid)
         val currentContribution = contributionService.uniqueContribution(contributions)
 
         currentContribution?.let {
@@ -325,10 +334,15 @@ open class ProductService @Autowired constructor(
             )
         }
 
+        // Assign label
+        product.productLabels.add(productLabel)
+        productLabel.products.add(product)
+
         // Create label contribution
         var productLabelContribution = ProductLabelContribution()
         productLabelContribution.uuid = CryptoUtil().uuid()
         productLabelContribution.client = client
+        productLabelContribution.product = product
         productLabelContribution.productLabel = productLabel
 
         // Glue it together
@@ -380,6 +394,10 @@ open class ProductService @Autowired constructor(
             currentContribution.enabled = false
             productCompanyContributionRepository.save(currentContribution)
         }
+
+        // Assign company
+        product.companies.add(company)
+        company.products.add(product)
 
         // Create company contribution
         var productCompanyContribution = ProductCompanyContribution()
@@ -522,16 +540,6 @@ open class ProductService @Autowired constructor(
     }
 
     /**
-     * Returns the name of a product.
-     *
-     * @param product   Product
-     * @return          Name of product
-     */
-    open fun productName(product: Product): String? {
-        return productNameContribution(product)?.name
-    }
-
-    /**
      * Returns whether the given client can edit the name of the product.
      *
      * @param client    Client
@@ -554,43 +562,6 @@ open class ProductService @Autowired constructor(
     open fun trustVoteProductName(client: Client, product: Product, vote: TrustVote.TrustVoteType, modifyValues: (Client) -> Unit = {}): TrustVote {
         val contribution = productNameContribution(product)!!
         return contributionService.trustVoteItem(client, contribution, vote, modifyValues = {client, contribution -> modifyValues(client)})
-    }
-
-
-
-
-
-    /**
-     * Returns the categories of a product.
-     *
-     * @param product   Product
-     * @return          Product categories
-     */
-    open fun productCategories(product: Product): List<ProductCategory> {
-        val contributions = productCategoryContributionRepository.findByProductUuidAndEnabled(product.uuid)
-        return contributions.map { contribution -> contribution.productCategory }
-    }
-
-    /**
-     * Returns the labels of a product.
-     *
-     * @param product   Product
-     * @return          Product labels
-     */
-    open fun productLabels(product: Product): List<ProductLabel> {
-        val contributions = productLabelContributionRepository.findByProductUuidAndEnabled(product.uuid)
-        return contributions.map { contribution -> contribution.productLabel }
-    }
-
-    /**
-     * Returns the company of a product.
-     *
-     * @param product   Product
-     * @return          Company
-     */
-    open fun productCompany(product: Product): Company? {
-        val contributions = productCompanyContributionRepository.findByProductUuidAndEnabled(product.uuid)
-        return contributionService.uniqueContribution(contributions)?.company
     }
 }
 

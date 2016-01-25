@@ -78,6 +78,22 @@ fun <T> HashMap<String, T>.add(jsonKey: String, entity: T?) : HashMap<String, T>
 }
 
 /**
+ * Adds an entity to the map given by the evaluation function. If entity is null the function is idempotence.
+ *
+ * @param jsonKey     Key to map entity to
+ * @param condition   Condition
+ * @param entity      Entity to map
+ * @return            Map with entity mapped if condition is true
+ */
+fun <T> HashMap<String, T>.add(jsonKey: String, valueFunction: () -> T?) : HashMap<String, T> {
+    val entity = valueFunction()
+    entity?.let {
+        this[jsonKey] = entity
+    }
+    return this
+}
+
+/**
  * Adds all entries of given map to the map.
  *
  * @param entity    Entity to map
@@ -101,8 +117,9 @@ fun <T> HashMap<String, T>.add(entries: HashMap<String, T>) : HashMap<String, T>
  * @param entity      Entity to map
  * @return            Map with entity mapped if condition is true
  */
-fun <T> HashMap<String, T>.add(jsonKey: String, condition: () -> kotlin.Boolean, entity: T?) : HashMap<String, T> {
+fun <T> HashMap<String, T>.add(jsonKey: String, condition: () -> Boolean, entityFunction: () -> T?) : HashMap<String, T> {
     if (condition()) {
+        val entity = entityFunction()
         entity?.let {
             this[jsonKey] = entity
         }
@@ -148,24 +165,28 @@ fun HashMap<String, Any>.add(product: Product, client: Client? = null, productSe
     return add(hashMapOf<String, Any>()
             .add("product", hashMapOf<String, Any>()
                     .add("uuid", product.uuid)
-                    .add("name", productService.productName(product))
-                    .add("categories", productService.productCategories(product), { category -> hashMapOf<String, Any>()
+                    .add("name", product.name)
+                    .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
                             .add("uuid", category.uuid)
                             .add("name", category.name) })
-                    .add("labels", productService.productLabels(product), { label -> hashMapOf<String, Any>()
+                    .add("labels", product.productLabels, { label -> hashMapOf<String, Any>()
                             .add("uuid", label.uuid)
                             .add("name", label.name) })
-                    .add("editableItems", {client != null}, arrayListOf<String>()
-                            .add("name", {productService.canEditProductName(client!!, product)}))))
+                    .add("editableItems", {client != null}, {hashMapOf<String, Any>()
+                            .add("name", hashMapOf<String, Any>()
+                                    .add("editable", {productService.canEditProductName(client!!, product)})
+                                    .add("trustScore", {productService.productNameContribution(product)?.trustScore}))})))
 }
 
 fun HashMap<String, Any>.add(company: Company, client: Client? = null, companyService: CompanyService): HashMap<String, Any> {
     return add(hashMapOf<String, Any>()
             .add("company", hashMapOf<String, Any>()
                     .add("uuid", company.uuid)
-                    .add("name", companyService.companyName(company))
-                    .add("editableItems", {client != null}, arrayListOf<String>()
-                            .add("name", {companyService.canEditCompanyName(client!!, company)}))))
+                    .add("name", company.name)
+                    .add("editableItems", {client != null}, {hashMapOf<String, Any>()
+                            .add("name", hashMapOf<String, Any>()
+                                    .add("editable", {companyService.canEditCompanyName(client!!, company)})
+                                    .add("trustScore", {companyService.companyNameContribution(company)?.trustScore}))})))
 }
 
 fun HashMap<String, Any>.add(store: Store, client: Client? = null, storeService: StoreService): HashMap<String, Any> {
@@ -173,6 +194,8 @@ fun HashMap<String, Any>.add(store: Store, client: Client? = null, storeService:
             .add("store", hashMapOf<String, Any>()
                     .add("uuid", store.uuid)
                     .add("name", storeService.storeName(store))
-                    .add("editableItems", {client != null}, arrayListOf<String>()
-                            .add("name", {storeService.canEditStoreName(client!!, store)}))))
+                    .add("editableItems", {client != null}, {hashMapOf<String, Any>()
+                            .add("name", hashMapOf<String, Any>()
+                                    .add("editable", {storeService.canEditStoreName(client!!, store)})
+                                    .add("trustScore", {storeService.storeNameContribution(store)?.trustScore}))})))
 }

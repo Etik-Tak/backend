@@ -272,7 +272,7 @@ open class ContributionService @Autowired constructor(
      */
     open fun <T: Contribution> uniqueContribution(contributions: List<T>): T? {
         Assert.isTrue(
-                contributions.size >= 1,
+                contributions.size <= 1,
                 "Expected only one active contribution, but found ${contributions.size}"
         )
         return if (contributions.size > 0) contributions[0] else null

@@ -124,10 +124,14 @@ open class StoreService @Autowired constructor(
             storeNameContributionRepository.save(currentContribution)
         }
 
+        // Edit name
+        store.name = name
+
         // Create name contribution
         var storeNameContribution = StoreNameContribution()
         storeNameContribution.uuid = CryptoUtil().uuid()
         storeNameContribution.client = client
+        storeNameContribution.store = store
         storeNameContribution.name = name
 
         // Glue it together
@@ -176,10 +180,15 @@ open class StoreService @Autowired constructor(
             )
         }
 
+        // Assign company
+        store.company = company
+        company.stores.add(store)
+
         // Create company contribution
         var storeCompanyContribution = StoreCompanyContribution()
         storeCompanyContribution.uuid = CryptoUtil().uuid()
         storeCompanyContribution.client = client
+        storeCompanyContribution.store = store
         storeCompanyContribution.company = company
 
         // Glue it together

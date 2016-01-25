@@ -117,10 +117,14 @@ open class CompanyService @Autowired constructor(
             companyNameContributionRepository.save(currentContribution)
         }
 
+        // Edit name
+        company.name = name
+
         // Create name contribution
         var companyNameContribution = CompanyNameContribution()
         companyNameContribution.uuid = CryptoUtil().uuid()
         companyNameContribution.client = client
+        companyNameContribution.company = company
         companyNameContribution.name = name
 
         // Glue it together
@@ -149,16 +153,6 @@ open class CompanyService @Autowired constructor(
     open fun companyNameContribution(company: Company): CompanyNameContribution? {
         val contributions = companyNameContributionRepository.findByCompanyUuidAndEnabled(company.uuid)
         return contributionService.uniqueContribution(contributions)
-    }
-
-    /**
-     * Returns the name of a company.
-     *
-     * @param company   Company
-     * @return          Name of company
-     */
-    open fun companyName(company: Company): String? {
-        return companyNameContribution(company)?.name
     }
 
     /**
