@@ -31,8 +31,15 @@ package dk.etiktak.backend.controller.rest.json
 
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.company.Store
+import dk.etiktak.backend.model.infochannel.InfoChannel
+import dk.etiktak.backend.model.infosource.InfoSource
+import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
+import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.model.user.SmsVerification
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.company.StoreService
 import dk.etiktak.backend.service.product.ProductService
@@ -40,6 +47,125 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 private val logger = LoggerFactory.getLogger("Jsonifier")
+
+/* Utility methods for adding standard representations of model objects. */
+
+fun HashMap<String, Any>.add(product: Product, client: Client? = null, productService: ProductService): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("product", hashMapOf<String, Any>()
+                    .add("uuid", product.uuid)
+                    .add("name", product.name)
+                    .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
+                            .add("uuid", category.uuid)
+                            .add("name", category.name) })
+                    .add("labels", product.productLabels, { label -> hashMapOf<String, Any>()
+                            .add("uuid", label.uuid)
+                            .add("name", label.name) })
+                    .add("editableItems", {client != null}, {hashMapOf<String, Any>()
+                            .add("name", hashMapOf<String, Any>()
+                                    .add("editable", {productService.canEditProductName(client!!, product)})
+                                    .add("trustScore", {productService.productNameContribution(product)?.trustScore}))})))
+}
+
+fun HashMap<String, Any>.add(company: Company, client: Client? = null, companyService: CompanyService): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("company", hashMapOf<String, Any>()
+                    .add("uuid", company.uuid)
+                    .add("name", company.name)
+                    .add("editableItems", {client != null}, {hashMapOf<String, Any>()
+                            .add("name", hashMapOf<String, Any>()
+                                    .add("editable", {companyService.canEditCompanyName(client!!, company)})
+                                    .add("trustScore", {companyService.companyNameContribution(company)?.trustScore}))})))
+}
+
+fun HashMap<String, Any>.add(store: Store, client: Client? = null, storeService: StoreService): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("store", hashMapOf<String, Any>()
+                    .add("uuid", store.uuid)
+                    .add("name", storeService.storeName(store))
+                    .add("editableItems", {client != null}, {hashMapOf<String, Any>()
+                            .add("name", hashMapOf<String, Any>()
+                                    .add("editable", {storeService.canEditStoreName(client!!, store)})
+                                    .add("trustScore", {storeService.storeNameContribution(store)?.trustScore}))})))
+}
+
+fun HashMap<String, Any>.add(productLabel: ProductLabel): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("productLabel", hashMapOf<String, Any>()
+                    .add("uuid", productLabel.uuid)
+                    .add("name", productLabel.name)))
+}
+
+fun HashMap<String, Any>.add(productCategory: ProductCategory): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("productCategory", hashMapOf<String, Any>()
+                    .add("uuid", productCategory.uuid)
+                    .add("name", productCategory.name)))
+}
+
+fun HashMap<String, Any>.add(recommendation: Recommendation): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("recommendation", hashMapOf<String, Any>()
+                    .add("uuid", recommendation.uuid)
+                    .add("summary", recommendation.summary)
+                    .add("score", recommendation.score.name)))
+}
+
+fun HashMap<String, Any>.add(recommendations: List<Recommendation>): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("recommendations", recommendations, { recommendation -> hashMapOf<String, Any>()
+                    .add("uuid", recommendation.uuid)
+                    .add("summary", recommendation.summary)
+                    .add("score", recommendation.score.name) }))
+}
+
+fun HashMap<String, Any>.add(infoSource: InfoSource): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("infoSource", hashMapOf<String, Any>()
+                    .add("uuid", infoSource.uuid)
+                    .add("friendlyName", infoSource.friendlyName)
+                    .add("urlPrefixes", infoSource.urlPrefixes, { urlPrefix -> urlPrefix.urlPrefix })))
+}
+
+fun HashMap<String, Any>.add(infoSourceReference: InfoSourceReference): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("infoSourceReference", hashMapOf<String, Any>()
+                    .add("uuid", infoSourceReference.uuid)
+                    .add("url", infoSourceReference.url)
+                    .add("title", infoSourceReference.title)
+                    .add("summary", infoSourceReference.summary)
+                    .add("categories", infoSourceReference.productCategories, { category -> hashMapOf<String, Any>()
+                            .add("uuid", category.uuid)
+                            .add("name", category.name) })
+                    .add("labels", infoSourceReference.productLabels, { label -> hashMapOf<String, Any>()
+                            .add("uuid", label.uuid)
+                            .add("name", label.name) })
+                    .add("companies", infoSourceReference.companies, { company -> hashMapOf<String, Any>()
+                            .add("uuid", company.uuid)
+                            .add("name", company.name) })))
+}
+
+fun HashMap<String, Any>.add(infoChannel: InfoChannel): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("infoChannel", hashMapOf<String, Any>()
+                    .add("uuid", infoChannel.uuid)
+                    .add("name", infoChannel.name)))
+}
+
+fun HashMap<String, Any>.add(client: Client): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("client", hashMapOf<String, Any>()
+                    .add("uuid", client.uuid)))
+}
+
+fun HashMap<String, Any>.add(smsVerification: SmsVerification): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("smsVerification", hashMapOf<String, Any>()
+                    .add("challenge", smsVerification.clientChallenge)
+                    .add("status", smsVerification.status.name)))
+}
+
+
 
 /**
  * Adds a result to the hash map.
@@ -157,45 +283,4 @@ fun <T> ArrayList<T>.add(item: T, condition: () -> Boolean) : ArrayList<T> {
         add(item)
     }
     return this
-}
-
-
-
-fun HashMap<String, Any>.add(product: Product, client: Client? = null, productService: ProductService): HashMap<String, Any> {
-    return add(hashMapOf<String, Any>()
-            .add("product", hashMapOf<String, Any>()
-                    .add("uuid", product.uuid)
-                    .add("name", product.name)
-                    .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
-                            .add("uuid", category.uuid)
-                            .add("name", category.name) })
-                    .add("labels", product.productLabels, { label -> hashMapOf<String, Any>()
-                            .add("uuid", label.uuid)
-                            .add("name", label.name) })
-                    .add("editableItems", {client != null}, {hashMapOf<String, Any>()
-                            .add("name", hashMapOf<String, Any>()
-                                    .add("editable", {productService.canEditProductName(client!!, product)})
-                                    .add("trustScore", {productService.productNameContribution(product)?.trustScore}))})))
-}
-
-fun HashMap<String, Any>.add(company: Company, client: Client? = null, companyService: CompanyService): HashMap<String, Any> {
-    return add(hashMapOf<String, Any>()
-            .add("company", hashMapOf<String, Any>()
-                    .add("uuid", company.uuid)
-                    .add("name", company.name)
-                    .add("editableItems", {client != null}, {hashMapOf<String, Any>()
-                            .add("name", hashMapOf<String, Any>()
-                                    .add("editable", {companyService.canEditCompanyName(client!!, company)})
-                                    .add("trustScore", {companyService.companyNameContribution(company)?.trustScore}))})))
-}
-
-fun HashMap<String, Any>.add(store: Store, client: Client? = null, storeService: StoreService): HashMap<String, Any> {
-    return add(hashMapOf<String, Any>()
-            .add("store", hashMapOf<String, Any>()
-                    .add("uuid", store.uuid)
-                    .add("name", storeService.storeName(store))
-                    .add("editableItems", {client != null}, {hashMapOf<String, Any>()
-                            .add("name", hashMapOf<String, Any>()
-                                    .add("editable", {storeService.canEditStoreName(client!!, store)})
-                                    .add("trustScore", {storeService.storeNameContribution(store)?.trustScore}))})))
 }

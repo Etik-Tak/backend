@@ -45,8 +45,6 @@ class ClientRestController @Autowired constructor(
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun create(): HashMap<String, Any> {
         val client = clientService.createClient()
-        return okMap()
-                .add("client", hashMapOf<String, Any>()
-                        .add("uuid", client.uuid))
+        return okMap().add(client)
     }
 }

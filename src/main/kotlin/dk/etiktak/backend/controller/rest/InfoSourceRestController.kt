@@ -51,10 +51,6 @@ class InfoSourceRestController @Autowired constructor(
 
         val infoSource = infoSourceService.createInfoSource(client, urlPrefixList, friendlyName)
 
-        return okMap()
-                .add("infoSource", hashMapOf<String, Any>()
-                        .add("uuid", infoSource.uuid)
-                        .add("friendlyName", infoSource.friendlyName)
-                        .add("urlPrefixes", infoSource.urlPrefixes, { urlPrefix -> urlPrefix.urlPrefix }))
+        return okMap().add(infoSource)
     }
 }

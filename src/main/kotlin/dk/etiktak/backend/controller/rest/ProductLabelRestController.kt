@@ -30,7 +30,6 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
-import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductLabelService
 import org.springframework.beans.factory.annotation.Autowired
@@ -51,7 +50,7 @@ class ProductLabelRestController @Autowired constructor(
             @RequestParam uuid: String): HashMap<String, Any> {
         val productLabel = productLabelService.getProductLabelByUuid(uuid) ?: return notFoundMap("Product label")
 
-        return productLabelOkMap(productLabel)
+        return okMap().add(productLabel)
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
@@ -62,13 +61,6 @@ class ProductLabelRestController @Autowired constructor(
 
         val productLabel = productLabelService.createProductLabel(client, name)
 
-        return productLabelOkMap(productLabel)
-    }
-
-    fun productLabelOkMap(productLabel: ProductLabel): HashMap<String, Any> {
-        return okMap()
-                .add("productLabel", hashMapOf<String, Any>()
-                        .add("uuid", productLabel.uuid)
-                        .add("name", productLabel.name))
+        return okMap().add(productLabel)
     }
 }
