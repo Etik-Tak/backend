@@ -32,10 +32,7 @@ import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
-import dk.etiktak.backend.repository.contribution.ProductCategoryContributionRepository
-import dk.etiktak.backend.repository.contribution.ProductCompanyContributionRepository
-import dk.etiktak.backend.repository.contribution.ProductLabelContributionRepository
-import dk.etiktak.backend.repository.contribution.ProductNameContributionRepository
+import dk.etiktak.backend.repository.contribution.*
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.*
 import dk.etiktak.backend.repository.user.ClientRepository
@@ -60,9 +57,11 @@ open class ProductService @Autowired constructor(
         private val locationRepository: LocationRepository,
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
+        private val productTagRepository: ProductTagRepository,
         private val productNameContributionRepository: ProductNameContributionRepository,
         private val productCategoryContributionRepository: ProductCategoryContributionRepository,
         private val productLabelContributionRepository: ProductLabelContributionRepository,
+        private val productTagContributionRepository: ProductTagContributionRepository,
         private val productCompanyContributionRepository: ProductCompanyContributionRepository,
         private val companyRepository: CompanyRepository,
         private val contributionService: ContributionService) {
@@ -108,16 +107,18 @@ open class ProductService @Autowired constructor(
      * @param name          Name of product
      * @param categories    Product categories
      * @param labels        Product labels
+     * @param tags          Product tags
      * @param companies     Companies
-     * @param modifyValues  Function called with modified client, product categories, product labels and companies
+     * @param modifyValues  Function called with modified client, product categories, product labels, product tags and companies
      * @return              Created product
      */
     @ClientVerified
     open fun createProduct(inClient: Client, barcode: String, barcodeType: Product.BarcodeType?, name: String,
                            categories: List<ProductCategory> = listOf(),
                            labels: List<ProductLabel> = listOf(),
+                           tags: List<ProductTag> = listOf(),
                            companies: List<Company> = listOf(),
-                           modifyValues: (Client, List<ProductCategory>, List<ProductLabel>, List<Company>) -> Unit = { client, productCategories, productLabels, companies -> Unit}): Product {
+                           modifyValues: (Client, List<ProductCategory>, List<ProductLabel>, List<ProductTag>, List<Company>) -> Unit = { client, productCategories, productLabels, productTags, companies -> Unit}): Product {
 
         var client = inClient
 
@@ -147,6 +148,13 @@ open class ProductService @Autowired constructor(
                     modifyValues = { modifiedClient, modifiedProduct, modifiedLabel -> client = modifiedClient; product = modifiedProduct; modifiedLabels.add(modifiedLabel)})
         }
 
+        // Assign tags
+        var modifiedTags: MutableList<ProductTag> = arrayListOf()
+        for (productTag in tags) {
+            assignTagToProduct(client, product, productTag,
+                    modifyValues = { modifiedClient, modifiedProduct, modifiedTag -> client = modifiedClient; product = modifiedProduct; modifiedTags.add(modifiedTag)})
+        }
+
         // Assign companies
         var modifiedCompanies: MutableList<Company> = arrayListOf()
         for (company in companies) {
@@ -154,7 +162,7 @@ open class ProductService @Autowired constructor(
                     modifyValues = {modifiedClient, modifiedProduct, modifiedCompany -> client = modifiedClient; product = modifiedProduct; modifiedCompanies.add(modifiedCompany)})
         }
 
-        modifyValues(client, modifiedCategories, modifiedLabels, modifiedCompanies)
+        modifyValues(client, modifiedCategories, modifiedLabels, modifiedTags, modifiedCompanies)
 
         return product
     }
@@ -306,11 +314,11 @@ open class ProductService @Autowired constructor(
     }
 
     /**
-     * Assigns a category to a product.
+     * Assigns a label to a product.
      *
      * @param inClient            Client
      * @param inProduct           Product
-     * @param inProductLabel      Product category
+     * @param inProductLabel      Product label
      * @param modifyValues        Function called with modified client, product and product label
      * @return                    Product label contribution
      */
@@ -364,6 +372,64 @@ open class ProductService @Autowired constructor(
         return productLabelContribution
     }
 
+    /**
+     * Assigns a tag to a product.
+     *
+     * @param inClient            Client
+     * @param inProduct           Product
+     * @param inProductTag        Product tag
+     * @param modifyValues        Function called with modified client, product and product tag
+     * @return                    Product tag contribution
+     */
+    @ClientVerified
+    open fun assignTagToProduct(inClient: Client, inProduct: Product, inProductTag: ProductTag, modifyValues: (Client, Product, ProductTag) -> Unit = { client, product, productTag -> Unit}): ProductTagContribution {
+
+        var client = inClient
+        var product = inProduct
+        var productTag = inProductTag
+
+        // Get current tag contribution
+        val contributions = productTagContributionRepository.findByProductUuidAndProductTagUuidAndEnabled(product.uuid, productTag.uuid)
+        val currentContribution = contributionService.uniqueContribution(contributions)
+
+        currentContribution?.let {
+
+            // Make sure it's disabled
+            Assert.isTrue(
+                    !currentContribution.enabled,
+                    "Cannot assign product tag with UUID ${currentContribution.uuid} to product with UUID ${product.uuid}; it's already there and enabled!"
+            )
+        }
+
+        // Assign tag
+        product.productTags.add(productTag)
+        productTag.products.add(product)
+
+        // Create tag contribution
+        var productTagContribution = ProductTagContribution()
+        productTagContribution.uuid = CryptoUtil().uuid()
+        productTagContribution.client = client
+        productTagContribution.product = product
+        productTagContribution.productTag = productTag
+
+        // Glue it together
+        productTag.contributions.add(productTagContribution)
+        product.contributions.add(productTagContribution)
+        client.contributions.add(productTagContribution)
+
+        // Save it all
+        productTag = productTagRepository.save(productTag)
+        client = clientRepository.save(client)
+        product = productRepository.save(product)
+        productTagContribution = productTagContributionRepository.save(productTagContribution)
+
+        // Update trust
+        contributionService.updateTrust(productTagContribution)
+
+        modifyValues(client, product, productTag)
+
+        return productTagContribution
+    }
 
     /**
      * Assigns a company to a product.

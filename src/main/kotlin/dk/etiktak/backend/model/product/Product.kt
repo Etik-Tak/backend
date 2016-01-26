@@ -83,6 +83,14 @@ class Product constructor() : BaseModel() {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
+            name="product_productTag",
+            joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
+            inverseJoinColumns=arrayOf(JoinColumn(name="product_tag_id", referencedColumnName="product_tag_id")))
+    @Column(name = "product_tags")
+    var productTags: MutableSet<ProductTag> = HashSet()
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
             name="product_company",
             joinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")),
             inverseJoinColumns=arrayOf(JoinColumn(name="company_id", referencedColumnName="company_id")))
