@@ -181,68 +181,40 @@ class ProductTrustTest : BaseRestTest() {
     @Test
     fun clientTrustLevelAndProductTrustScoreIsUpdatedOnReceivingNewProductVote() {
 
-        var currentClientTrust = clientTrustLevel(client1Uuid)
-        var currentProductTrust = productNameTrustLevel(product1Uuid)
-
         // Check initial trust values
         Assert.isTrue(
-                currentClientTrust == ContributionService.initialClientTrustLevel,
+                clientTrustLevel(client1Uuid) == ContributionService.initialClientTrustLevel,
                 "Client trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${clientTrustLevel(client1Uuid)}"
         )
         Assert.isTrue(
-                currentProductTrust == ContributionService.initialClientTrustLevel,
+                productNameTrustLevel(product1Uuid) == ContributionService.initialClientTrustLevel,
                 "Product trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${productNameTrustLevel(product1Uuid)}"
         )
 
         // Perform 20 trusted votes on product and see that trust increases
-        for (i in 1..20) {
-            val clientUuid = createAndSaveClient()
-            mockMvc().perform(
-                    post(serviceEndpoint("/trust/name/"))
-                            .param("clientUuid", clientUuid)
-                            .param("productUuid", product1Uuid)
-                            .param("vote", TrustVote.TrustVoteType.Trusted.name))
-                    .andExpect(status().isOk)
-
-            // Check that trust values have increased
+        trustVoteProduct(productUuid = product1Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
-                    clientTrustLevel(client1Uuid) >= currentClientTrust,
-                    "Client trust level expected to increase from ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}. Iteration ${i}."
+                    clientTrustScoreDelta >= 0.0,
+                    "Client trust level expected to increase, but delta was $clientTrustScoreDelta"
             )
             Assert.isTrue(
-                    productNameTrustLevel(product1Uuid) >= currentProductTrust,
-                    "Product trust level expected to increase from ${currentProductTrust}, but was ${productNameTrustLevel(product1Uuid)}. Iteration ${i}."
+                    productTrustScoreDelta >= 0.0,
+                    "Product trust level expected to increase, but delta was $productTrustScoreDelta"
             )
-
-            // Update trust
-            currentClientTrust = clientTrustLevel(client1Uuid)
-            currentProductTrust = productNameTrustLevel(product1Uuid)
-        }
+        })
 
         // Perform 20 not-trusted votes on product and see that trust decreases
-        for (i in 1..20) {
-            val clientUuid = createAndSaveClient()
-            mockMvc().perform(
-                    post(serviceEndpoint("/trust/name/"))
-                            .param("clientUuid", clientUuid)
-                            .param("productUuid", product1Uuid)
-                            .param("vote", TrustVote.TrustVoteType.NotTrusted.name))
-                    .andExpect(status().isOk)
+        trustVoteProduct(productUuid = product1Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
 
-            // Check that trust values have decreased
             Assert.isTrue(
-                    clientTrustLevel(client1Uuid) <= currentClientTrust,
-                    "Client trust level expected to decrease from ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}. Iteration ${i}."
+                    clientTrustScoreDelta <= 0.0,
+                    "Client trust level expected to decrease, but delta was $clientTrustScoreDelta"
             )
             Assert.isTrue(
-                    productNameTrustLevel(product1Uuid) <= currentProductTrust,
-                    "Product trust level expected to decrease from ${currentProductTrust}, but was ${productNameTrustLevel(product1Uuid)}. Iteration ${i}."
+                    productTrustScoreDelta <= 0.0,
+                    "Product trust level expected to decrease, but delta was $productTrustScoreDelta"
             )
-
-            // Update trust
-            currentClientTrust = clientTrustLevel(client1Uuid)
-            currentProductTrust = productNameTrustLevel(product1Uuid)
-        }
+        })
     }
 
     /**
@@ -251,11 +223,9 @@ class ProductTrustTest : BaseRestTest() {
     @Test
     fun clientTrustLevelIsUpdatedWhenReceivingNewProductVoteOnSameProductAsVotedOnByClient() {
 
-        var currentClientTrust = clientTrustLevel(client1Uuid)
-
         // Check initial trust values
         Assert.isTrue(
-                currentClientTrust == ContributionService.initialClientTrustLevel,
+                clientTrustLevel(client1Uuid) == ContributionService.initialClientTrustLevel,
                 "Client trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${clientTrustLevel(client1Uuid)}"
         )
 
@@ -268,44 +238,20 @@ class ProductTrustTest : BaseRestTest() {
                 .andExpect(status().isOk)
 
         // Perform 20 trusted votes on product and see that trust increases
-        for (i in 1..20) {
-            val clientUuid = createAndSaveClient()
-            mockMvc().perform(
-                    post(serviceEndpoint("/trust/name/"))
-                            .param("clientUuid", clientUuid)
-                            .param("productUuid", product2Uuid)
-                            .param("vote", TrustVote.TrustVoteType.Trusted.name))
-                    .andExpect(status().isOk)
-
-            // Check that trust values have increased
+        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
-                    clientTrustLevel(client1Uuid) >= currentClientTrust,
-                    "Client trust level expected to increase from ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}. Iteration ${i}."
+                    clientTrustScoreDelta >= 0.0,
+                    "Client trust level expected to increase, but delta was $clientTrustScoreDelta"
             )
-
-            // Update trust
-            currentClientTrust = clientTrustLevel(client1Uuid)
-        }
+        })
 
         // Perform 20 not-trusted votes on product and see that trust decreases
-        for (i in 1..20) {
-            val clientUuid = createAndSaveClient()
-            mockMvc().perform(
-                    post(serviceEndpoint("/trust/name/"))
-                            .param("clientUuid", clientUuid)
-                            .param("productUuid", product2Uuid)
-                            .param("vote", TrustVote.TrustVoteType.NotTrusted.name))
-                    .andExpect(status().isOk)
-
-            // Check that trust values have decreased
+        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
-                    clientTrustLevel(client1Uuid) <= currentClientTrust,
-                    "Client trust level expected to decrease from ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}. Iteration ${i}."
+                    clientTrustScoreDelta <= 0.0,
+                    "Client trust level expected to decrease, but delta was $clientTrustScoreDelta"
             )
-
-            // Update trust
-            currentClientTrust = clientTrustLevel(client1Uuid)
-        }
+        })
     }
 
     /**
@@ -350,29 +296,17 @@ class ProductTrustTest : BaseRestTest() {
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
 
-        var currentClientTrust = clientTrustLevel(client1Uuid)
-
         // Perform 20 not-trusted votes on product and see that trust decreases
-        for (i in 1..20) {
-            val clientUuid = createAndSaveClient()
-            mockMvc().perform(
-                    post(serviceEndpoint("/trust/name/"))
-                            .param("clientUuid", clientUuid)
-                            .param("productUuid", product2Uuid)
-                            .param("vote", TrustVote.TrustVoteType.NotTrusted.name))
-                    .andExpect(status().isOk)
-
-            // Check that trust values have decreased
+        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
-                    clientTrustLevel(client1Uuid) <= currentClientTrust,
-                    "Client trust level expected to decrease from ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}. Iteration ${i}."
+                    clientTrustScoreDelta <= 0.0,
+                    "Client trust level expected to decrease, but delta was $clientTrustScoreDelta"
             )
-
-            // Update trust
-            currentClientTrust = clientTrustLevel(client1Uuid)
-        }
+        })
 
         // Make another client edit product
+        var initialClientTrust = clientTrustLevel(client1Uuid)
+
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
                         .param("clientUuid", client2Uuid)
@@ -382,48 +316,48 @@ class ProductTrustTest : BaseRestTest() {
 
         // Check trust unaffected
         Assert.isTrue(
-                clientTrustLevel(client1Uuid) == currentClientTrust,
-                "Client trust level expected to be the same as before edit: ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}"
+                clientTrustLevel(client1Uuid) == initialClientTrust,
+                "Client trust level expected to be the same as before edit: ${initialClientTrust}, but was ${clientTrustLevel(client1Uuid)}"
         )
 
         // Perform 20 trusted votes on product and see that trust stays the same
-        for (i in 1..20) {
-            val clientUuid = createAndSaveClient()
-            mockMvc().perform(
-                    post(serviceEndpoint("/trust/name/"))
-                            .param("clientUuid", clientUuid)
-                            .param("productUuid", product2Uuid)
-                            .param("vote", TrustVote.TrustVoteType.Trusted.name))
-                    .andExpect(status().isOk)
-
-            // Check that trust values have increased
+        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
-                    clientTrustLevel(client1Uuid) == currentClientTrust,
-                    "Client trust level expected to be the same as before vote: ${currentClientTrust}, but was ${clientTrustLevel(client1Uuid)}"
+                    clientTrustScoreDelta == 0.0,
+                    "Client trust level expected to stay the same, but delta was $clientTrustScoreDelta"
             )
-
-            // Update trust
-            currentClientTrust = clientTrustLevel(client1Uuid)
-        }
+        })
     }
 
 
-    /*private fun trustVoteProductAndPerformAssertion(productUuid: String, trustVoteType: TrustVote.TrustVoteType, count: Int, assertion: (Int) -> Unit) {
+
+    private fun trustVoteProduct(productUuid: String, clientUuid: String, createClient: Boolean = true, trustVoteType: TrustVote.TrustVoteType, count: Int,
+                                 assertion: (productTrustScoreDelta: Double, clientTrustScoreDelta: Double) -> Unit) {
+
+        var currentClientTrust = clientTrustLevel(clientUuid)
+        var currentProductTrust = productNameTrustLevel(productUuid)
+
         for (i in 1..count) {
-            val clientUuid = createAndSaveClient()
+
+            // Create client
+            val currentClientUuid = if (createClient) createAndSaveClient() else clientUuid
+
+            // Vote
             mockMvc().perform(
                     post(serviceEndpoint("/trust/name/"))
-                            .param("clientUuid", clientUuid)
+                            .param("clientUuid", currentClientUuid)
                             .param("productUuid", productUuid)
                             .param("vote", trustVoteType.name))
                     .andExpect(status().isOk)
 
-            assertion(clientTrustLevel(client1Uuid));
+            // Assert
+            assertion(productNameTrustLevel(productUuid) - currentProductTrust, clientTrustLevel(clientUuid) - currentClientTrust);
 
             // Update trust
-            currentClientTrust = clientTrustLevel(client1Uuid)
+            currentClientTrust = clientTrustLevel(clientUuid)
+            currentProductTrust = productNameTrustLevel(productUuid)
         }
-    }*/
+    }
 
     private fun setClientTrustLevel(clientUuid: String, trustLevel: Double) {
         val client = clientRepository!!.findByUuid(clientUuid)
