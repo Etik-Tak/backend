@@ -35,11 +35,13 @@ import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.product.ProductCategory
+import dk.etiktak.backend.model.product.ProductTag
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
 import dk.etiktak.backend.service.product.ProductService
+import dk.etiktak.backend.service.product.ProductTagService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -50,6 +52,7 @@ class ProductRestController @Autowired constructor(
         private val productService: ProductService,
         private val productCategoryService: ProductCategoryService,
         private val productLabelService: ProductLabelService,
+        private val productTagService: ProductTagService,
         private val companyService: CompanyService,
         private val clientService: ClientService) : BaseRestController() {
 
@@ -77,6 +80,7 @@ class ProductRestController @Autowired constructor(
             @RequestParam(required = false) barcodeType: String? = null,
             @RequestParam(required = false) categoryUuidList: List<String>? = null,
             @RequestParam(required = false) labelUuidList: List<String>? = null,
+            @RequestParam(required = false) tagUuidList: List<String>? = null,
             @RequestParam(required = false) companyUuidList: List<String>?): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -99,6 +103,15 @@ class ProductRestController @Autowired constructor(
             }
         }
 
+        // List of product tags
+        val productTags = ArrayList<ProductTag>()
+        tagUuidList?.let {
+            for (productTagUuid in tagUuidList) {
+                val productTag = productTagService.getProductTagByUuid(productTagUuid) ?: continue
+                productTags.add(productTag)
+            }
+        }
+
         // List of companies
         val companies = ArrayList<Company>()
         companyUuidList?.let {
@@ -116,6 +129,7 @@ class ProductRestController @Autowired constructor(
                 name,
                 productCategories,
                 productLabels,
+                productTags,
                 companies)
 
         return okMap().add(product, client, productService)
@@ -125,12 +139,14 @@ class ProductRestController @Autowired constructor(
     fun editProduct(
             @RequestParam clientUuid: String,
             @RequestParam productUuid: String,
-            @RequestParam(required = false) name: String): HashMap<String, Any> {
+            @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 
-        productService.editProductName(client, product, name, modifyValues = { modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
+        name?.let {
+            productService.editProductName(client, product, name, modifyValues = { modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct })
+        }
 
         return okMap().add(product, client, productService)
     }
@@ -161,6 +177,21 @@ class ProductRestController @Autowired constructor(
 
         productService.assignLabelToProduct(client, product, productLabel,
                 modifyValues = { modifiedClient, modifiedProduct, modifiedProductLabel -> client = modifiedClient; product = modifiedProduct; productLabel = modifiedProductLabel})
+
+        return okMap().add(product, client, productService)
+    }
+
+    @RequestMapping(value = "/assign/tag/", method = arrayOf(RequestMethod.POST))
+    fun assignTagToProduct(
+            @RequestParam clientUuid: String,
+            @RequestParam productUuid: String,
+            @RequestParam tagUuid: String): HashMap<String, Any> {
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
+        var productTag = productTagService.getProductTagByUuid(tagUuid) ?: return notFoundMap("Product tag")
+
+        productService.assignTagToProduct(client, product, productTag,
+                modifyValues = { modifiedClient, modifiedProduct, modifiedProductTag -> client = modifiedClient; product = modifiedProduct; productTag = modifiedProductTag})
 
         return okMap().add(product, client, productService)
     }

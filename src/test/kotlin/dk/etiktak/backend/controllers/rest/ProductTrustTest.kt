@@ -191,8 +191,8 @@ class ProductTrustTest : BaseRestTest() {
                 "Product trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${productNameTrustLevel(product1Uuid)}"
         )
 
-        // Perform 20 trusted votes on product and see that trust increases
-        trustVoteProduct(productUuid = product1Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
+        // Perform 5 trusted votes on product and see that trust increases
+        trustVoteProduct(productUuid = product1Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 5, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
                     clientTrustScoreDelta >= 0.0,
                     "Client trust level expected to increase, but delta was $clientTrustScoreDelta"
@@ -203,8 +203,8 @@ class ProductTrustTest : BaseRestTest() {
             )
         })
 
-        // Perform 20 not-trusted votes on product and see that trust decreases
-        trustVoteProduct(productUuid = product1Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
+        // Perform 5 not-trusted votes on product and see that trust decreases
+        trustVoteProduct(productUuid = product1Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 5, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
 
             Assert.isTrue(
                     clientTrustScoreDelta <= 0.0,
@@ -237,16 +237,16 @@ class ProductTrustTest : BaseRestTest() {
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
 
-        // Perform 20 trusted votes on product and see that trust increases
-        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
+        // Perform 5 trusted votes on product and see that trust increases
+        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 5, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
                     clientTrustScoreDelta >= 0.0,
                     "Client trust level expected to increase, but delta was $clientTrustScoreDelta"
             )
         })
 
-        // Perform 20 not-trusted votes on product and see that trust decreases
-        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
+        // Perform 5 not-trusted votes on product and see that trust decreases
+        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 5, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
                     clientTrustScoreDelta <= 0.0,
                     "Client trust level expected to decrease, but delta was $clientTrustScoreDelta"
@@ -296,8 +296,8 @@ class ProductTrustTest : BaseRestTest() {
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
 
-        // Perform 20 not-trusted votes on product and see that trust decreases
-        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
+        // Perform 5 not-trusted votes on product and see that trust decreases
+        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 5, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
                     clientTrustScoreDelta <= 0.0,
                     "Client trust level expected to decrease, but delta was $clientTrustScoreDelta"
@@ -320,8 +320,8 @@ class ProductTrustTest : BaseRestTest() {
                 "Client trust level expected to be the same as before edit: ${initialClientTrust}, but was ${clientTrustLevel(client1Uuid)}"
         )
 
-        // Perform 20 trusted votes on product and see that trust stays the same
-        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 20, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
+        // Perform 5 trusted votes on product and see that trust stays the same
+        trustVoteProduct(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 5, assertion = {productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
                     clientTrustScoreDelta == 0.0,
                     "Client trust level expected to stay the same, but delta was $clientTrustScoreDelta"

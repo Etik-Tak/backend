@@ -28,10 +28,7 @@ package dk.etiktak.backend.controllers.rest
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
-import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
-import dk.etiktak.backend.model.recommendation.ProductRecommendation
-import dk.etiktak.backend.model.recommendation.RecommendationScore
+import dk.etiktak.backend.model.recommendation.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -72,6 +69,9 @@ class RecommendationServiceTest : BaseRestTest() {
 
         productLabel1Uuid = createAndSaveProductLabel(client1Uuid, product1Uuid)
         productLabel2Uuid = createAndSaveProductLabel(client2Uuid, product2Uuid)
+
+        productTag1Uuid = createAndSaveProductTag(client1Uuid, product1Uuid)
+        productTag2Uuid = createAndSaveProductTag(client2Uuid, product2Uuid)
     }
 
     /**
@@ -213,6 +213,53 @@ class RecommendationServiceTest : BaseRestTest() {
         Assert.assertEquals(
                 productLabel2Uuid,
                 (recommendations.last() as ProductLabelRecommendation).productLabel.uuid)
+    }
+
+    /**
+     * Test that we can create a product tag recommendation.
+     */
+    @Test
+    fun createProductTagRecommendation() {
+        mockMvc().perform(
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
+                        .param("summary", "Test tag 1")
+                        .param("score", RecommendationScore.THUMBS_UP.name)
+                        .param("productTagUuid", productTag1Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.recommendation.uuid", notNullValue()))
+                .andExpect(jsonPath("$.recommendation.summary", `is`("Test tag 1")))
+                .andExpect(jsonPath("$.recommendation.score", `is`(RecommendationScore.THUMBS_UP.name)))
+
+        mockMvc().perform(
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
+                        .param("summary", "Test tag 2")
+                        .param("score", RecommendationScore.THUMBS_DOWN.name)
+                        .param("productTagUuid", productTag2Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.recommendation.uuid", notNullValue()))
+                .andExpect(jsonPath("$.recommendation.summary", `is`("Test tag 2")))
+                .andExpect(jsonPath("$.recommendation.score", `is`(RecommendationScore.THUMBS_DOWN.name)))
+
+        val recommendations = recommendationRepository!!.findAll()
+        Assert.assertEquals(
+                2,
+                recommendations.collectionSizeOrDefault(0))
+
+        Assert.assertEquals(
+                productTag1Uuid,
+                (recommendations.first() as ProductTagRecommendation).productTag.uuid)
+
+        Assert.assertEquals(
+                productTag2Uuid,
+                (recommendations.last() as ProductTagRecommendation).productTag.uuid)
     }
 
     /**

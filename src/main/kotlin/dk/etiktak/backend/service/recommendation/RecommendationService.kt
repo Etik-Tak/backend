@@ -29,15 +29,18 @@ import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.product.ProductTag
 import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.product.ProductRepository
+import dk.etiktak.backend.repository.product.ProductTagRepository
 import dk.etiktak.backend.repository.recommendation.ProductCategoryRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRepository
 import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
+import dk.etiktak.backend.repository.recommendation.ProductTagRecommendationRepository
 import dk.etiktak.backend.service.infochannel.InfoChannelService
 import dk.etiktak.backend.service.product.ProductService
 import dk.etiktak.backend.service.security.ClientVerified
@@ -55,9 +58,11 @@ open class RecommendationService @Autowired constructor(
         private val productRecommendationRepository: ProductRecommendationRepository,
         private val productCategoryRecommendationRepository: ProductCategoryRecommendationRepository,
         private val productLabelRecommendationRepository: ProductLabelRecommendationRepository,
+        private val productTagRecommendationRepository: ProductTagRecommendationRepository,
         private val productRepository: ProductRepository,
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
+        private val productTagRepository: ProductTagRepository,
         private val infoChannelService: InfoChannelService,
         private val infoChannelRepository: InfoChannelRepository) {
 
@@ -94,10 +99,13 @@ open class RecommendationService @Autowired constructor(
                 productLabelListToUuidList(product.productLabels),
                 infoChannelListToUuidList(infoChannels)
         )
+        val productTagRecommendations = productTagRecommendationRepository.findByProductTagUuidInAndInfoChannelUuidIn(
+                productTagListToUuidList(product.productTags),
+                infoChannelListToUuidList(infoChannels)
+        )
 
-        return productRecommendations + productCategoryRecommendations + productLabelRecommendations
+        return productRecommendations + productCategoryRecommendations + productLabelRecommendations + productTagRecommendations
     }
-
 
     /**
      * Create product recommendation.
@@ -213,6 +221,44 @@ open class RecommendationService @Autowired constructor(
         return modifiedRecommandation
     }
 
+    /**
+     * Create product tag recommendation.
+     *
+     * @param client           Client
+     * @param infoChannel      Info channel
+     * @param summary          Summary
+     * @param score            Score
+     * @param productTag       Product tag
+     * @param modifyValues     Function called with modified info channel and product tag
+     * @return                 Created recommendation
+     */
+    @ClientVerified
+    open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productTag: ProductTag,
+                                  modifyValues: (InfoChannel, ProductTag) -> Unit = { infoChannel, productTag -> Unit}): Recommendation {
+
+        // Security checks
+        Assert.isTrue(
+                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
+                "Client not member of info channel with UUID: ${infoChannel.uuid}")
+
+        // Create recommendation
+        val recommendation = ProductTagRecommendation()
+        recommendation.productTag = productTag
+
+        setupRecommendation(client, infoChannel, recommendation, summary, score)
+
+        productTag.recommendations.add(recommendation)
+
+        // Save it all
+        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        val modifiedProductTag = productTagRepository.save(productTag)
+        val modifiedRecommandation = productTagRecommendationRepository.save(recommendation)
+
+        modifyValues(modifiedInfoChannel, modifiedProductTag)
+
+        return modifiedRecommandation
+    }
+
 
 
     /* Helper methods */
@@ -256,5 +302,13 @@ open class RecommendationService @Autowired constructor(
             productLabelUuids.add(productLabel.uuid)
         }
         return productLabelUuids
+    }
+
+    open fun productTagListToUuidList(productTags: Set<ProductTag>): List<String> {
+        val productTagUuids: MutableList<String> = ArrayList()
+        for (productTag in productTags) {
+            productTagUuids.add(productTag.uuid)
+        }
+        return productTagUuids
     }
 }

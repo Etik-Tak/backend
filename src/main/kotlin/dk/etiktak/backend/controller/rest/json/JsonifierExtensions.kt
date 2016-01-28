@@ -37,6 +37,7 @@ import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.product.ProductTag
 import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.model.user.SmsVerification
@@ -61,6 +62,9 @@ fun HashMap<String, Any>.add(product: Product, client: Client? = null, productSe
                     .add("labels", product.productLabels, { label -> hashMapOf<String, Any>()
                             .add("uuid", label.uuid)
                             .add("name", label.name) })
+                    .add("tags", product.productTags, { tag -> hashMapOf<String, Any>()
+                            .add("uuid", tag.uuid)
+                            .add("name", tag.name) })
                     .add("editableItems", {client != null}, {hashMapOf<String, Any>()
                             .add("name", hashMapOf<String, Any>()
                                     .add("editable", {productService.canEditProductName(client!!, product)})
@@ -89,6 +93,13 @@ fun HashMap<String, Any>.add(store: Store, client: Client? = null, storeService:
                                     .add("trustScore", {storeService.storeNameContribution(store)?.trustScore}))})))
 }
 
+fun HashMap<String, Any>.add(productCategory: ProductCategory): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("productCategory", hashMapOf<String, Any>()
+                    .add("uuid", productCategory.uuid)
+                    .add("name", productCategory.name)))
+}
+
 fun HashMap<String, Any>.add(productLabel: ProductLabel): HashMap<String, Any> {
     return add(hashMapOf<String, Any>()
             .add("productLabel", hashMapOf<String, Any>()
@@ -96,11 +107,11 @@ fun HashMap<String, Any>.add(productLabel: ProductLabel): HashMap<String, Any> {
                     .add("name", productLabel.name)))
 }
 
-fun HashMap<String, Any>.add(productCategory: ProductCategory): HashMap<String, Any> {
+fun HashMap<String, Any>.add(productTag: ProductTag): HashMap<String, Any> {
     return add(hashMapOf<String, Any>()
-            .add("productCategory", hashMapOf<String, Any>()
-                    .add("uuid", productCategory.uuid)
-                    .add("name", productCategory.name)))
+            .add("productTag", hashMapOf<String, Any>()
+                    .add("uuid", productTag.uuid)
+                    .add("name", productTag.name)))
 }
 
 fun HashMap<String, Any>.add(recommendation: Recommendation): HashMap<String, Any> {

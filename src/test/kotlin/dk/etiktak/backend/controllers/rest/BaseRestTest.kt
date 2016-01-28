@@ -38,13 +38,10 @@ import dk.etiktak.backend.repository.infosource.InfoSourceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceUrlPrefixRepository
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.*
-import dk.etiktak.backend.repository.recommendation.ProductCategoryRecommendationRepository
-import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRepository
-import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
-import dk.etiktak.backend.repository.recommendation.RecommendationRepository
 import dk.etiktak.backend.repository.contribution.ContributionRepository
 import dk.etiktak.backend.repository.contribution.ProductNameContributionRepository
 import dk.etiktak.backend.repository.contribution.TrustVoteRepository
+import dk.etiktak.backend.repository.recommendation.*
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository
@@ -89,6 +86,9 @@ open class BaseRestTest {
 
     var productLabel1Uuid = ""
     var productLabel2Uuid = ""
+
+    var productTag1Uuid = ""
+    var productTag2Uuid = ""
 
     var infoSource1Uuid = ""
     var infoSource2Uuid = ""
@@ -173,15 +173,6 @@ open class BaseRestTest {
     val recommendationRepository: RecommendationRepository? = null
 
     @Autowired
-    val productRecommendationRepository: ProductRecommendationRepository? = null
-
-    @Autowired
-    val productCategoryRecommendationRepository: ProductCategoryRecommendationRepository? = null
-
-    @Autowired
-    val productLabelRecommendationRepository: ProductLabelRecommendationRepository? = null
-
-    @Autowired
     val changeLogRepository: ChangeLogRepository? = null
 
     @get:Rule
@@ -208,9 +199,6 @@ open class BaseRestTest {
         contributionRepository!!.deleteAll()
 
         recommendationRepository!!.deleteAll()
-        productRecommendationRepository!!.deleteAll()
-        productCategoryRecommendationRepository!!.deleteAll()
-        productLabelRecommendationRepository!!.deleteAll()
 
         infoSourceUrlPrefixRepository!!.deleteAll()
         infoSourceReferenceRepository!!.deleteAll()
@@ -282,6 +270,25 @@ open class BaseRestTest {
         }
 
         return labelUuid
+    }
+
+    fun createAndSaveProductTag(clientUuid: String, name: String, productUuid: String? = null): String {
+        val tagUuid = postAndExtract(ProductTagServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "name" to name),
+                "$.productTag.uuid")
+
+        productUuid?.let {
+            postAndExtract(ProductServiceTest().serviceEndpoint("assign/tag/"),
+                    hashMapOf(
+                            "clientUuid" to clientUuid,
+                            "productUuid" to productUuid,
+                            "tagUuid" to tagUuid),
+                    "$.message")
+        }
+
+        return tagUuid
     }
 
     fun createAndSaveInfoChannel(clientUuid: String, name: String = "Test info channel"): String {
