@@ -32,6 +32,7 @@ package dk.etiktak.backend.controller.rest
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.recommendation.RecommendationScore
 import dk.etiktak.backend.service.client.ClientService
+import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
@@ -53,6 +54,7 @@ class RecommendationRestController @Autowired constructor(
         private val productCategoryService: ProductCategoryService,
         private val productLabelService: ProductLabelService,
         private val productTagService: ProductTagService,
+        private val companyService: CompanyService,
         private val infoChannelService: InfoChannelService,
         private val clientService: ClientService) : BaseRestController() {
 
@@ -78,7 +80,8 @@ class RecommendationRestController @Autowired constructor(
             @RequestParam(required = false) productUuid: String? = null,
             @RequestParam(required = false) productCategoryUuid: String? = null,
             @RequestParam(required = false) productLabelUuid: String? = null,
-            @RequestParam(required = false) productTagUuid: String? = null): HashMap<String, Any> {
+            @RequestParam(required = false) productTagUuid: String? = null,
+            @RequestParam(required = false) companyUuid: String? = null): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid) ?: return notFoundMap("Info channel")
@@ -110,6 +113,13 @@ class RecommendationRestController @Autowired constructor(
         productTagUuid?.let {
             val productTag = productTagService.getProductTagByUuid(productTagUuid) ?: return notFoundMap("Product tag")
             val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productTag)
+            return okMap().add(recommendation)
+        }
+
+        // Create company recommendation
+        companyUuid?.let {
+            val company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
+            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, company)
             return okMap().add(recommendation)
         }
 

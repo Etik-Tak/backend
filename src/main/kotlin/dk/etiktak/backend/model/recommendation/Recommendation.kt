@@ -40,7 +40,8 @@ import javax.persistence.*
 @Table(uniqueConstraints = arrayOf(
         UniqueConstraint(columnNames = arrayOf("product_id", "info_channel_id")),
         UniqueConstraint(columnNames = arrayOf("product_category_id", "info_channel_id")),
-        UniqueConstraint(columnNames = arrayOf("product_label_id", "info_channel_id"))))
+        UniqueConstraint(columnNames = arrayOf("product_label_id", "info_channel_id")),
+        UniqueConstraint(columnNames = arrayOf("product_tag_id", "info_channel_id"))))
 open class Recommendation constructor() : BaseModel() {
 
     @Id

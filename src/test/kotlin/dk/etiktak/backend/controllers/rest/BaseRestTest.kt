@@ -78,6 +78,9 @@ open class BaseRestTest {
     var nonVerifiedClient1Uuid = ""
     var nonVerifiedClient2Uuid = ""
 
+    var company1Uuid = ""
+    var company2Uuid = ""
+
     var product1Uuid = ""
     var product2Uuid = ""
 
@@ -222,6 +225,14 @@ open class BaseRestTest {
         smsVerificationRepository!!.deleteAll()
 
         changeLogRepository!!.deleteAll()
+    }
+
+    fun createAndSaveCompany(clientUuid: String, name: String = "Test company"): String {
+        return postAndExtract(CompanyServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "name" to name),
+                "$.company.uuid")
     }
 
     fun createAndSaveProduct(clientUuid: String, barcode: String, barcodeType: Product.BarcodeType, name: String = "Test product"): String {

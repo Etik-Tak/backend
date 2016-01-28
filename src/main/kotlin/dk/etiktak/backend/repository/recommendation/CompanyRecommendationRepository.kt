@@ -25,13 +25,13 @@
 
 package dk.etiktak.backend.repository.recommendation
 
-import dk.etiktak.backend.model.recommendation.ProductRecommendation
+import dk.etiktak.backend.model.recommendation.CompanyRecommendation
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ProductRecommendationRepository : PagingAndSortingRepository<ProductRecommendation, Long> {
-    fun findByUuid(uuid: String): ProductRecommendation?
-    fun findByProductUuidAndInfoChannelUuid(productUuid: String, infoChannelUuid: String): ProductRecommendation?
-    fun findByProductUuidAndInfoChannelUuidIn(productUuid: String, infoChannelListToUuidList: List<String>): List<ProductRecommendation>
+interface CompanyRecommendationRepository : PagingAndSortingRepository<CompanyRecommendation, Long> {
+    fun findByUuid(uuid: String): CompanyRecommendation?
+    fun findByCompanyUuidAndInfoChannelUuid(companyTagUuid: String, infoChannelUuid: String): CompanyRecommendation?
+    fun findByCompanyUuidInAndInfoChannelUuidIn(companyUuidList: List<String>, infoChannelUuidList: List<String>): List<CompanyRecommendation>
 }

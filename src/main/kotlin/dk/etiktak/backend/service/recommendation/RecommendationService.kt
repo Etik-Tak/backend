@@ -25,6 +25,7 @@
 
 package dk.etiktak.backend.service.recommendation
 
+import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
@@ -32,15 +33,13 @@ import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.product.ProductTag
 import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductTagRepository
-import dk.etiktak.backend.repository.recommendation.ProductCategoryRecommendationRepository
-import dk.etiktak.backend.repository.recommendation.ProductLabelRecommendationRepository
-import dk.etiktak.backend.repository.recommendation.ProductRecommendationRepository
-import dk.etiktak.backend.repository.recommendation.ProductTagRecommendationRepository
+import dk.etiktak.backend.repository.recommendation.*
 import dk.etiktak.backend.service.infochannel.InfoChannelService
 import dk.etiktak.backend.service.product.ProductService
 import dk.etiktak.backend.service.security.ClientVerified
@@ -50,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
+import org.springframework.util.StringUtils
 import java.util.*
 
 @Service
@@ -59,10 +59,12 @@ open class RecommendationService @Autowired constructor(
         private val productCategoryRecommendationRepository: ProductCategoryRecommendationRepository,
         private val productLabelRecommendationRepository: ProductLabelRecommendationRepository,
         private val productTagRecommendationRepository: ProductTagRecommendationRepository,
+        private val companyRecommendationRepository: CompanyRecommendationRepository,
         private val productRepository: ProductRepository,
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
         private val productTagRepository: ProductTagRepository,
+        private val companyRepository: CompanyRepository,
         private val infoChannelService: InfoChannelService,
         private val infoChannelRepository: InfoChannelRepository) {
 
@@ -127,6 +129,11 @@ open class RecommendationService @Autowired constructor(
                 infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
                 "Client not member of info channel with UUID: ${infoChannel.uuid}")
 
+        // Check recommendation does not already exists
+        Assert.isNull(
+                productRecommendationRepository.findByProductUuidAndInfoChannelUuid(product.uuid, infoChannel.uuid),
+                "Info channel with UUID ${infoChannel.uuid} already has a recommandation for product with uuid: ${product.uuid}")
+
         // Create recommendation
         val recommendation = ProductRecommendation()
         recommendation.product = product
@@ -164,6 +171,11 @@ open class RecommendationService @Autowired constructor(
         Assert.isTrue(
                 infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
                 "Client not member of info channel with UUID: ${infoChannel.uuid}")
+
+        // Check recommendation does not already exists
+        Assert.isNull(
+                productCategoryRecommendationRepository.findByProductCategoryUuidAndInfoChannelUuid(productCategory.uuid, infoChannel.uuid),
+                "Info channel with UUID ${infoChannel.uuid} already has a recommandation for category with uuid: ${productCategory.uuid}")
 
         // Create recommendation
         val recommendation = ProductCategoryRecommendation()
@@ -203,6 +215,11 @@ open class RecommendationService @Autowired constructor(
                 infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
                 "Client not member of info channel with UUID: ${infoChannel.uuid}")
 
+        // Check recommendation does not already exists
+        Assert.isNull(
+                productLabelRecommendationRepository.findByProductLabelUuidAndInfoChannelUuid(productLabel.uuid, infoChannel.uuid),
+                "Info channel with UUID ${infoChannel.uuid} already has a recommandation for label with uuid: ${productLabel.uuid}")
+
         // Create recommendation
         val recommendation = ProductLabelRecommendation()
         recommendation.productLabel = productLabel
@@ -241,6 +258,11 @@ open class RecommendationService @Autowired constructor(
                 infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
                 "Client not member of info channel with UUID: ${infoChannel.uuid}")
 
+        // Check recommendation does not already exists
+        Assert.isNull(
+                productTagRecommendationRepository.findByProductTagUuidAndInfoChannelUuid(productTag.uuid, infoChannel.uuid),
+                "Info channel with UUID ${infoChannel.uuid} already has a recommandation for tag with uuid: ${productTag.uuid}")
+
         // Create recommendation
         val recommendation = ProductTagRecommendation()
         recommendation.productTag = productTag
@@ -255,6 +277,49 @@ open class RecommendationService @Autowired constructor(
         val modifiedRecommandation = productTagRecommendationRepository.save(recommendation)
 
         modifyValues(modifiedInfoChannel, modifiedProductTag)
+
+        return modifiedRecommandation
+    }
+
+    /**
+     * Create company recommendation.
+     *
+     * @param client           Client
+     * @param infoChannel      Info channel
+     * @param summary          Summary
+     * @param score            Score
+     * @param company          Company
+     * @param modifyValues     Function called with modified info channel and company
+     * @return                 Created recommendation
+     */
+    @ClientVerified
+    open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, company: Company,
+                                  modifyValues: (InfoChannel, Company) -> Unit = { infoChannel, company -> Unit}): Recommendation {
+
+        // Security checks
+        Assert.isTrue(
+                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
+                "Client not member of info channel with UUID: ${infoChannel.uuid}")
+
+        // Check recommendation does not already exists
+        Assert.isNull(
+                companyRecommendationRepository.findByCompanyUuidAndInfoChannelUuid(company.uuid, infoChannel.uuid),
+                "Info channel with UUID ${infoChannel.uuid} already has a recommandation for company with uuid: ${company.uuid}")
+
+        // Create recommendation
+        val recommendation = CompanyRecommendation()
+        recommendation.company = company
+
+        setupRecommendation(client, infoChannel, recommendation, summary, score)
+
+        company.recommendations.add(recommendation)
+
+        // Save it all
+        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        val modifiedCompany = companyRepository.save(company)
+        val modifiedRecommandation = companyRecommendationRepository.save(recommendation)
+
+        modifyValues(modifiedInfoChannel, modifiedCompany)
 
         return modifiedRecommandation
     }

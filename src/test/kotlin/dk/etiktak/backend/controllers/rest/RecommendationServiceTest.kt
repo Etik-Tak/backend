@@ -72,6 +72,9 @@ class RecommendationServiceTest : BaseRestTest() {
 
         productTag1Uuid = createAndSaveProductTag(client1Uuid, product1Uuid)
         productTag2Uuid = createAndSaveProductTag(client2Uuid, product2Uuid)
+
+        company1Uuid = createAndSaveCompany(client1Uuid)
+        company2Uuid = createAndSaveCompany(client2Uuid)
     }
 
     /**
@@ -263,6 +266,53 @@ class RecommendationServiceTest : BaseRestTest() {
     }
 
     /**
+     * Test that we can create a company recommendation.
+     */
+    @Test
+    fun createCompanyRecommendation() {
+        mockMvc().perform(
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
+                        .param("summary", "Test company 1")
+                        .param("score", RecommendationScore.THUMBS_UP.name)
+                        .param("companyUuid", company1Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.recommendation.uuid", notNullValue()))
+                .andExpect(jsonPath("$.recommendation.summary", `is`("Test company 1")))
+                .andExpect(jsonPath("$.recommendation.score", `is`(RecommendationScore.THUMBS_UP.name)))
+
+        mockMvc().perform(
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
+                        .param("summary", "Test company 2")
+                        .param("score", RecommendationScore.THUMBS_DOWN.name)
+                        .param("companyUuid", company2Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.recommendation.uuid", notNullValue()))
+                .andExpect(jsonPath("$.recommendation.summary", `is`("Test company 2")))
+                .andExpect(jsonPath("$.recommendation.score", `is`(RecommendationScore.THUMBS_DOWN.name)))
+
+        val recommendations = recommendationRepository!!.findAll()
+        Assert.assertEquals(
+                2,
+                recommendations.collectionSizeOrDefault(0))
+
+        Assert.assertEquals(
+                company1Uuid,
+                (recommendations.first() as CompanyRecommendation).company.uuid)
+
+        Assert.assertEquals(
+                company2Uuid,
+                (recommendations.last() as CompanyRecommendation).company.uuid)
+    }
+
+    /**
      * Test that we cannot create several recommendations for same product and info channel.
      */
     @Test
@@ -332,5 +382,53 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("summary", "Test label")
                         .param("score", RecommendationScore.THUMBS_UP.name)
                         .param("productLabelUuid", productLabel1Uuid))
+    }
+
+    /**
+     * Test that we cannot create several recommendations for same product tag and info channel.
+     */
+    @Test
+    fun cannotCreateSeveralRecommendationsForSameProductTagAndInfoChannel() {
+        mockMvc().perform(
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
+                        .param("summary", "Test tag")
+                        .param("score", RecommendationScore.THUMBS_UP.name)
+                        .param("productTagUuid", productTag1Uuid))
+                .andExpect(status().isOk)
+
+        exception.expect(NestedServletException::class.java)
+        mockMvc().perform(
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
+                        .param("summary", "Test tag")
+                        .param("score", RecommendationScore.THUMBS_UP.name)
+                        .param("productTagUuid", productTag1Uuid))
+    }
+
+    /**
+     * Test that we cannot create several recommendations for same company and info channel.
+     */
+    @Test
+    fun cannotCreateSeveralRecommendationsForSameCompanyAndInfoChannel() {
+        mockMvc().perform(
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
+                        .param("summary", "Test company")
+                        .param("score", RecommendationScore.THUMBS_UP.name)
+                        .param("companyUuid", company1Uuid))
+                .andExpect(status().isOk)
+
+        exception.expect(NestedServletException::class.java)
+        mockMvc().perform(
+                post(serviceEndpoint("/create/"))
+                        .param("clientUuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid)
+                        .param("summary", "Test company")
+                        .param("score", RecommendationScore.THUMBS_UP.name)
+                        .param("companyUuid", company1Uuid))
     }
 }
