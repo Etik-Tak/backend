@@ -68,6 +68,12 @@ open class ProductScanTest : BaseRestTest() {
         productLabel1Uuid = createAndSaveProductLabel(client1Uuid, "Test label 1", product1Uuid)
         productLabel2Uuid = createAndSaveProductLabel(client2Uuid, "Test label 2", product2Uuid)
 
+        productTag1Uuid = createAndSaveProductTag(client1Uuid, "Test tag 1", product1Uuid)
+        productTag2Uuid = createAndSaveProductTag(client2Uuid, "Test tag 2", product2Uuid)
+
+        company1Uuid = createAndSaveCompany(client1Uuid, "Test company 1", product1Uuid)
+        company2Uuid = createAndSaveCompany(client2Uuid, "Test company 2", product2Uuid)
+
         location1 = TestLocation(56.0, 60.0)
         location2 = TestLocation(56.1, 60.1)
 
@@ -82,6 +88,12 @@ open class ProductScanTest : BaseRestTest() {
 
         productLabelRecommendation1Uuid = createAndSaveProductLabelRecommendation(client1Uuid, infoChannel1Uuid, productLabel1Uuid)
         productLabelRecommendation2Uuid = createAndSaveProductLabelRecommendation(client2Uuid, infoChannel2Uuid, productLabel2Uuid)
+
+        productTagRecommendation1Uuid = createAndSaveProductTagRecommendation(client1Uuid, infoChannel1Uuid, productTag1Uuid)
+        productTagRecommendation2Uuid = createAndSaveProductTagRecommendation(client2Uuid, infoChannel2Uuid, productTag2Uuid)
+
+        companyRecommendation1Uuid = createAndSaveCompanyRecommendation(client1Uuid, infoChannel1Uuid, company1Uuid)
+        companyRecommendation2Uuid = createAndSaveCompanyRecommendation(client2Uuid, infoChannel2Uuid, company2Uuid)
     }
 
     /**
@@ -103,7 +115,8 @@ open class ProductScanTest : BaseRestTest() {
                 .andExpect(jsonPath("$.scan.product.name", `is`("Test product")))
                 .andExpect(jsonPath("$.scan.product.categories", hasSize<Any>(1)))
                 .andExpect(jsonPath("$.scan.product.labels", hasSize<Any>(1)))
-                .andExpect(jsonPath("$.scan.recommendations", hasSize<Any>(3)))
+                .andExpect(jsonPath("$.scan.product.tags", hasSize<Any>(1)))
+                .andExpect(jsonPath("$.scan.recommendations", hasSize<Any>(5)))
 
         validateProductScan(product1Uuid, client1Uuid, location1)
     }

@@ -105,8 +105,16 @@ open class RecommendationService @Autowired constructor(
                 productTagListToUuidList(product.productTags),
                 infoChannelListToUuidList(infoChannels)
         )
+        val companyRecommendations = companyRecommendationRepository.findByCompanyProductsUuidAndInfoChannelUuidIn(
+                product.uuid,
+                infoChannelListToUuidList(infoChannels)
+        )
 
-        return productRecommendations + productCategoryRecommendations + productLabelRecommendations + productTagRecommendations
+        return productRecommendations +
+                productCategoryRecommendations +
+                productLabelRecommendations +
+                productTagRecommendations +
+                companyRecommendations
     }
 
     /**

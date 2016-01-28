@@ -30,10 +30,7 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
-import dk.etiktak.backend.model.recommendation.CompanyRecommendation
-import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
-import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
-import dk.etiktak.backend.model.recommendation.ProductRecommendation
+import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
@@ -70,6 +67,7 @@ class ProductScanRestController @Autowired constructor(
                                 .add("product", if (recommendation.javaClass == ProductRecommendation::class.java) (recommendation as ProductRecommendation).product.uuid else null)
                                 .add("productCategory", if (recommendation.javaClass == ProductCategoryRecommendation::class.java) (recommendation as ProductCategoryRecommendation).productCategory.uuid else null)
                                 .add("productLabel", if (recommendation.javaClass == ProductLabelRecommendation::class.java) (recommendation as ProductLabelRecommendation).productLabel.uuid else null)
+                                .add("productTag", if (recommendation.javaClass == ProductTagRecommendation::class.java) (recommendation as ProductTagRecommendation).productTag.uuid else null)
                                 .add("company", if (recommendation.javaClass == CompanyRecommendation::class.java) (recommendation as CompanyRecommendation).company.uuid else null) })
                 )
     }

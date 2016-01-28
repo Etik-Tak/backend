@@ -34,4 +34,5 @@ interface CompanyRecommendationRepository : PagingAndSortingRepository<CompanyRe
     fun findByUuid(uuid: String): CompanyRecommendation?
     fun findByCompanyUuidAndInfoChannelUuid(companyTagUuid: String, infoChannelUuid: String): CompanyRecommendation?
     fun findByCompanyUuidInAndInfoChannelUuidIn(companyUuidList: List<String>, infoChannelUuidList: List<String>): List<CompanyRecommendation>
+    fun findByCompanyProductsUuidAndInfoChannelUuidIn(productUuid: String, infoChannelListToUuidList: List<String>): List<CompanyRecommendation>
 }

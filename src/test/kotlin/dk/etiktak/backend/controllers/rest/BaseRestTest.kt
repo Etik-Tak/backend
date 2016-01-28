@@ -114,6 +114,12 @@ open class BaseRestTest {
     var productLabelRecommendation1Uuid = ""
     var productLabelRecommendation2Uuid = ""
 
+    var productTagRecommendation1Uuid = ""
+    var productTagRecommendation2Uuid = ""
+
+    var companyRecommendation1Uuid = ""
+    var companyRecommendation2Uuid = ""
+
     var smsChallenge: String = ""
 
 
@@ -211,13 +217,14 @@ open class BaseRestTest {
         infoChannelClientRepository!!.deleteAll()
         infoChannelRepository!!.deleteAll()
 
-        companyRepository!!.deleteAll()
-
         productScanRepository!!.deleteAll()
         locationRepository!!.deleteAll()
+
         productRepository!!.deleteAll()
         productCategoryRepository!!.deleteAll()
         productLabelRepository!!.deleteAll()
+
+        companyRepository!!.deleteAll()
 
         clientRepository!!.deleteAll()
 
@@ -227,12 +234,23 @@ open class BaseRestTest {
         changeLogRepository!!.deleteAll()
     }
 
-    fun createAndSaveCompany(clientUuid: String, name: String = "Test company"): String {
-        return postAndExtract(CompanyServiceTest().serviceEndpoint("create/"),
+    fun createAndSaveCompany(clientUuid: String, name: String = "Test company", productUuid: String? = null): String {
+        val companyUuid = postAndExtract(CompanyServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
                         "clientUuid" to clientUuid,
                         "name" to name),
                 "$.company.uuid")
+
+        productUuid?.let {
+            postAndExtract(ProductServiceTest().serviceEndpoint("assign/company/"),
+                    hashMapOf(
+                            "clientUuid" to clientUuid,
+                            "productUuid" to productUuid,
+                            "companyUuid" to companyUuid),
+                    "$.message")
+        }
+
+        return companyUuid
     }
 
     fun createAndSaveProduct(clientUuid: String, barcode: String, barcodeType: Product.BarcodeType, name: String = "Test product"): String {
@@ -366,6 +384,28 @@ open class BaseRestTest {
                         "clientUuid" to clientUuid,
                         "infoChannelUuid" to infoChannelUuid,
                         "productLabelUuid" to productLabelUuid,
+                        "score" to RecommendationScore.THUMBS_UP.name,
+                        "summary" to "Some summary"),
+                "$.recommendation.uuid")
+    }
+
+    fun createAndSaveProductTagRecommendation(clientUuid: String, infoChannelUuid: String, productTagUuid: String): String {
+        return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "infoChannelUuid" to infoChannelUuid,
+                        "productTagUuid" to productTagUuid,
+                        "score" to RecommendationScore.THUMBS_UP.name,
+                        "summary" to "Some summary"),
+                "$.recommendation.uuid")
+    }
+
+    fun createAndSaveCompanyRecommendation(clientUuid: String, infoChannelUuid: String, companyUuid: String): String {
+        return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
+                hashMapOf(
+                        "clientUuid" to clientUuid,
+                        "infoChannelUuid" to infoChannelUuid,
+                        "companyUuid" to companyUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
                         "summary" to "Some summary"),
                 "$.recommendation.uuid")

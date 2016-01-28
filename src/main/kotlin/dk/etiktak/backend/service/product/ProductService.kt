@@ -469,6 +469,7 @@ open class ProductService @Autowired constructor(
         var productCompanyContribution = ProductCompanyContribution()
         productCompanyContribution.uuid = CryptoUtil().uuid()
         productCompanyContribution.client = client
+        productCompanyContribution.product = product
         productCompanyContribution.company = company
 
         // Glue it together
