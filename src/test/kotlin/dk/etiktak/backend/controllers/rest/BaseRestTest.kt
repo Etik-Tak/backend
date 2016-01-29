@@ -35,7 +35,7 @@ import dk.etiktak.backend.repository.infochannel.InfoChannelFollowerRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
-import dk.etiktak.backend.repository.infosource.InfoSourceUrlPrefixRepository
+import dk.etiktak.backend.repository.infosource.InfoSourceDomainRepository
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.*
 import dk.etiktak.backend.repository.contribution.ContributionRepository
@@ -173,7 +173,7 @@ open class BaseRestTest {
     val infoSourceRepository: InfoSourceRepository? = null
 
     @Autowired
-    val infoSourceUrlPrefixRepository: InfoSourceUrlPrefixRepository? = null
+    val infoSourceDomainRepository: InfoSourceDomainRepository? = null
 
     @Autowired
     val infoSourceReferenceRepository: InfoSourceReferenceRepository? = null
@@ -207,11 +207,11 @@ open class BaseRestTest {
         trustVoteRepository!!.deleteAll()
         contributionRepository!!.deleteAll()
 
-        recommendationRepository!!.deleteAll()
-
-        infoSourceUrlPrefixRepository!!.deleteAll()
+        infoSourceDomainRepository!!.deleteAll()
         infoSourceReferenceRepository!!.deleteAll()
         infoSourceRepository!!.deleteAll()
+
+        recommendationRepository!!.deleteAll()
 
         infoChannelFollowerRepository!!.deleteAll()
         infoChannelClientRepository!!.deleteAll()
@@ -328,19 +328,19 @@ open class BaseRestTest {
                 "$.infoChannel.uuid")
     }
 
-    fun createAndSaveInfoSource(clientUuid: String, urlPrefixes: List<String>): String {
-        var prefixString = ""
+    fun createAndSaveInfoSource(clientUuid: String, domains: List<String>): String {
+        var domainString = ""
         var delimiter = ""
-        for (urlPrefix in urlPrefixes) {
-            prefixString += delimiter
-            prefixString += urlPrefix
+        for (domain in domains) {
+            domainString += delimiter
+            domainString += domain
             delimiter = ","
         }
         return postAndExtract(InfoSourceServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
                         "clientUuid" to clientUuid,
                         "friendlyName" to "Test info source",
-                        "urlPrefixList" to prefixString),
+                        "domainList" to domainString),
                 "$.infoSource.uuid")
     }
 
@@ -356,58 +356,63 @@ open class BaseRestTest {
                 "$.infoSourceReference.uuid")
     }
 
-    fun createAndSaveProductRecommendation(clientUuid: String, infoChannelUuid: String, productUuid: String): String {
+    fun createAndSaveProductRecommendation(clientUuid: String, infoChannelUuid: String, productUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
                         "clientUuid" to clientUuid,
                         "infoChannelUuid" to infoChannelUuid,
                         "productUuid" to productUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
-                        "summary" to "Some summary"),
+                        "summary" to "Some summary",
+                        "infoSourceReferenceUrlList" to urlListString),
                 "$.recommendation.uuid")
     }
 
-    fun createAndSaveProductCategoryRecommendation(clientUuid: String, infoChannelUuid: String, productCategoryUuid: String): String {
+    fun createAndSaveProductCategoryRecommendation(clientUuid: String, infoChannelUuid: String, productCategoryUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
                         "clientUuid" to clientUuid,
                         "infoChannelUuid" to infoChannelUuid,
                         "productCategoryUuid" to productCategoryUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
-                        "summary" to "Some summary"),
+                        "summary" to "Some summary",
+                        "infoSourceReferenceUrlList" to urlListString),
                 "$.recommendation.uuid")
     }
 
-    fun createAndSaveProductLabelRecommendation(clientUuid: String, infoChannelUuid: String, productLabelUuid: String): String {
+    fun createAndSaveProductLabelRecommendation(clientUuid: String, infoChannelUuid: String, productLabelUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
                         "clientUuid" to clientUuid,
                         "infoChannelUuid" to infoChannelUuid,
                         "productLabelUuid" to productLabelUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
-                        "summary" to "Some summary"),
+                        "summary" to "Some summary",
+                        "infoSourceReferenceUrlList" to urlListString),
                 "$.recommendation.uuid")
     }
 
-    fun createAndSaveProductTagRecommendation(clientUuid: String, infoChannelUuid: String, productTagUuid: String): String {
+    fun createAndSaveProductTagRecommendation(clientUuid: String, infoChannelUuid: String, productTagUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
                         "clientUuid" to clientUuid,
                         "infoChannelUuid" to infoChannelUuid,
                         "productTagUuid" to productTagUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
-                        "summary" to "Some summary"),
+                        "summary" to "Some summary",
+                        "infoSourceReferenceUrlList" to urlListString),
                 "$.recommendation.uuid")
     }
 
-    fun createAndSaveCompanyRecommendation(clientUuid: String, infoChannelUuid: String, companyUuid: String): String {
+    fun createAndSaveCompanyRecommendation(clientUuid: String, infoChannelUuid: String, companyUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
                         "clientUuid" to clientUuid,
                         "infoChannelUuid" to infoChannelUuid,
                         "companyUuid" to companyUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
-                        "summary" to "Some summary"),
+                        "summary" to "Some summary",
+                        "infoSourceReferenceUrlList" to urlListString),
                 "$.recommendation.uuid")
     }
 

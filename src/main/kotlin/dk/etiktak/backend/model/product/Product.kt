@@ -32,7 +32,6 @@ package dk.etiktak.backend.model.product
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.contribution.ProductContribution
-import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.ProductRecommendation
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -107,9 +106,6 @@ class Product constructor() : BaseModel() {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     var recommendations: MutableList<ProductRecommendation> = ArrayList()
-
-    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
-    var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

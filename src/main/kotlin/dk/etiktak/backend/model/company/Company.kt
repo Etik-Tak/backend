@@ -31,7 +31,6 @@ package dk.etiktak.backend.model.company
 
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.contribution.CompanyContribution
-import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.contribution.ProductCompanyContribution
 import dk.etiktak.backend.model.contribution.StoreCompanyContribution
 import dk.etiktak.backend.model.product.Product
@@ -73,9 +72,6 @@ class Company constructor() : BaseModel() {
 
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
     var storeContributions: MutableList<StoreCompanyContribution> = ArrayList()
-
-    @ManyToMany(mappedBy = "companies", fetch = FetchType.LAZY)
-    var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

@@ -60,6 +60,7 @@ class ProductRestController @Autowired constructor(
     fun getProduct(
             @RequestParam(required = false) uuid: String? = null,
             @RequestParam(required = false) barcode: String? = null): HashMap<String, Any> {
+
         uuid?.let {
             val product = productService.getProductByUuid(uuid) ?: return notFoundMap("Product")
             return okMap().add(product, client = null, productService = productService)

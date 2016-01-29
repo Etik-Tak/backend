@@ -45,12 +45,29 @@ class InfoSourceRestController @Autowired constructor(
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoSource(
             @RequestParam clientUuid: String,
-            @RequestParam friendlyName: String,
-            @RequestParam urlPrefixList: List<String>): HashMap<String, Any> {
+            @RequestParam domainList: List<String>,
+            @RequestParam(required = false) friendlyName: String?): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
-        val infoSource = infoSourceService.createInfoSource(client, urlPrefixList, friendlyName)
+        val infoSource = infoSourceService.createInfoSource(client, domainList, friendlyName)
 
         return okMap().add(infoSource)
+    }
+
+    @RequestMapping(value = "/", method = arrayOf(RequestMethod.POST))
+    fun getInfoSourceReference(
+            @RequestParam(required = false) url: String?,
+            @RequestParam(required = false) uuid: String?): HashMap<String, Any> {
+        url?.let {
+            val infoSource = infoSourceService.getInfoSourceByUrl(url) ?: return notFoundMap("Info source")
+            return okMap().add(infoSource)
+        }
+
+        uuid?.let {
+            val infoSource = infoSourceService.getInfoSourceByUuid(uuid) ?: return notFoundMap("Info source")
+            return okMap().add(infoSource)
+        }
+
+        return notFoundMap("Info source")
     }
 }

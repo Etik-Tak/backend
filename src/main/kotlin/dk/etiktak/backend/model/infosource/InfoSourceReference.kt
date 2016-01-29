@@ -24,18 +24,13 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a reference to an info source publication, including url and summary of content.
+ * Represents a reference to an info source publication, including url and title. Is attached to a recommendation.
  */
 
 package dk.etiktak.backend.model.infosource
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.company.Company
-import dk.etiktak.backend.model.infochannel.InfoChannel
-import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductCategory
-import dk.etiktak.backend.model.product.ProductLabel
-import dk.etiktak.backend.model.product.ProductTag
+import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -55,63 +50,20 @@ class InfoSourceReference constructor() : BaseModel() {
     @Column(name = "url")
     var url: String = ""
 
-    @Column(name = "title")
-    var title: String = ""
-
-    @Column(name = "summary")
-    var summary: String = ""
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "client_id")
-    var creator = Client()
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "info_channel_id")
-    var infoChannel = InfoChannel()
+    @Column(name = "title", nullable = true)
+    var title: String? = null
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_source_id")
     var infoSource = InfoSource()
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="infoSourceReference_product",
-            joinColumns=arrayOf(JoinColumn(name="info_source_reference_id", referencedColumnName="info_source_reference_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_id", referencedColumnName="product_id")))
-    @Column(name = "products")
-    var products: MutableSet<Product> = HashSet()
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "recommendation_id")
+    var recommendation = Recommendation()
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="infoSourceReference_productCategory",
-            joinColumns=arrayOf(JoinColumn(name="info_source_reference_id", referencedColumnName="info_source_reference_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_category_id", referencedColumnName="product_category_id")))
-    @Column(name = "product_categories")
-    var productCategories: MutableSet<ProductCategory> = HashSet()
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="infoSourceReference_productLabel",
-            joinColumns=arrayOf(JoinColumn(name="info_source_reference_id", referencedColumnName="info_source_reference_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_label_id", referencedColumnName="product_label_id")))
-    @Column(name = "product_labels")
-    var productLabels: MutableSet<ProductLabel> = HashSet()
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="infoSourceReference_productTag",
-            joinColumns=arrayOf(JoinColumn(name="info_source_reference_id", referencedColumnName="info_source_reference_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="product_tag_id", referencedColumnName="product_tag_id")))
-    @Column(name = "product_tags")
-    var productTags: MutableSet<ProductTag> = HashSet()
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="infoSourceReference_company",
-            joinColumns=arrayOf(JoinColumn(name="info_source_reference_id", referencedColumnName="info_source_reference_id")),
-            inverseJoinColumns=arrayOf(JoinColumn(name="company_id", referencedColumnName="company_id")))
-    @Column(name = "companies")
-    var companies: MutableSet<Company> = HashSet()
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var creator = Client()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

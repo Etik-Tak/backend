@@ -30,10 +30,12 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.RecommendationScore
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
+import dk.etiktak.backend.service.infosource.InfoSourceReferenceService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
 import dk.etiktak.backend.service.product.ProductService
@@ -56,6 +58,7 @@ class RecommendationRestController @Autowired constructor(
         private val productTagService: ProductTagService,
         private val companyService: CompanyService,
         private val infoChannelService: InfoChannelService,
+        private val infoSourceReferenceService: InfoSourceReferenceService,
         private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
@@ -77,6 +80,7 @@ class RecommendationRestController @Autowired constructor(
             @RequestParam infoChannelUuid: String,
             @RequestParam summary: String,
             @RequestParam score: String,
+            @RequestParam(required = false) infoSourceReferenceUrlList: List<String>,
             @RequestParam(required = false) productUuid: String? = null,
             @RequestParam(required = false) productCategoryUuid: String? = null,
             @RequestParam(required = false) productLabelUuid: String? = null,
@@ -91,35 +95,35 @@ class RecommendationRestController @Autowired constructor(
         // Create product recommendation
         productUuid?.let {
             val product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
-            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, product)
+            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, product, infoSourceReferenceUrlList)
             return okMap().add(recommendation)
         }
 
         // Create product category recommendation
         productCategoryUuid?.let {
             val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: return notFoundMap("Product category")
-            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productCategory)
+            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productCategory, infoSourceReferenceUrlList)
             return okMap().add(recommendation)
         }
 
         // Create product label recommendation
         productLabelUuid?.let {
             val productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: return notFoundMap("Product label")
-            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productLabel)
+            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productLabel, infoSourceReferenceUrlList)
             return okMap().add(recommendation)
         }
 
         // Create product tag recommendation
         productTagUuid?.let {
             val productTag = productTagService.getProductTagByUuid(productTagUuid) ?: return notFoundMap("Product tag")
-            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productTag)
+            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, productTag, infoSourceReferenceUrlList)
             return okMap().add(recommendation)
         }
 
         // Create company recommendation
         companyUuid?.let {
             val company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
-            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, company)
+            val recommendation = recommendationService.createRecommendation(client, infoChannel, summary, scoreType, company, infoSourceReferenceUrlList)
             return okMap().add(recommendation)
         }
 

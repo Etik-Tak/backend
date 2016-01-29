@@ -26,10 +26,10 @@
 package dk.etiktak.backend.service.infosource
 
 import dk.etiktak.backend.model.infosource.InfoSource
-import dk.etiktak.backend.model.infosource.InfoSourceUrlPrefix
+import dk.etiktak.backend.model.infosource.InfoSourceDomain
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
-import dk.etiktak.backend.repository.infosource.InfoSourceUrlPrefixRepository
+import dk.etiktak.backend.repository.infosource.InfoSourceDomainRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
@@ -39,12 +39,13 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
 import org.springframework.util.StringUtils
+import java.net.URI
 
 @Service
 @Transactional
 open class InfoSourceService @Autowired constructor(
         private val infoSourceRepository: InfoSourceRepository,
-        private val infoSourceUrlPrefixRepository: InfoSourceUrlPrefixRepository,
+        private val infoSourceDomainRepository: InfoSourceDomainRepository,
         private val clientRepository: ClientRepository) {
 
     private val logger = LoggerFactory.getLogger(InfoSourceService::class.java)
@@ -60,62 +61,94 @@ open class InfoSourceService @Autowired constructor(
     }
 
     /**
+     * Finds an info source from the given url.
+     *
+     * @param url   URL
+     * @return      Info source with given url
+     */
+    open fun getInfoSourceByUrl(url: String): InfoSource? {
+        val domain = domainFromUrl(url)
+        return infoSourceRepository.findByDomainsDomain(domain)
+    }
+
+    /**
      * Creates an info source.
      *
      * @param client         Creator
-     * @param urlPrefixes    Url prefixes of info source
+     * @param domains        Domains
      * @param friendlyName   Name of info source
      * @return               Created info source
      */
     @ClientVerified
-    open fun createInfoSource(client: Client, urlPrefixes: List<String>, friendlyName: String): InfoSource {
+    open fun createInfoSource(client: Client, domains: List<String>, friendlyName: String? = null): InfoSource {
 
-        // Validate url prefix
-        for (urlPrefix in urlPrefixes) {
-            validateUrlPrefix(urlPrefix)
+        // Validate domains
+        for (domain in domains) {
+            validateDomain(domain)
         }
-
-        logger.info("Creating new info source with name: $friendlyName")
 
         // Create info source
         val infoSource = InfoSource()
         infoSource.uuid = CryptoUtil().uuid()
-        infoSource.friendlyName = friendlyName
+        infoSource.name = friendlyName
 
-        // Create url prefixes
-        for (urlPrefix in urlPrefixes) {
-            val infoSourceUrlPrefix = InfoSourceUrlPrefix()
-            infoSourceUrlPrefix.uuid = CryptoUtil().uuid()
-            infoSourceUrlPrefix.urlPrefix = urlPrefix
-            infoSourceUrlPrefix.infoSource = infoSource
+        // Create domains
+        for (domain in domains) {
+            val infoSourceDomain = InfoSourceDomain()
+            infoSourceDomain.uuid = CryptoUtil().uuid()
+            infoSourceDomain.domain = domain
+            infoSourceDomain.infoSource = infoSource
 
-            infoSource.urlPrefixes.add(infoSourceUrlPrefix)
+            infoSource.domains.add(infoSourceDomain)
         }
 
         // Save it all
         infoSourceRepository.save(infoSource)
-        for (infoSourceUrlPrefix in infoSource.urlPrefixes) {
-            infoSourceUrlPrefixRepository.save(infoSourceUrlPrefix)
+        for (infoSourceDomain in infoSource.domains) {
+            infoSourceDomainRepository.save(infoSourceDomain)
         }
 
         return infoSource
     }
 
     /**
-     * Validates an info source url prefix.
+     * Creates an info source from a given URL.
      *
-     * @param urlPrefix      Url prefix
-     * @throws               Exception if url prefix does not validate
+     * @param client         Creator
+     * @param url            URL
+     * @return               Created info source
      */
-    open fun validateUrlPrefix(urlPrefix: String) {
-        // TODO! Implement url prefix validator!
-        Assert.isTrue(
-                !StringUtils.isEmpty(urlPrefix),
-                "URL prefix must not be empty")
+    @ClientVerified
+    open fun createInfoSourceFromUrl(client: Client, url: String): InfoSource {
+        return createInfoSource(client, arrayListOf(domainFromUrl(url)))
+    }
 
+    /**
+     * Creates an domain from the given url.
+     *
+     * @param url    URL
+     * @return       Domain
+     * @throws       Exception if url is not valid
+     */
+    open fun domainFromUrl(url: String): String {
         Assert.isTrue(
-                urlPrefix.toLowerCase().startsWith("http://") || urlPrefix.toLowerCase().startsWith("https://"),
-                "URL prefix must start with http:// or https://. Got: " + urlPrefix
-        )
+                !StringUtils.isEmpty(url),
+                "URL must not be empty")
+
+        val uri = URI(url)
+        return uri.host
+    }
+
+    /**
+     * Validates an info source domain.
+     *
+     * @param domain      Domain
+     * @throws            Exception if domain does not validate
+     */
+    open fun validateDomain(domain: String) {
+        // TODO! Implement domain validator!
+        Assert.isTrue(
+                !StringUtils.isEmpty(domain),
+                "Domain must not be empty")
     }
 }

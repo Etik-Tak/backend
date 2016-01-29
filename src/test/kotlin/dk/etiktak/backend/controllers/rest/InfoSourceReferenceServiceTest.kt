@@ -28,7 +28,6 @@ package dk.etiktak.backend.controllers.rest
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
-import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,8 +38,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.notNullValue
-import org.springframework.http.MediaType
-import org.springframework.web.util.NestedServletException
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
@@ -72,6 +69,9 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
 
         productLabel1Uuid = createAndSaveProductLabel(client1Uuid, product1Uuid)
         productLabel2Uuid = createAndSaveProductLabel(client2Uuid, product2Uuid)
+
+        productRecommendation1Uuid = createAndSaveProductRecommendation(client1Uuid, infoChannel1Uuid, product1Uuid)
+        productRecommendation2Uuid = createAndSaveProductRecommendation(client2Uuid, infoChannel2Uuid, product2Uuid)
     }
 
     /**
@@ -82,92 +82,14 @@ class InfoSourceReferenceServiceTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
                         .param("clientUuid", client1Uuid)
-                        .param("infoChannelUuid", infoChannel1Uuid)
-                        .param("infoSourceUuid", infoSource1Uuid)
+                        .param("recommendationUuid", productRecommendation1Uuid)
                         .param("url", "http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")
-                        .param("title", "Fødevarestyrelsen: Spis ikke for meget mørk chokolade")
-                        .param("summary", "Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3."))
+                        .param("title", "Fødevarestyrelsen: Spis ikke for meget mørk chokolade"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
                 .andExpect(jsonPath("$.infoSourceReference.url", `is`("http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")))
                 .andExpect(jsonPath("$.infoSourceReference.title", `is`("Fødevarestyrelsen: Spis ikke for meget mørk chokolade")))
-                .andExpect(jsonPath("$.infoSourceReference.summary", `is`("Visse mørke chokolader indeholder bekymrende meget cadmium, viser test i Videnskabsmagasinet på DR3.")))
-    }
-
-    /**
-     * Test that we cannot create an info source reference with an url that is not in the domain of the info source.
-     */
-    @Test
-    fun createInfoSourceReferanceWithIllegalUrlDomain() {
-        exception.expect(NestedServletException::class.java)
-        mockMvc().perform(
-                post(serviceEndpoint("create/"))
-                        .param("clientUuid", client1Uuid)
-                        .param("infoChannelUuid", infoChannel1Uuid)
-                        .param("infoSourceUuid", infoSource1Uuid)
-                        .param("url", "http://politiken.dk/forbrugogliv/forbrug/tjekmad/ECE2981742/eksperter-advarer-glutenfri-foedevarer-er-slet-ikke-sunde/")
-                        .param("title", "Eksperter advarer: Glutenfri fødevarer er slet ikke sunde")
-                        .param("summary", "Glutenfri fødevarer opfattes som sunde, men er ofte det modsatte, lyder det fra eksperter."))
-                .andExpect(status().`is`(400))
-    }
-
-    /**
-     * Test that we can assign products to an existing info source reference.
-     */
-    @Test
-    fun assignProductsToExistingInfoSourceReference() {
-        infoSourceReference1Uuid = createAndSaveInfoSourceReference(client1Uuid, infoChannel1Uuid, infoSource1Uuid, "http://dr.dk/somenews")
-
-        mockMvc().perform(
-                post(serviceEndpoint("assign/products/"))
-                        .param("clientUuid", client1Uuid)
-                        .param("infoSourceReferenceUuid", infoSourceReference1Uuid)
-                        .param("productUuids", "${product1Uuid}, ${product2Uuid}"))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
-    }
-
-    /**
-     * Test that we can assign product categories to an existing info source reference.
-     */
-    @Test
-    fun assignProductCategoriesToExistingInfoSourceReference() {
-        infoSourceReference1Uuid = createAndSaveInfoSourceReference(client1Uuid, infoChannel1Uuid, infoSource1Uuid, "http://dr.dk/somenews")
-
-        mockMvc().perform(
-                post(serviceEndpoint("assign/categories/"))
-                        .param("clientUuid", client1Uuid)
-                        .param("infoSourceReferenceUuid", infoSourceReference1Uuid)
-                        .param("productCategoryUuids", "${productCategory1Uuid}, ${productCategory2Uuid}"))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
-                .andExpect(jsonPath("$.infoSourceReference.categories", Matchers.hasSize<Any>(2)))
-                .andExpect(jsonPath("$.infoSourceReference.labels", Matchers.hasSize<Any>(0)))
-    }
-
-    /**
-     * Test that we can assign product labels to an existing info source reference.
-     */
-    @Test
-    fun assignProductLabelsToExistingInfoSourceReference() {
-        infoSourceReference1Uuid = createAndSaveInfoSourceReference(client1Uuid, infoChannel1Uuid, infoSource1Uuid, "http://dr.dk/somenews")
-
-        mockMvc().perform(
-                post(serviceEndpoint("assign/labels/"))
-                        .param("clientUuid", client1Uuid)
-                        .param("infoSourceReferenceUuid", infoSourceReference1Uuid)
-                        .param("productLabelUuids", "${productLabel1Uuid}, ${productLabel2Uuid}"))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
-                .andExpect(jsonPath("$.infoSourceReference.categories", Matchers.hasSize<Any>(0)))
-                .andExpect(jsonPath("$.infoSourceReference.labels", Matchers.hasSize<Any>(2)))
     }
 }

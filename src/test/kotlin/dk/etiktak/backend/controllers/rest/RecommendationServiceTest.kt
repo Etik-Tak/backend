@@ -88,7 +88,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test product 1")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productUuid", product1Uuid))
+                        .param("productUuid", product1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -102,7 +103,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test product 2")
                         .param("score", RecommendationScore.THUMBS_DOWN.name)
-                        .param("productUuid", product2Uuid))
+                        .param("productUuid", product2Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -135,7 +137,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category 1")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productCategoryUuid", productCategory1Uuid))
+                        .param("productCategoryUuid", productCategory1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -149,7 +152,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category 2")
                         .param("score", RecommendationScore.THUMBS_DOWN.name)
-                        .param("productCategoryUuid", productCategory2Uuid))
+                        .param("productCategoryUuid", productCategory2Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -182,7 +186,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label 1")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productLabelUuid", productLabel1Uuid))
+                        .param("productLabelUuid", productLabel1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -196,7 +201,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label 2")
                         .param("score", RecommendationScore.THUMBS_DOWN.name)
-                        .param("productLabelUuid", productLabel2Uuid))
+                        .param("productLabelUuid", productLabel2Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -229,7 +235,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test tag 1")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productTagUuid", productTag1Uuid))
+                        .param("productTagUuid", productTag1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -243,7 +250,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test tag 2")
                         .param("score", RecommendationScore.THUMBS_DOWN.name)
-                        .param("productTagUuid", productTag2Uuid))
+                        .param("productTagUuid", productTag2Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -276,7 +284,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test company 1")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("companyUuid", company1Uuid))
+                        .param("companyUuid", company1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -290,7 +299,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test company 2")
                         .param("score", RecommendationScore.THUMBS_DOWN.name)
-                        .param("companyUuid", company2Uuid))
+                        .param("companyUuid", company2Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -323,7 +333,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productUuid", product1Uuid))
+                        .param("productUuid", product1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
 
         exception.expect(NestedServletException::class.java)
@@ -333,7 +344,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productUuid", product1Uuid))
+                        .param("productUuid", product1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
     }
 
     /**
@@ -347,7 +359,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productCategoryUuid", productCategory1Uuid))
+                        .param("productCategoryUuid", productCategory1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
 
         exception.expect(NestedServletException::class.java)
@@ -357,7 +370,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productCategoryUuid", productCategory1Uuid))
+                        .param("productCategoryUuid", productCategory1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
     }
 
     /**
@@ -371,7 +385,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productLabelUuid", productLabel1Uuid))
+                        .param("productLabelUuid", productLabel1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
 
         exception.expect(NestedServletException::class.java)
@@ -381,7 +396,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productLabelUuid", productLabel1Uuid))
+                        .param("productLabelUuid", productLabel1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
     }
 
     /**
@@ -395,7 +411,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test tag")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productTagUuid", productTag1Uuid))
+                        .param("productTagUuid", productTag1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
 
         exception.expect(NestedServletException::class.java)
@@ -405,7 +422,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test tag")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("productTagUuid", productTag1Uuid))
+                        .param("productTagUuid", productTag1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
     }
 
     /**
@@ -419,7 +437,8 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test company")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("companyUuid", company1Uuid))
+                        .param("companyUuid", company1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
                 .andExpect(status().isOk)
 
         exception.expect(NestedServletException::class.java)
@@ -429,6 +448,7 @@ class RecommendationServiceTest : BaseRestTest() {
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test company")
                         .param("score", RecommendationScore.THUMBS_UP.name)
-                        .param("companyUuid", company1Uuid))
+                        .param("companyUuid", company1Uuid)
+                        .param("infoSourceReferenceUrlList", "http://dr.dk/somenews/"))
     }
 }

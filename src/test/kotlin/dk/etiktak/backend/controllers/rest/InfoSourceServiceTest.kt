@@ -65,13 +65,13 @@ open class InfoSourceServiceTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
                         .param("clientUuid", client1Uuid)
-                        .param("urlPrefixList", "http://dr.dk, https://dr.dk, http://www.dr.dk, https://www.dr.dk")
+                        .param("domainList", "http://dr.dk,https://dr.dk")
                         .param("friendlyName", "Test Info Source 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.infoSource.uuid", notNullValue()))
-                .andExpect(jsonPath("$.infoSource.urlPrefixes", containsInAnyOrder("http://dr.dk", "https://dr.dk", "http://www.dr.dk", "https://www.dr.dk")))
+                .andExpect(jsonPath("$.infoSource.domains", containsInAnyOrder("http://dr.dk", "https://dr.dk")))
                 .andExpect(jsonPath("$.infoSource.friendlyName", `is`("Test Info Source 1")))
     }
 }

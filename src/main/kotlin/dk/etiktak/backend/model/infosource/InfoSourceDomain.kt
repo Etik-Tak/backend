@@ -24,7 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a info source url prefix that can be referenced by info sources.
+ * Represents a info source domain that can be referenced by info sources.
  */
 
 package dk.etiktak.backend.model.infosource
@@ -34,19 +34,19 @@ import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
-@Entity(name = "info_source_url_prefixes")
-class InfoSourceUrlPrefix constructor() : BaseModel() {
+@Entity(name = "info_source_domains")
+class InfoSourceDomain constructor() : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "infosourceurlprefix_id")
+    @Column(name = "info_source_domain_id")
     var id: Long = 0
 
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Column(name = "url_prefix", unique = true)
-    var urlPrefix: String = ""
+    @Column(name = "domain", unique = true)
+    var domain: String = ""
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "infosource_id")

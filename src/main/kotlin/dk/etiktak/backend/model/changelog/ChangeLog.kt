@@ -56,7 +56,7 @@ open class ChangeLog constructor() : BaseModel() {
     @Column(name = "change_type")
     var changeType = ChangeType.Unknown
 
-    @Column(name = "change_text", nullable = true)
+    @Column(name = "change_text", nullable = true, columnDefinition="TEXT")
     var changeText: String? = null
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

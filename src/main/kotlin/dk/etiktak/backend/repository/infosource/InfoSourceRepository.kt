@@ -33,4 +33,6 @@ import org.springframework.stereotype.Repository
 interface InfoSourceRepository : PagingAndSortingRepository<InfoSource, Long> {
 
     fun findByUuid(uuid: String): InfoSource?
+
+    fun findByDomainsDomain(domain: String): InfoSource?
 }

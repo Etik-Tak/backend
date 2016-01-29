@@ -40,6 +40,7 @@ import dk.etiktak.backend.model.infochannel.InfoChannelFollower
 import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.contribution.TrustVote
+import dk.etiktak.backend.model.recommendation.Recommendation
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -84,6 +85,10 @@ class Client constructor() {
     @NotNull
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var contributions: MutableList<Contribution> = ArrayList()
+
+    @NotNull
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    var recommendations: MutableList<Recommendation> = ArrayList()
 
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()

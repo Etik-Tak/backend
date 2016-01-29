@@ -31,9 +31,7 @@ package dk.etiktak.backend.model.product
 
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.contribution.ProductLabelContribution
-import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
-import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -57,9 +55,6 @@ class ProductLabel constructor() : BaseModel() {
 
     @OneToMany(mappedBy = "productLabel", fetch = FetchType.LAZY)
     var contributions: MutableList<ProductLabelContribution> = ArrayList()
-
-    @ManyToMany(mappedBy = "productLabels", fetch = FetchType.LAZY)
-    var infoSourceReferences: MutableSet<InfoSourceReference> = HashSet()
 
     @OneToMany(mappedBy = "productLabel", fetch = FetchType.LAZY)
     var recommendations: MutableList<ProductLabelRecommendation> = ArrayList()

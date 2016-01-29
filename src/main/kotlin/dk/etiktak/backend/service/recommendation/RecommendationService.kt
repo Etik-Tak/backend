@@ -27,6 +27,7 @@ package dk.etiktak.backend.service.recommendation
 
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.infochannel.InfoChannel
+import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
@@ -35,13 +36,15 @@ import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
+import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
 import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.product.ProductRepository
 import dk.etiktak.backend.repository.product.ProductTagRepository
 import dk.etiktak.backend.repository.recommendation.*
+import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.infochannel.InfoChannelService
-import dk.etiktak.backend.service.product.ProductService
+import dk.etiktak.backend.service.infosource.InfoSourceReferenceService
 import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
@@ -55,6 +58,8 @@ import java.util.*
 @Service
 @Transactional
 open class RecommendationService @Autowired constructor(
+        private val infoSourceReferenceService: InfoSourceReferenceService,
+        private val recommendationRepository: RecommendationRepository,
         private val productRecommendationRepository: ProductRecommendationRepository,
         private val productCategoryRecommendationRepository: ProductCategoryRecommendationRepository,
         private val productLabelRecommendationRepository: ProductLabelRecommendationRepository,
@@ -66,9 +71,20 @@ open class RecommendationService @Autowired constructor(
         private val productTagRepository: ProductTagRepository,
         private val companyRepository: CompanyRepository,
         private val infoChannelService: InfoChannelService,
-        private val infoChannelRepository: InfoChannelRepository) {
+        private val infoChannelRepository: InfoChannelRepository,
+        private val clientRepository: ClientRepository) {
 
     private val logger = LoggerFactory.getLogger(RecommendationService::class.java)
+
+    /**
+     * Get recommendation from UUID.
+     *
+     * @param uuid  UUID
+     * @return      Recommendation with given UUID
+     */
+    open fun getRecommendation(uuid: String): Recommendation? {
+        return recommendationRepository.findByUuid(uuid)
+    }
 
     /**
      * Get recommendations for a product for the given client.
@@ -89,6 +105,7 @@ open class RecommendationService @Autowired constructor(
      * @return              List of recommendations for given product for all info channels
      */
     open fun getRecommendations(infoChannels: List<InfoChannel>, product: Product): List<Recommendation> {
+
         val productRecommendations = productRecommendationRepository.findByProductUuidAndInfoChannelUuidIn(
                 product.uuid,
                 infoChannelListToUuidList(infoChannels)
@@ -120,22 +137,19 @@ open class RecommendationService @Autowired constructor(
     /**
      * Create product recommendation.
      *
-     * @param client         Client
-     * @param infoChannel    Info channel
-     * @param summary        Summary
-     * @param score          Score
-     * @param product        Product
-     * @param modifyValues   Function called with modified info channel and product
-     * @return               Created recommendation
+     * @param client                   Client
+     * @param infoChannel              Info channel
+     * @param summary                  Summary
+     * @param score                    Score
+     * @param product                  Product
+     * @param infoSourceReferenceUrls  Info source reference URLs
+     * @param modifyValues             Function called with modified info channel and product
+     * @return                         Created recommendation
      */
     @ClientVerified
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, product: Product,
+                                  infoSourceReferenceUrls: List<String>,
                                   modifyValues: (InfoChannel, Product) -> Unit = {infoChannel, product -> Unit}): Recommendation {
-
-        // Security checks
-        Assert.isTrue(
-                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
-                "Client not member of info channel with UUID: ${infoChannel.uuid}")
 
         // Check recommendation does not already exists
         Assert.isNull(
@@ -155,6 +169,9 @@ open class RecommendationService @Autowired constructor(
         val modifiedProduct = productRepository.save(product)
         val modifiedRecommandation = productRecommendationRepository.save(recommendation)
 
+        // Add info source references
+        addInfoSourceReferencesToRecommendation(recommendation, infoSourceReferenceUrls)
+
         modifyValues(modifiedInfoChannel, modifiedProduct)
 
         return modifiedRecommandation
@@ -163,22 +180,19 @@ open class RecommendationService @Autowired constructor(
     /**
      * Create product category recommendation.
      *
-     * @param client           Client
-     * @param infoChannel      Info channel
-     * @param summary          Summary
-     * @param score            Score
-     * @param productCategory  Product category
-     * @param modifyValues     Function called with modified info channel and product category
-     * @return                 Created recommendation
+     * @param client                   Client
+     * @param infoChannel              Info channel
+     * @param summary                  Summary
+     * @param score                    Score
+     * @param productCategory          Product category
+     * @param infoSourceReferenceUrls  Info source reference URLs
+     * @param modifyValues             Function called with modified info channel and product category
+     * @return                         Created recommendation
      */
     @ClientVerified
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productCategory: ProductCategory,
+                                  infoSourceReferenceUrls: List<String>,
                                   modifyValues: (InfoChannel, ProductCategory) -> Unit = { infoChannel, productCategory -> Unit}): Recommendation {
-
-        // Security checks
-        Assert.isTrue(
-                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
-                "Client not member of info channel with UUID: ${infoChannel.uuid}")
 
         // Check recommendation does not already exists
         Assert.isNull(
@@ -198,6 +212,9 @@ open class RecommendationService @Autowired constructor(
         val modifiedProductCategory = productCategoryRepository.save(productCategory)
         val modifiedRecommandation = productCategoryRecommendationRepository.save(recommendation)
 
+        // Add info source references
+        addInfoSourceReferencesToRecommendation(recommendation, infoSourceReferenceUrls)
+
         modifyValues(modifiedInfoChannel, modifiedProductCategory)
 
         return modifiedRecommandation
@@ -206,22 +223,19 @@ open class RecommendationService @Autowired constructor(
     /**
      * Create product label recommendation.
      *
-     * @param client           Client
-     * @param infoChannel      Info channel
-     * @param summary          Summary
-     * @param score            Score
-     * @param productLabel     Product label
-     * @param modifyValues     Function called with modified info channel and product label
-     * @return                 Created recommendation
+     * @param client                   Client
+     * @param infoChannel              Info channel
+     * @param summary                  Summary
+     * @param score                    Score
+     * @param productLabel             Product label
+     * @param infoSourceReferenceUrls  Info source reference URLs
+     * @param modifyValues             Function called with modified info channel and product label
+     * @return                         Created recommendation
      */
     @ClientVerified
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productLabel: ProductLabel,
+                                  infoSourceReferenceUrls: List<String>,
                                   modifyValues: (InfoChannel, ProductLabel) -> Unit = {infoChannel, productLabel -> Unit}): Recommendation {
-
-        // Security checks
-        Assert.isTrue(
-                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
-                "Client not member of info channel with UUID: ${infoChannel.uuid}")
 
         // Check recommendation does not already exists
         Assert.isNull(
@@ -241,6 +255,9 @@ open class RecommendationService @Autowired constructor(
         val modifiedProductLabel = productLabelRepository.save(productLabel)
         val modifiedRecommandation = productLabelRecommendationRepository.save(recommendation)
 
+        // Add info source references
+        addInfoSourceReferencesToRecommendation(recommendation, infoSourceReferenceUrls)
+
         modifyValues(modifiedInfoChannel, modifiedProductLabel)
 
         return modifiedRecommandation
@@ -249,22 +266,19 @@ open class RecommendationService @Autowired constructor(
     /**
      * Create product tag recommendation.
      *
-     * @param client           Client
-     * @param infoChannel      Info channel
-     * @param summary          Summary
-     * @param score            Score
-     * @param productTag       Product tag
-     * @param modifyValues     Function called with modified info channel and product tag
-     * @return                 Created recommendation
+     * @param client                  Client
+     * @param infoChannel             Info channel
+     * @param summary                 Summary
+     * @param score                   Score
+     * @param productTag              Product tag
+     * @param infoSourceReferenceUrls  Info source reference URLs
+     * @param modifyValues            Function called with modified info channel and product tag
+     * @return                        Created recommendation
      */
     @ClientVerified
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, productTag: ProductTag,
+                                  infoSourceReferenceUrls: List<String>,
                                   modifyValues: (InfoChannel, ProductTag) -> Unit = { infoChannel, productTag -> Unit}): Recommendation {
-
-        // Security checks
-        Assert.isTrue(
-                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
-                "Client not member of info channel with UUID: ${infoChannel.uuid}")
 
         // Check recommendation does not already exists
         Assert.isNull(
@@ -284,6 +298,9 @@ open class RecommendationService @Autowired constructor(
         val modifiedProductTag = productTagRepository.save(productTag)
         val modifiedRecommandation = productTagRecommendationRepository.save(recommendation)
 
+        // Add info source references
+        addInfoSourceReferencesToRecommendation(recommendation, infoSourceReferenceUrls)
+
         modifyValues(modifiedInfoChannel, modifiedProductTag)
 
         return modifiedRecommandation
@@ -292,22 +309,19 @@ open class RecommendationService @Autowired constructor(
     /**
      * Create company recommendation.
      *
-     * @param client           Client
-     * @param infoChannel      Info channel
-     * @param summary          Summary
-     * @param score            Score
-     * @param company          Company
-     * @param modifyValues     Function called with modified info channel and company
-     * @return                 Created recommendation
+     * @param client                   Client
+     * @param infoChannel              Info channel
+     * @param summary                  Summary
+     * @param score                    Score
+     * @param company                  Company
+     * @param infoSourceReferenceUrls  Info source reference URLs
+     * @param modifyValues             Function called with modified info channel and company
+     * @return                         Created recommendation
      */
     @ClientVerified
     open fun createRecommendation(client: Client, infoChannel: InfoChannel, summary: String, score: RecommendationScore, company: Company,
+                                  infoSourceReferenceUrls: List<String>,
                                   modifyValues: (InfoChannel, Company) -> Unit = { infoChannel, company -> Unit}): Recommendation {
-
-        // Security checks
-        Assert.isTrue(
-                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
-                "Client not member of info channel with UUID: ${infoChannel.uuid}")
 
         // Check recommendation does not already exists
         Assert.isNull(
@@ -315,7 +329,7 @@ open class RecommendationService @Autowired constructor(
                 "Info channel with UUID ${infoChannel.uuid} already has a recommandation for company with uuid: ${company.uuid}")
 
         // Create recommendation
-        val recommendation = CompanyRecommendation()
+        var recommendation = CompanyRecommendation()
         recommendation.company = company
 
         setupRecommendation(client, infoChannel, recommendation, summary, score)
@@ -327,22 +341,49 @@ open class RecommendationService @Autowired constructor(
         val modifiedCompany = companyRepository.save(company)
         val modifiedRecommandation = companyRecommendationRepository.save(recommendation)
 
+        // Add info source references
+        addInfoSourceReferencesToRecommendation(recommendation, infoSourceReferenceUrls)
+
         modifyValues(modifiedInfoChannel, modifiedCompany)
 
         return modifiedRecommandation
     }
 
 
-
     /* Helper methods */
 
-    open fun setupRecommendation(client: Client, infoChannel: InfoChannel, recommendation: Recommendation, summary: String, score: RecommendationScore) {
+    open fun setupRecommendation(client: Client, infoChannel: InfoChannel, recommendation: Recommendation,
+                                 summary: String, score: RecommendationScore) {
+
+        // Security checks
+        Assert.isTrue(
+                infoChannelService.isClientMemberOfInfoChannel(client, infoChannel),
+                "Client not member of info channel with UUID: ${infoChannel.uuid}")
+
+        // Setup recommendation
         recommendation.uuid = CryptoUtil().uuid()
         recommendation.summary = summary
         recommendation.score = score
 
+        recommendation.creator = client
+        client.recommendations.add(recommendation)
+
+        clientRepository.save(client)
+
         recommendation.infoChannel = infoChannel
         infoChannel.recommendations.add(recommendation)
+    }
+
+    open fun addInfoSourceReferencesToRecommendation(recommendation: Recommendation, infoSourceReferenceUrls: List<String>) {
+
+        // Check that at least one info source reference is given
+        Assert.isTrue(
+                infoSourceReferenceUrls.size > 0,
+                "At least one info source reference URL must be provided in order to create recommendation")
+
+        for (infoSourceReferenceUrl in infoSourceReferenceUrls) {
+            infoSourceReferenceService.createInfoSourceReference(recommendation.creator, recommendation, infoSourceReferenceUrl)
+        }
     }
 
     open fun followedInfoChannelsFromClient(client: Client): List<InfoChannel> {

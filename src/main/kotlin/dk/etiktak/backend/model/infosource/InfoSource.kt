@@ -24,7 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a info source that can be referenced by channels.
+ * Represents a info source that can be referenced by recommendations.
  */
 
 package dk.etiktak.backend.model.infosource
@@ -47,12 +47,12 @@ class InfoSource constructor() : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Column(name = "friendly_name")
-    var friendlyName: String = ""
+    @Column(name = "name", nullable = true)
+    var name: String? = null
 
     @NotNull
     @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)
-    var urlPrefixes: MutableList<InfoSourceUrlPrefix> = ArrayList()
+    var domains: MutableList<InfoSourceDomain> = ArrayList()
 
     @NotNull
     @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)

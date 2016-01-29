@@ -25,21 +25,13 @@
 
 package dk.etiktak.backend.service.infosource
 
-import dk.etiktak.backend.model.company.Company
-import dk.etiktak.backend.model.infochannel.InfoChannel
 import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.infosource.InfoSourceReference
-import dk.etiktak.backend.model.product.Product
-import dk.etiktak.backend.model.product.ProductCategory
-import dk.etiktak.backend.model.product.ProductLabel
+import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
-import dk.etiktak.backend.repository.company.CompanyRepository
-import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
-import dk.etiktak.backend.repository.product.ProductCategoryRepository
-import dk.etiktak.backend.repository.product.ProductLabelRepository
-import dk.etiktak.backend.repository.product.ProductRepository
+import dk.etiktak.backend.repository.recommendation.RecommendationRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.infochannel.InfoChannelService
 import dk.etiktak.backend.service.security.ClientVerified
@@ -50,20 +42,16 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
 import org.springframework.util.StringUtils
-import java.util.*
 
 @Service
 @Transactional
 open class InfoSourceReferenceService @Autowired constructor(
         private val infoChannelService: InfoChannelService,
+        private val infoSourceService: InfoSourceService,
         private val infoSourceReferenceRepository: InfoSourceReferenceRepository,
         private val infoSourceRepository: InfoSourceRepository,
-        private val infoChannelRepository: InfoChannelRepository,
-        private val clientRepository: ClientRepository,
-        private val productRepository: ProductRepository,
-        private val productCategoryRepository: ProductCategoryRepository,
-        private val productLabelRepository: ProductLabelRepository,
-        private val companyRepository: CompanyRepository) {
+        private val recommendationRepository: RecommendationRepository,
+        private val clientRepository: ClientRepository) {
 
     private val logger = LoggerFactory.getLogger(InfoSourceReferenceService::class.java)
 
@@ -81,215 +69,74 @@ open class InfoSourceReferenceService @Autowired constructor(
      * Creates an info source reference.
      *
      * @param client           Creator
-     * @param infoChannel      Info channel to attach
-     * @param infoSource       Info source from which it is based
+     * @param recommendation   Recommendation
      * @param url              Reference URL
-     * @param title            Title of reference
-     * @param summary          Summary
-     * @param modifyValues     Function called with modified client, info channel and info source
+     * @param title            Title
+     * @param modifyValues     Function called with modified client and recommendation
      * @return                 Created info source reference
      */
     @ClientVerified
-    open fun createInfoSourceReference(client: Client, infoChannel: InfoChannel, infoSource: InfoSource,
-                                       url: String, title: String, summary: String,
-                                       modifyValues: (Client, InfoChannel, InfoSource) -> Unit = {client, infoChannel, infoSource -> Unit}): InfoSourceReference {
+    open fun createInfoSourceReference(client: Client, recommendation: Recommendation, url: String, title: String? = null,
+                                       modifyValues: (Client, Recommendation) -> Unit = {client, recommendation -> Unit}): InfoSourceReference {
+
+        // Security checks
+        Assert.isTrue(
+                infoChannelService.isClientMemberOfInfoChannel(client, recommendation.infoChannel),
+                "Client not member of info channel with UUID: ${recommendation.infoChannel.uuid}")
 
         // Check for empty fields
         Assert.isTrue(
                 !StringUtils.isEmpty(url),
                 "URL must be provided")
 
-        Assert.isTrue(
-                !StringUtils.isEmpty(title),
-                "Title must be provided")
+        // Find info source
+        val infoSource = infoSourceService.getInfoSourceByUrl(url) ?: infoSourceService.createInfoSourceFromUrl(client, url)
 
-        Assert.isTrue(
-                !StringUtils.isEmpty(summary),
-                "Summary must be provided")
-
-        // Validate url
-        validateUrlReference(url, infoSource)
-
-        logger.info("Creating new info source reference with title: $title")
-
-        // Create info source
+        // Create info source reference
         val infoSourceReference = InfoSourceReference()
         infoSourceReference.uuid = CryptoUtil().uuid()
         infoSourceReference.url = url
         infoSourceReference.title = title
-        infoSourceReference.summary = summary
         infoSourceReference.creator = client
+        infoSourceReference.recommendation = recommendation
         infoSourceReference.infoSource = infoSource
-        infoSourceReference.infoChannel = infoChannel
 
         // Glue it all together
         client.infoSourceReferences.add(infoSourceReference)
-        infoChannel.infoSourceReferences.add(infoSourceReference)
+        recommendation.infoSourceReferences.add(infoSourceReference)
         infoSource.infoSourceReferences.add(infoSourceReference)
 
         // Save it all
         val modifiedInfoSourceReference = infoSourceReferenceRepository.save(infoSourceReference)
         val modifiedClient = clientRepository.save(client)
-        val modifiedInfoSource = infoSourceRepository.save(infoSource)
-        val modifiedInfoChannel = infoChannelRepository.save(infoChannel)
+        infoSourceRepository.save(infoSource)
+        val modifiedRecommendation = recommendationRepository.save(recommendation)
 
-        modifyValues(modifiedClient, modifiedInfoChannel, modifiedInfoSource)
+        modifyValues(modifiedClient, modifiedRecommendation)
 
         return modifiedInfoSourceReference
     }
 
     /**
-     * Assigns products to an info source reference.
-     *
-     * @param client                Client
-     * @param infoSourceReference   Info source reference
-     * @param products              Products
-     * @param modifyValues          Function called with modified info source reference and products
-     */
-    @ClientVerified
-    open fun assignProductsToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, products: List<Product>,
-                                                 modifyValues: (InfoSourceReference, List<Product>) -> Unit = {infoSourceReference, products -> Unit}) {
-
-        // Validate ownership to info channel
-        Assert.isTrue(
-                infoChannelService.isClientMemberOfInfoChannel(client, infoSourceReference.infoChannel),
-                "Client not member of info channel")
-
-        // Assign products to info source reference
-        infoSourceReference.products.addAll(products)
-        for (product in products) {
-            product.infoSourceReferences.add(infoSourceReference)
-        }
-
-        // Save it all
-        val modifiedInfoSourceReference = infoSourceReferenceRepository.save(infoSourceReference)
-        val modifiedProducts: MutableList<Product> = ArrayList()
-        for (product in products) {
-            modifiedProducts.add(productRepository.save(product))
-        }
-
-        modifyValues(modifiedInfoSourceReference, modifiedProducts)
-    }
-
-    /**
-     * Assigns product categories to an info source reference.
-     *
-     * @param client                Client
-     * @param infoSourceReference   Info source reference
-     * @param productCategories     Product categories
-     * @param modifyValues          Function called with modified info source reference and product categories
-     */
-    @ClientVerified
-    open fun assignProductCategoriesToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productCategories: List<ProductCategory>,
-                                                          modifyValues: (InfoSourceReference, List<ProductCategory>) -> Unit = { infoSourceReference, productCategories -> Unit}) {
-
-        // Validate ownership to info channel
-        Assert.isTrue(
-                infoChannelService.isClientMemberOfInfoChannel(client, infoSourceReference.infoChannel),
-                "Client not member of info channel")
-
-        // Assign product categories to info source reference
-        infoSourceReference.productCategories.addAll(productCategories)
-        for (productCategory in productCategories) {
-            productCategory.infoSourceReferences.add(infoSourceReference)
-        }
-
-        // Save it all
-        val modifiedInfoSourceReference = infoSourceReferenceRepository.save(infoSourceReference)
-        val modifiedProductCategories: MutableList<ProductCategory> = ArrayList()
-        for (productCategory in productCategories) {
-            modifiedProductCategories.add(productCategoryRepository.save(productCategory))
-        }
-
-        modifyValues(modifiedInfoSourceReference, modifiedProductCategories)
-    }
-
-    /**
-     * Assigns product labels to an info source reference.
-     *
-     * @param client                Client
-     * @param infoSourceReference   Info source reference
-     * @param productLabels         Product labels
-     * @param modifyValues          Function called with modified info source reference and product labels
-     */
-    @ClientVerified
-    open fun assignProductLabelsToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, productLabels: List<ProductLabel>,
-                                                      modifyValues: (InfoSourceReference, List<ProductLabel>) -> Unit = {infoSourceReference, productLabels -> Unit}) {
-
-        // Validate ownership to info channel
-        Assert.isTrue(
-                infoChannelService.isClientMemberOfInfoChannel(client, infoSourceReference.infoChannel),
-                "Client not member of info channel")
-
-        // Assign product labels to info source reference
-        infoSourceReference.productLabels.addAll(productLabels)
-        for (productLabel in productLabels) {
-            productLabel.infoSourceReferences.add(infoSourceReference)
-        }
-
-        // Save it all
-        val modifiedInfoSourceReference = infoSourceReferenceRepository.save(infoSourceReference)
-        val modifiedProductLabels: MutableList<ProductLabel> = ArrayList()
-        for (productLabel in productLabels) {
-            modifiedProductLabels.add(productLabelRepository.save(productLabel))
-        }
-
-        modifyValues(modifiedInfoSourceReference, modifiedProductLabels)
-    }
-
-    /**
-     * Assigns companies to an info source reference.
-     *
-     * @param client                Client
-     * @param infoSourceReference   Info source reference
-     * @param companies             Companies
-     * @param modifyValues          Function called with modified info source reference and companies
-     */
-    @ClientVerified
-    open fun assignCompaniesToInfoSourceReference(client: Client, infoSourceReference: InfoSourceReference, companies: List<Company>,
-                                                  modifyValues: (InfoSourceReference, List<Company>) -> Unit = {infoSourceReference, companies -> Unit}) {
-
-        // Validate ownership to info channel
-        Assert.isTrue(
-                infoChannelService.isClientMemberOfInfoChannel(client, infoSourceReference.infoChannel),
-                "Client not member of info channel")
-
-        // Assign company to info source reference
-        infoSourceReference.companies.addAll(companies)
-        for (company in companies) {
-            company.infoSourceReferences.add(infoSourceReference)
-        }
-
-        // Save it all
-        val modifiedInfoSourceReference = infoSourceReferenceRepository.save(infoSourceReference)
-        val modifiedCompany: MutableList<Company> = ArrayList()
-        for (company in companies) {
-            modifiedCompany.add(companyRepository.save(company))
-        }
-
-        modifyValues(modifiedInfoSourceReference, modifiedCompany)
-    }
-
-    /**
-     * Validates an info source reference url.
+     * Validates an url against the given info source.
      *
      * @param url         Url
      * @param infoSource  Info source
      * @throws            Exception if url does not validate
      */
     open fun validateUrlReference(url: String, infoSource: InfoSource) {
-        // TODO! Implement url prefix validator!
+        // TODO! Implement domain validator!
         Assert.isTrue(
                 !StringUtils.isEmpty(url),
                 "URL must not be empty")
 
         var didMatchAny = false
-        for (urlPrefix in infoSource.urlPrefixes) {
-            didMatchAny = didMatchAny || url.toLowerCase().startsWith(urlPrefix.urlPrefix)
+        for (domain in infoSource.domains) {
+            didMatchAny = didMatchAny || url.toLowerCase().startsWith(domain.domain)
         }
         Assert.isTrue(
                 didMatchAny,
-                "URL must be from the given info source, e.g. it must start with fx. " + infoSource.urlPrefixes.first().urlPrefix + ", but was: " + url
+                "URL must be from the given info source, e.g. it must start with fx. " + infoSource.domains.first().domain + ", but was: " + url
         )
     }
 }

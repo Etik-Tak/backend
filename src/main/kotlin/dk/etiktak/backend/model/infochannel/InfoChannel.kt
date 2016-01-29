@@ -30,7 +30,6 @@
 package dk.etiktak.backend.model.infochannel
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.Recommendation
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -62,10 +61,6 @@ class InfoChannel constructor() : BaseModel() {
     @NotNull
     @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
     var recommendations: MutableList<Recommendation> = ArrayList()
-
-    @NotNull
-    @OneToMany(mappedBy = "infoChannel", fetch = FetchType.LAZY)
-    var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

@@ -134,8 +134,8 @@ fun HashMap<String, Any>.add(infoSource: InfoSource): HashMap<String, Any> {
     return add(hashMapOf<String, Any>()
             .add("infoSource", hashMapOf<String, Any>()
                     .add("uuid", infoSource.uuid)
-                    .add("friendlyName", infoSource.friendlyName)
-                    .add("urlPrefixes", infoSource.urlPrefixes, { urlPrefix -> urlPrefix.urlPrefix })))
+                    .add("friendlyName", infoSource.name)
+                    .add("domains", infoSource.domains, { domain -> domain.domain })))
 }
 
 fun HashMap<String, Any>.add(infoSourceReference: InfoSourceReference): HashMap<String, Any> {
@@ -143,17 +143,7 @@ fun HashMap<String, Any>.add(infoSourceReference: InfoSourceReference): HashMap<
             .add("infoSourceReference", hashMapOf<String, Any>()
                     .add("uuid", infoSourceReference.uuid)
                     .add("url", infoSourceReference.url)
-                    .add("title", infoSourceReference.title)
-                    .add("summary", infoSourceReference.summary)
-                    .add("categories", infoSourceReference.productCategories, { category -> hashMapOf<String, Any>()
-                            .add("uuid", category.uuid)
-                            .add("name", category.name) })
-                    .add("labels", infoSourceReference.productLabels, { label -> hashMapOf<String, Any>()
-                            .add("uuid", label.uuid)
-                            .add("name", label.name) })
-                    .add("companies", infoSourceReference.companies, { company -> hashMapOf<String, Any>()
-                            .add("uuid", company.uuid)
-                            .add("name", company.name) })))
+                    .add("title", infoSourceReference.title)))
 }
 
 fun HashMap<String, Any>.add(infoChannel: InfoChannel): HashMap<String, Any> {

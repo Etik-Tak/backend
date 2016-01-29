@@ -40,7 +40,7 @@ open class SecurityService {
     /**
      * Asserts that the client is valid, i.e. is enabled and not banned.
      */
-    fun assertClientValid(client: Client) {
+    open fun assertClientValid(client: Client) {
         Assert.isTrue(
                 client.enabled,
                 "Client with UUID ${client.uuid} is disabled"

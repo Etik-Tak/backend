@@ -31,10 +31,12 @@ package dk.etiktak.backend.model.recommendation
 
 import dk.etiktak.backend.model.BaseModel
 import dk.etiktak.backend.model.infochannel.InfoChannel
+import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
+import javax.validation.constraints.NotNull
 
 @Entity(name = "recommendations")
 @Table(uniqueConstraints = arrayOf(
@@ -52,15 +54,26 @@ open class Recommendation constructor() : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Column(name = "summary")
+    @Column(name = "title")
+    var title: String = ""
+
+    @Column(name = "summary", columnDefinition="TEXT")
     var summary: String = ""
 
     @Column(name = "score")
     var score = RecommendationScore.NEUTRAL
 
+    @NotNull
+    @OneToMany(mappedBy = "recommendation", fetch = FetchType.LAZY)
+    var infoSourceReferences: MutableList<InfoSourceReference> = ArrayList()
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "info_channel_id")
     var infoChannel = InfoChannel()
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var creator = Client()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

@@ -25,13 +25,13 @@
 
 package dk.etiktak.backend.repository.infosource
 
-import dk.etiktak.backend.model.infosource.InfoSourceUrlPrefix
+import dk.etiktak.backend.model.infosource.InfoSourceDomain
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface InfoSourceUrlPrefixRepository : PagingAndSortingRepository<InfoSourceUrlPrefix, Long> {
+interface InfoSourceDomainRepository : PagingAndSortingRepository<InfoSourceDomain, Long> {
 
-    fun findByUuid(uuid: String): InfoSourceUrlPrefix?
-    fun findByUrlPrefix(urlPrefix: String): InfoSourceUrlPrefix?
+    fun findByUuid(uuid: String): InfoSourceDomain?
+    fun findByDomain(domain: String): InfoSourceDomain?
 }
