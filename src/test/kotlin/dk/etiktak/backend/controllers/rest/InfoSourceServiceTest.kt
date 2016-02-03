@@ -64,7 +64,7 @@ open class InfoSourceServiceTest : BaseRestTest() {
     fun createInfoSource() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("domainList", "http://dr.dk,https://dr.dk")
                         .param("friendlyName", "Test Info Source 1"))
                 .andExpect(status().isOk)

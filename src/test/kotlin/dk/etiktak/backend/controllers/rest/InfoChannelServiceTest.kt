@@ -64,7 +64,7 @@ open class InfoChannelServiceTest : BaseRestTest() {
     fun createInfoChannel() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientUuid", client1Uuid)
                         .param("name", "Test Info Channel 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -97,7 +97,7 @@ open class InfoChannelServiceTest : BaseRestTest() {
         // Test follow others info channel
         mockMvc().perform(
                 post(serviceEndpoint("follow/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("infoChannelUuid", infoChannel2Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -110,7 +110,7 @@ open class InfoChannelServiceTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("follow/"))
-                        .param("clientUuid", client2Uuid)
+                        .header("clientuuid", client2Uuid)
                         .param("infoChannelUuid", infoChannel1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

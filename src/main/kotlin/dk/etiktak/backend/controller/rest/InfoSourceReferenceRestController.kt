@@ -46,7 +46,7 @@ class InfoSourceReferenceRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoSourceReference(
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam recommendationUuid: String,
             @RequestParam url: String,
             @RequestParam(required = false) title: String?): HashMap<String, Any> {

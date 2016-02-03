@@ -104,7 +104,7 @@ open class ProductScanTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", "12345678a")
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
                 .andExpect(status().isOk)
@@ -129,7 +129,7 @@ open class ProductScanTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", "12345678a")
-                        .param("clientUuid", client1Uuid))
+                        .header("clientuuid", client1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -147,7 +147,7 @@ open class ProductScanTest : BaseRestTest() {
         val json = mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", "product_that_does_not_exist")
-                        .param("clientUuid", client1Uuid))
+                        .header("clientuuid", client1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -161,7 +161,7 @@ open class ProductScanTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", "product_that_does_not_exist")
-                        .param("clientUuid", client1Uuid))
+                        .header("clientuuid", client1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -179,7 +179,7 @@ open class ProductScanTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("productScanUuid", productScanUuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
@@ -209,7 +209,7 @@ open class ProductScanTest : BaseRestTest() {
         // Assign first location
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("productScanUuid", productScanUuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
@@ -219,7 +219,7 @@ open class ProductScanTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("productScanUuid", productScanUuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
@@ -234,7 +234,7 @@ open class ProductScanTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("productScanUuid", productScanUuid))
                 .andExpect(status().`is`(400))
     }
@@ -244,8 +244,9 @@ open class ProductScanTest : BaseRestTest() {
     private fun scanProduct(): String {
         return postAndExtract(serviceEndpoint(""),
                 hashMapOf(
-                        "barcode" to "12345678a",
                         "clientUuid" to client1Uuid),
+                hashMapOf(
+                        "barcode" to "12345678a"),
                 "$.scan.uuid")
     }
 

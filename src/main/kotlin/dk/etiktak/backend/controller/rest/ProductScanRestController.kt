@@ -34,10 +34,7 @@ import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
@@ -49,7 +46,7 @@ class ProductScanRestController @Autowired constructor(
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.POST))
     fun scanProduct(
             @RequestParam barcode: String,
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam(required = false) latitude: Double? = null,
             @RequestParam(required = false) longitude: Double? = null): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -74,7 +71,7 @@ class ProductScanRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/location/", method = arrayOf(RequestMethod.POST))
     fun provideProductScanLocation(
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam productScanUuid: String,
             @RequestParam latitude: Double,
             @RequestParam longitude: Double): HashMap<String, Any> {

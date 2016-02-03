@@ -237,14 +237,16 @@ open class BaseRestTest {
     fun createAndSaveCompany(clientUuid: String, name: String = "Test company", productUuid: String? = null): String {
         val companyUuid = postAndExtract(CompanyServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "name" to name),
                 "$.company.uuid")
 
         productUuid?.let {
             postAndExtract(ProductServiceTest().serviceEndpoint("assign/company/"),
                     hashMapOf(
-                            "clientUuid" to clientUuid,
+                            "clientUuid" to clientUuid),
+                    hashMapOf(
                             "productUuid" to productUuid,
                             "companyUuid" to companyUuid),
                     "$.message")
@@ -256,7 +258,8 @@ open class BaseRestTest {
     fun createAndSaveProduct(clientUuid: String, barcode: String, barcodeType: Product.BarcodeType, name: String = "Test product"): String {
         return postAndExtract(ProductServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "name" to name,
                         "barcode" to barcode,
                         "barcodeType" to barcodeType.name),
@@ -266,14 +269,16 @@ open class BaseRestTest {
     fun createAndSaveProductCategory(clientUuid: String, name: String, productUuid: String? = null): String {
         val categoryUuid = postAndExtract(ProductCategoryServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "name" to name),
                 "$.productCategory.uuid")
 
         productUuid?.let {
             postAndExtract(ProductServiceTest().serviceEndpoint("assign/category/"),
                     hashMapOf(
-                            "clientUuid" to clientUuid,
+                            "clientUuid" to clientUuid),
+                    hashMapOf(
                             "productUuid" to productUuid,
                             "categoryUuid" to categoryUuid),
                     "$.message")
@@ -285,14 +290,16 @@ open class BaseRestTest {
     fun createAndSaveProductLabel(clientUuid: String, name: String, productUuid: String? = null): String {
         val labelUuid = postAndExtract(ProductLabelServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "name" to name),
                 "$.productLabel.uuid")
 
         productUuid?.let {
             postAndExtract(ProductServiceTest().serviceEndpoint("assign/label/"),
                     hashMapOf(
-                            "clientUuid" to clientUuid,
+                            "clientUuid" to clientUuid),
+                    hashMapOf(
                             "productUuid" to productUuid,
                             "labelUuid" to labelUuid),
                     "$.message")
@@ -304,14 +311,16 @@ open class BaseRestTest {
     fun createAndSaveProductTag(clientUuid: String, name: String, productUuid: String? = null): String {
         val tagUuid = postAndExtract(ProductTagServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "name" to name),
                 "$.productTag.uuid")
 
         productUuid?.let {
             postAndExtract(ProductServiceTest().serviceEndpoint("assign/tag/"),
                     hashMapOf(
-                            "clientUuid" to clientUuid,
+                            "clientUuid" to clientUuid),
+                    hashMapOf(
                             "productUuid" to productUuid,
                             "tagUuid" to tagUuid),
                     "$.message")
@@ -323,7 +332,8 @@ open class BaseRestTest {
     fun createAndSaveInfoChannel(clientUuid: String, name: String = "Test info channel"): String {
         return postAndExtract(InfoChannelServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "name" to name),
                 "$.infoChannel.uuid")
     }
@@ -338,7 +348,8 @@ open class BaseRestTest {
         }
         return postAndExtract(InfoSourceServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "friendlyName" to "Test info source",
                         "domainList" to domainString),
                 "$.infoSource.uuid")
@@ -347,7 +358,8 @@ open class BaseRestTest {
     fun createAndSaveInfoSourceReference(clientUuid: String, infoChannelUuid: String, infoSourceUuid: String, url: String): String {
         return postAndExtract(InfoSourceReferenceServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "infoSourceUuid" to infoSourceUuid,
                         "url" to url,
@@ -359,7 +371,8 @@ open class BaseRestTest {
     fun createAndSaveProductRecommendation(clientUuid: String, infoChannelUuid: String, productUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productUuid" to productUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
@@ -371,7 +384,8 @@ open class BaseRestTest {
     fun createAndSaveProductCategoryRecommendation(clientUuid: String, infoChannelUuid: String, productCategoryUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productCategoryUuid" to productCategoryUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
@@ -383,7 +397,8 @@ open class BaseRestTest {
     fun createAndSaveProductLabelRecommendation(clientUuid: String, infoChannelUuid: String, productLabelUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productLabelUuid" to productLabelUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
@@ -395,7 +410,8 @@ open class BaseRestTest {
     fun createAndSaveProductTagRecommendation(clientUuid: String, infoChannelUuid: String, productTagUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productTagUuid" to productTagUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
@@ -407,7 +423,8 @@ open class BaseRestTest {
     fun createAndSaveCompanyRecommendation(clientUuid: String, infoChannelUuid: String, companyUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationServiceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid,
+                        "clientUuid" to clientUuid),
+                hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "companyUuid" to companyUuid,
                         "score" to RecommendationScore.THUMBS_UP.name,
@@ -418,6 +435,7 @@ open class BaseRestTest {
 
     fun createAndSaveClient(verified: Boolean = true): String {
         val clientUuid = postAndExtract(ClientServiceTest().serviceEndpoint("create/"),
+                hashMapOf(),
                 hashMapOf(),
                 "$.client.uuid")
 
@@ -431,15 +449,18 @@ open class BaseRestTest {
         return TestLocation(latitude, longitude)
     }
 
-    fun postAndExtract(url: String, params: Map<String, String>, jsonKey: String): String {
-        return callAndExtract(post(url), params, jsonKey)
+    fun postAndExtract(url: String, headers: Map<String, String>, params: Map<String, String>, jsonKey: String): String {
+        return callAndExtract(post(url), headers, params, jsonKey)
     }
 
-    fun getAndExtract(url: String, params: Map<String, String>, jsonKey: String): String {
-        return callAndExtract(get(url), params, jsonKey)
+    fun getAndExtract(url: String, headers: Map<String, String>, params: Map<String, String>, jsonKey: String): String {
+        return callAndExtract(get(url), headers, params, jsonKey)
     }
 
-    fun callAndExtract(requestBuilder: MockHttpServletRequestBuilder, params: Map<String, String>, jsonKey: String): String {
+    fun callAndExtract(requestBuilder: MockHttpServletRequestBuilder, headers: Map<String, String>, params: Map<String, String>, jsonKey: String): String {
+        for ((key, value) in headers) {
+            requestBuilder.header(key, value)
+        }
         for ((key, value) in params) {
             requestBuilder.param(key, value)
         }

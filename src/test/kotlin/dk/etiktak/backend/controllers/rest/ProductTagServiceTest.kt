@@ -63,7 +63,7 @@ class ProductTagServiceTest : BaseRestTest() {
     fun createProductTag() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("name", "Vegetarisk"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

@@ -75,7 +75,7 @@ class ProductTrustTest : BaseRestTest() {
     fun createProductWithInitialTrustLevel() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
                         .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
@@ -97,7 +97,7 @@ class ProductTrustTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("productUuid", product1Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
@@ -117,7 +117,7 @@ class ProductTrustTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("productUuid", product1Uuid)
                         .param("name", "Pepsi Cola"))
     }
@@ -129,7 +129,7 @@ class ProductTrustTest : BaseRestTest() {
     fun trustVoteProduct() {
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .param("clientUuid", client2Uuid)
+                        .header("clientuuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -144,7 +144,7 @@ class ProductTrustTest : BaseRestTest() {
     fun cannotTrustVoteMoreThanOnceOnSameProduct() {
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .param("clientUuid", client2Uuid)
+                        .header("clientuuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -154,7 +154,7 @@ class ProductTrustTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .param("clientUuid", client2Uuid)
+                        .header("clientuuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
     }
@@ -167,7 +167,7 @@ class ProductTrustTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -232,7 +232,7 @@ class ProductTrustTest : BaseRestTest() {
         // Trust vote product
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("productUuid", product2Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -272,7 +272,7 @@ class ProductTrustTest : BaseRestTest() {
         // Edit product
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .param("clientUuid", client2Uuid)
+                        .header("clientuuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
@@ -291,7 +291,7 @@ class ProductTrustTest : BaseRestTest() {
         // Edit product
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("productUuid", product2Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
@@ -309,7 +309,7 @@ class ProductTrustTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .param("clientUuid", client2Uuid)
+                        .header("clientuuid", client2Uuid)
                         .param("productUuid", product2Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
@@ -345,7 +345,7 @@ class ProductTrustTest : BaseRestTest() {
             // Vote
             mockMvc().perform(
                     post(serviceEndpoint("/trust/name/"))
-                            .param("clientUuid", currentClientUuid)
+                            .header("clientuuid", currentClientUuid)
                             .param("productUuid", productUuid)
                             .param("vote", trustVoteType.name))
                     .andExpect(status().isOk)

@@ -42,10 +42,7 @@ import dk.etiktak.backend.service.product.ProductService
 import dk.etiktak.backend.service.product.ProductTagService
 import dk.etiktak.backend.service.recommendation.RecommendationService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
@@ -63,7 +60,7 @@ class RecommendationRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getRecommendation(
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam productUuid: String): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -76,7 +73,7 @@ class RecommendationRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createRecommendation(
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam infoChannelUuid: String,
             @RequestParam summary: String,
             @RequestParam score: String,

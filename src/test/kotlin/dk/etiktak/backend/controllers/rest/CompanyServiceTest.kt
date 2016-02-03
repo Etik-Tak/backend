@@ -63,7 +63,7 @@ class CompanyServiceTest : BaseRestTest() {
     fun createCompany() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientUuid", client1Uuid)
                         .param("name", "Coca Cola"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

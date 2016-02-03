@@ -33,10 +33,7 @@ import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
@@ -54,7 +51,7 @@ class InfoChannelRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoChannel(
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
@@ -65,7 +62,7 @@ class InfoChannelRestController @Autowired constructor(
 
     @RequestMapping(value = "/follow/", method = arrayOf(RequestMethod.POST))
     fun followInfoChannel(
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam infoChannelUuid: String): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid) ?: return notFoundMap("Info channel")

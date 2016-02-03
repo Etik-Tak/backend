@@ -33,10 +33,7 @@ import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.client.SmsVerificationService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
@@ -48,7 +45,7 @@ class SmsVerificationRestController @Autowired constructor(
     @RequestMapping(value = "/request/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
     fun requestSmsChallenge(
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam mobileNumber: String,
             @RequestParam password: String): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")

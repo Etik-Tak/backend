@@ -63,7 +63,7 @@ class ProductCategoryServiceTest : BaseRestTest() {
     fun createProductCategory() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .param("clientUuid", client1Uuid)
+                        .header("clientuuid", client1Uuid)
                         .param("name", "Chokolade"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

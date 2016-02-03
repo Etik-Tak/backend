@@ -54,7 +54,7 @@ class CompanyRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createCompany(
-            @RequestParam clientUuid: String,
+            @RequestHeader(value="clientUuid") clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -66,7 +66,7 @@ class CompanyRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editCompany(
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam companyUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
@@ -83,7 +83,7 @@ class CompanyRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/", method = arrayOf(RequestMethod.POST))
     fun trustVoteCompany(
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam companyUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")

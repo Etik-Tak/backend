@@ -44,7 +44,7 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoSource(
-            @RequestParam clientUuid: String,
+            @RequestHeader clientUuid: String,
             @RequestParam domainList: List<String>,
             @RequestParam(required = false) friendlyName: String?): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
