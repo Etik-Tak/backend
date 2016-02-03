@@ -49,7 +49,9 @@ open class ContributionService @Autowired constructor(
 
     companion object {
         val initialClientTrustLevel = 0.5
-        val TrustScoreContributionDelta = 0.05
+        val trustScoreContributionDelta = 0.05
+        val votedTrustWeightMax = 0.95
+        val votedTrustWeightLinearGrowthUpUntil = 5.0
     }
 
     /**
@@ -61,7 +63,7 @@ open class ContributionService @Autowired constructor(
      */
     open fun hasSufficientTrustToEditContribution(client: Client, contribution: Contribution?): Boolean {
         if (contribution != null) {
-            return client.trustLevel >= contribution.trustScore - TrustScoreContributionDelta
+            return client.trustLevel >= contribution.trustScore - trustScoreContributionDelta
         } else {
             return true
         }
@@ -150,11 +152,11 @@ open class ContributionService @Autowired constructor(
         // Update trust item
         if (totalVotesCount > 0) {
 
-            // Voted trust score is simply the percentage of trusted votes out of total number of votes.
-            // Weight has linear growth up until 20 votes, reaching its maximum at 95%.
+            // Voted trust score is simply the percentage of trusted votes out of total number of votes. Weight has linear growth.
             val votedTrustScore = trustedVotesCount.toDouble() / totalVotesCount.toDouble()
             val votedTrustScoreWeight = linearGrowthTrustWeight(totalVotesCount)
 
+            // Client trust level
             val clientTrustLevel = contribution.client.trustLevel
             val clientTrustLevelWeight = 1.0 - votedTrustScoreWeight
 
@@ -211,12 +213,13 @@ open class ContributionService @Autowired constructor(
             totalWeight += 1.0
         }
 
-        // Add trust from contributions(voted on by client
+        // Add trust from contributions voted on by client
         for (contribution in votedContributions) {
 
             // Count trusted and not-trusted votes
             val trustedVoteCount = trustVoteRepository.countByVoteAndContributionUuid(TrustVote.TrustVoteType.Trusted, contribution.uuid)
             val notTrustedVoteCount = trustVoteRepository.countByVoteAndContributionUuid(TrustVote.TrustVoteType.NotTrusted, contribution.uuid)
+            val totalVoteCount = trustedVoteCount + notTrustedVoteCount
 
             // If none, ignore trust item
             if (trustedVoteCount == 0L && notTrustedVoteCount == 0L) {
@@ -226,9 +229,13 @@ open class ContributionService @Autowired constructor(
             // Find client's trust vote
             val actualVote = trustVoteRepository.findByClientUuidAndContributionUuid(client.uuid, contribution.uuid)!!
 
-            // Calculate weight
+            // Weight is lowered if vote is of type trusted. This is done in an attempt to mitigate clients from easily
+            // gaining higher trust level from just contributing with votes that provide no real value.
+            val weightImpact = if (actualVote.vote == TrustVote.TrustVoteType.Trusted) 0.75 else 1.0
+
+            // Calculate weight. Weight increases quadratic with number of votes.
             val ratio = Math.min(trustedVoteCount, notTrustedVoteCount).toDouble() / Math.max(trustedVoteCount, notTrustedVoteCount).toDouble()
-            val weight = Math.pow(1.0 - ratio, 3.0) * linearGrowthTrustWeight(trustedVoteCount + notTrustedVoteCount)
+            val weight = Math.pow(1.0 - ratio, 3.0) * linearGrowthTrustWeight(totalVoteCount) * weightImpact
 
             // Calculate score
             val majorityVoteType = if (trustedVoteCount > notTrustedVoteCount) TrustVote.TrustVoteType.Trusted else TrustVote.TrustVoteType.NotTrusted
@@ -258,14 +265,13 @@ open class ContributionService @Autowired constructor(
      * @return            Weight of voted trust from 0 to 1
      */
     open fun linearGrowthTrustWeight(votesCount: Long): Double {
-        val votedTrustWeightMax = 0.95
-        val votedTrustWeightGrowth = votedTrustWeightMax / 20.0
+        val votedTrustWeightGrowth = votedTrustWeightMax / votedTrustWeightLinearGrowthUpUntil
 
         return Math.min(votesCount * votedTrustWeightGrowth, votedTrustWeightMax)
     }
 
     /**
-     * Returns the unique contribution from the given list. Asserts that the list has size more no than one.
+     * Returns the unique contribution from the given list. Asserts that the list has size no more than one.
      *
      * @param contributions    List of contributions
      * @return                 Element at position 0, if any
