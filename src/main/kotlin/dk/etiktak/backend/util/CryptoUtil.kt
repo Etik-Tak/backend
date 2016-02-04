@@ -54,7 +54,7 @@ class CryptoUtil {
     @Throws(NoSuchAlgorithmException::class, UnsupportedEncodingException::class)
     fun hash(text: String): String {
         val digest = MessageDigest.getInstance("SHA-256")
-        val hashedBytes = digest.digest(text.toByteArray("UTF-8"))
+        val hashedBytes = digest.digest(text.toByteArray(Charsets.UTF_8))
 
         return hashedBytes.convertByteArrayToHexString()
     }

@@ -115,7 +115,7 @@ class RecommendationTest : BaseRestTest() {
         val recommendations = recommendationRepository!!.findAll()
         Assert.assertEquals(
                 2,
-                recommendations.collectionSizeOrDefault(0))
+                recommendations.count())
 
         Assert.assertEquals(
                 product1Uuid,
@@ -164,7 +164,7 @@ class RecommendationTest : BaseRestTest() {
         val recommendations = recommendationRepository!!.findAll()
         Assert.assertEquals(
                 2,
-                recommendations.collectionSizeOrDefault(0))
+                recommendations.count())
 
         Assert.assertEquals(
                 productCategory1Uuid,
@@ -213,7 +213,7 @@ class RecommendationTest : BaseRestTest() {
         val recommendations = recommendationRepository!!.findAll()
         Assert.assertEquals(
                 2,
-                recommendations.collectionSizeOrDefault(0))
+                recommendations.count())
 
         Assert.assertEquals(
                 productLabel1Uuid,
@@ -262,7 +262,7 @@ class RecommendationTest : BaseRestTest() {
         val recommendations = recommendationRepository!!.findAll()
         Assert.assertEquals(
                 2,
-                recommendations.collectionSizeOrDefault(0))
+                recommendations.count())
 
         Assert.assertEquals(
                 productTag1Uuid,
@@ -311,7 +311,7 @@ class RecommendationTest : BaseRestTest() {
         val recommendations = recommendationRepository!!.findAll()
         Assert.assertEquals(
                 2,
-                recommendations.collectionSizeOrDefault(0))
+                recommendations.count())
 
         Assert.assertEquals(
                 company1Uuid,

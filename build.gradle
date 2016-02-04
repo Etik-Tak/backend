@@ -1,21 +1,27 @@
 buildscript {
+    ext.kotlin_version = '1.0.0-rc-1036'
     repositories {
         mavenCentral()
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.3.RELEASE")
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.+'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 apply plugin: 'java'
+apply plugin: 'kotlin'
 apply plugin: 'idea'
 apply plugin: 'spring-boot'
-apply plugin: "kotlin"
 
 jar {
     baseName = 'etik-tak'
     version =  '0.1.0'
+}
+
+jar {
+    baseName = 'spring-boot-angular2'
+    //version = '0.0.1-SNAPSHOT'
 }
 
 repositories {
@@ -33,11 +39,10 @@ sourceSets {
             srcDir "test/main/kotlin"
         }
     }
+    main.java.srcDirs += 'src/main/java'
 }
 
 dependencies {
-    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.+'
-
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.boot:spring-boot-starter-security")
     compile("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -45,6 +50,7 @@ dependencies {
 
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("com.jayway.jsonpath:json-path")
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
 task wrapper(type: Wrapper) {

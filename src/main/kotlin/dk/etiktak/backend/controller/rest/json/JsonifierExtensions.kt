@@ -70,8 +70,8 @@ fun HashMap<String, Any>.add(product: Product, client: Client? = null, productSe
                             .add("name", tag.name) })
                     .add("editableItems", {client != null}, {hashMapOf<String, Any>()
                             .add("name", hashMapOf<String, Any>()
-                                    .add("editable", {productService.canEditProductName(client!!, product)})
-                                    .add("trustScore", {productService.productNameContribution(product)?.trustScore}))})))
+                                    .add("editable", eval = {productService.canEditProductName(client!!, product)})
+                                    .add("trustScore", eval = {productService.productNameContribution(product)?.trustScore}))})))
 }
 
 fun HashMap<String, Any>.add(company: Company, client: Client? = null, companyService: CompanyService): HashMap<String, Any> {
@@ -81,8 +81,8 @@ fun HashMap<String, Any>.add(company: Company, client: Client? = null, companySe
                     .add("name", company.name)
                     .add("editableItems", {client != null}, {hashMapOf<String, Any>()
                             .add("name", hashMapOf<String, Any>()
-                                    .add("editable", {companyService.canEditCompanyName(client!!, company)})
-                                    .add("trustScore", {companyService.companyNameContribution(company)?.trustScore}))})))
+                                    .add("editable", eval = {companyService.canEditCompanyName(client!!, company)})
+                                    .add("trustScore", eval = {companyService.companyNameContribution(company)?.trustScore}))})))
 }
 
 fun HashMap<String, Any>.add(store: Store, client: Client? = null, storeService: StoreService): HashMap<String, Any> {
@@ -92,8 +92,8 @@ fun HashMap<String, Any>.add(store: Store, client: Client? = null, storeService:
                     .add("name", storeService.storeName(store))
                     .add("editableItems", {client != null}, {hashMapOf<String, Any>()
                             .add("name", hashMapOf<String, Any>()
-                                    .add("editable", {storeService.canEditStoreName(client!!, store)})
-                                    .add("trustScore", {storeService.storeNameContribution(store)?.trustScore}))})))
+                                    .add("editable", eval = {storeService.canEditStoreName(client!!, store)})
+                                    .add("trustScore", eval = {storeService.storeNameContribution(store)?.trustScore}))})))
 }
 
 fun HashMap<String, Any>.add(productCategory: ProductCategory, client: Client? = null, productCategoryService: ProductCategoryService): HashMap<String, Any> {
@@ -103,8 +103,8 @@ fun HashMap<String, Any>.add(productCategory: ProductCategory, client: Client? =
                     .add("name", productCategory.name))
             .add("editableItems", {client != null}, {hashMapOf<String, Any>()
                     .add("name", hashMapOf<String, Any>()
-                            .add("editable", {productCategoryService.canEditProductCategoryName(client!!, productCategory)})
-                            .add("trustScore", {productCategoryService.productCategoryNameContribution(productCategory)?.trustScore}))}))
+                            .add("editable", eval = {productCategoryService.canEditProductCategoryName(client!!, productCategory)})
+                            .add("trustScore", eval = {productCategoryService.productCategoryNameContribution(productCategory)?.trustScore}))}))
 }
 
 fun HashMap<String, Any>.add(productLabel: ProductLabel, client: Client? = null, productLabelService: ProductLabelService): HashMap<String, Any> {
@@ -114,8 +114,8 @@ fun HashMap<String, Any>.add(productLabel: ProductLabel, client: Client? = null,
                     .add("name", productLabel.name))
             .add("editableItems", {client != null}, {hashMapOf<String, Any>()
                     .add("name", hashMapOf<String, Any>()
-                            .add("editable", {productLabelService.canEditProductLabelName(client!!, productLabel)})
-                            .add("trustScore", {productLabelService.productLabelNameContribution(productLabel)?.trustScore}))}))
+                            .add("editable", eval = {productLabelService.canEditProductLabelName(client!!, productLabel)})
+                            .add("trustScore", eval = {productLabelService.productLabelNameContribution(productLabel)?.trustScore}))}))
 }
 
 fun HashMap<String, Any>.add(productTag: ProductTag): HashMap<String, Any> {
@@ -149,8 +149,8 @@ fun HashMap<String, Any>.add(infoSource: InfoSource, client: Client? = null, inf
                     .add("domains", infoSource.domains, { domain -> domain.domain })
                     .add("editableItems", {client != null}, {hashMapOf<String, Any>()
                             .add("name", hashMapOf<String, Any>()
-                                    .add("editable", {infoSourceService.canEditInfoSourceName(client!!, infoSource)})
-                                    .add("trustScore", {infoSourceService.infoSourceNameContribution(infoSource)?.trustScore}))})))
+                                    .add("editable", eval = {infoSourceService.canEditInfoSourceName(client!!, infoSource)})
+                                    .add("trustScore", eval = {infoSourceService.infoSourceNameContribution(infoSource)?.trustScore}))})))
 }
 
 fun HashMap<String, Any>.add(infoSourceReference: InfoSourceReference): HashMap<String, Any> {
@@ -222,12 +222,12 @@ fun <T> HashMap<String, T>.add(jsonKey: String, entity: T?) : HashMap<String, T>
 /**
  * Adds an entity to the map given by the evaluation function. If entity is null the function is idempotence.
  *
- * @param jsonKey        Key to map entity to
- * @param valueFunction  Function that returns the actual function
- * @return               Map with entity mapped if condition is true
+ * @param jsonKey   Key to map entity to
+ * @param eval      Function that returns the actual function
+ * @return          Map with entity mapped if condition is true
  */
-fun <T> HashMap<String, T>.add(jsonKey: String, valueFunction: () -> T?) : HashMap<String, T> {
-    val entity = valueFunction()
+fun <T> HashMap<String, T>.add(jsonKey: String, eval: () -> T?) : HashMap<String, T> {
+    val entity = eval()
     entity?.let {
         this[jsonKey] = entity
     }
