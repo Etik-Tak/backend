@@ -145,6 +145,17 @@ open class ProductLabelService @Autowired constructor(
     }
 
     /**
+     * Returns whether the given client can edit the name of the product label.
+     *
+     * @param client        Client
+     * @param productLabel  Product label
+     * @return              Yes, if the given client can edit the name of the product label, or else false
+     */
+    open fun canEditProductLabelName(client: Client, productLabel: ProductLabel): Boolean {
+        return contributionService.hasSufficientTrustToEditContribution(client, productLabelNameContribution(productLabel))
+    }
+
+    /**
      * Returns the product label name contribution which is currently active.
      *
      * @param productLabel   Product label

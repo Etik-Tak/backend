@@ -43,6 +43,9 @@ import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.model.user.SmsVerification
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.company.StoreService
+import dk.etiktak.backend.service.infosource.InfoSourceService
+import dk.etiktak.backend.service.product.ProductCategoryService
+import dk.etiktak.backend.service.product.ProductLabelService
 import dk.etiktak.backend.service.product.ProductService
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -93,18 +96,26 @@ fun HashMap<String, Any>.add(store: Store, client: Client? = null, storeService:
                                     .add("trustScore", {storeService.storeNameContribution(store)?.trustScore}))})))
 }
 
-fun HashMap<String, Any>.add(productCategory: ProductCategory): HashMap<String, Any> {
+fun HashMap<String, Any>.add(productCategory: ProductCategory, client: Client? = null, productCategoryService: ProductCategoryService): HashMap<String, Any> {
     return add(hashMapOf<String, Any>()
             .add("productCategory", hashMapOf<String, Any>()
                     .add("uuid", productCategory.uuid)
-                    .add("name", productCategory.name)))
+                    .add("name", productCategory.name))
+            .add("editableItems", {client != null}, {hashMapOf<String, Any>()
+                    .add("name", hashMapOf<String, Any>()
+                            .add("editable", {productCategoryService.canEditProductCategoryName(client!!, productCategory)})
+                            .add("trustScore", {productCategoryService.productCategoryNameContribution(productCategory)?.trustScore}))}))
 }
 
-fun HashMap<String, Any>.add(productLabel: ProductLabel): HashMap<String, Any> {
+fun HashMap<String, Any>.add(productLabel: ProductLabel, client: Client? = null, productLabelService: ProductLabelService): HashMap<String, Any> {
     return add(hashMapOf<String, Any>()
             .add("productLabel", hashMapOf<String, Any>()
                     .add("uuid", productLabel.uuid)
-                    .add("name", productLabel.name)))
+                    .add("name", productLabel.name))
+            .add("editableItems", {client != null}, {hashMapOf<String, Any>()
+                    .add("name", hashMapOf<String, Any>()
+                            .add("editable", {productLabelService.canEditProductLabelName(client!!, productLabel)})
+                            .add("trustScore", {productLabelService.productLabelNameContribution(productLabel)?.trustScore}))}))
 }
 
 fun HashMap<String, Any>.add(productTag: ProductTag): HashMap<String, Any> {
@@ -130,12 +141,16 @@ fun HashMap<String, Any>.add(recommendations: List<Recommendation>): HashMap<Str
                     .add("score", recommendation.score.name) }))
 }
 
-fun HashMap<String, Any>.add(infoSource: InfoSource): HashMap<String, Any> {
+fun HashMap<String, Any>.add(infoSource: InfoSource, client: Client? = null, infoSourceService: InfoSourceService): HashMap<String, Any> {
     return add(hashMapOf<String, Any>()
             .add("infoSource", hashMapOf<String, Any>()
                     .add("uuid", infoSource.uuid)
                     .add("name", infoSource.name)
-                    .add("domains", infoSource.domains, { domain -> domain.domain })))
+                    .add("domains", infoSource.domains, { domain -> domain.domain })
+                    .add("editableItems", {client != null}, {hashMapOf<String, Any>()
+                            .add("name", hashMapOf<String, Any>()
+                                    .add("editable", {infoSourceService.canEditInfoSourceName(client!!, infoSource)})
+                                    .add("trustScore", {infoSourceService.infoSourceNameContribution(infoSource)?.trustScore}))})))
 }
 
 fun HashMap<String, Any>.add(infoSourceReference: InfoSourceReference): HashMap<String, Any> {
@@ -207,10 +222,9 @@ fun <T> HashMap<String, T>.add(jsonKey: String, entity: T?) : HashMap<String, T>
 /**
  * Adds an entity to the map given by the evaluation function. If entity is null the function is idempotence.
  *
- * @param jsonKey     Key to map entity to
- * @param condition   Condition
- * @param entity      Entity to map
- * @return            Map with entity mapped if condition is true
+ * @param jsonKey        Key to map entity to
+ * @param valueFunction  Function that returns the actual function
+ * @return               Map with entity mapped if condition is true
  */
 fun <T> HashMap<String, T>.add(jsonKey: String, valueFunction: () -> T?) : HashMap<String, T> {
     val entity = valueFunction()
@@ -223,8 +237,8 @@ fun <T> HashMap<String, T>.add(jsonKey: String, valueFunction: () -> T?) : HashM
 /**
  * Adds all entries of given map to the map.
  *
- * @param entity    Entity to map
- * @return          Map with entity mapped
+ * @param entries   Entries to add to map
+ * @return          Map with entries added to map
  */
 fun <T> HashMap<String, T>.add(entries: HashMap<String, T>) : HashMap<String, T> {
     for (jsonKey in entries.keys) {
@@ -239,10 +253,10 @@ fun <T> HashMap<String, T>.add(entries: HashMap<String, T>) : HashMap<String, T>
 /**
  * Adds an entity to the map if the given condition evaluated to true. If entity is null the function is idempotence.
  *
- * @param jsonKey     Key to map entity to
- * @param condition   Condition
- * @param entity      Entity to map
- * @return            Map with entity mapped if condition is true
+ * @param jsonKey         Key to map entity to
+ * @param condition       Condition
+ * @param entityFunction  Function that returns the actual value
+ * @return                Map with entity mapped if condition is true
  */
 fun <T> HashMap<String, T>.add(jsonKey: String, condition: () -> Boolean, entityFunction: () -> T?) : HashMap<String, T> {
     if (condition()) {
@@ -257,9 +271,10 @@ fun <T> HashMap<String, T>.add(jsonKey: String, condition: () -> Boolean, entity
 /**
  * Transforms and adds a list of entities to the list. If entities is null the function is idempotence.
  *
- * @param jsonKey   Key to map array to
- * @param entity    Entity to map list to
- * @return          Hash map with entity list mapped
+ * @param jsonKey      Key to map array to
+ * @param entities     Entity list to add to map
+ * @param transformer  Transform function
+ * @return             Hash map with entity list mapped
  */
 fun <T> HashMap<String, Any>.add(jsonKey: String, entities: Collection<T>?, transformer: (T) -> Any) : HashMap<String, Any> {
     entities?.let {

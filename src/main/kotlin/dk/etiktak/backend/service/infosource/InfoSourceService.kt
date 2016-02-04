@@ -225,6 +225,17 @@ open class InfoSourceService @Autowired constructor(
     }
 
     /**
+     * Returns whether the given client can edit the name of the info source.
+     *
+     * @param client      Client
+     * @param infoSource  Info source
+     * @return            Yes, if the given client can edit the name of the info source, or else false
+     */
+    open fun canEditInfoSourceName(client: Client, infoSource: InfoSource): Boolean {
+        return contributionService.hasSufficientTrustToEditContribution(client, infoSourceNameContribution(infoSource))
+    }
+
+    /**
      * Returns the info source name contribution which is currently active.
      *
      * @param infoSource  Info source

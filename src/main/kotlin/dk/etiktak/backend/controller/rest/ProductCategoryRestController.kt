@@ -34,6 +34,7 @@ import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -45,21 +46,25 @@ class ProductCategoryRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProductCategory(
+            @RequestHeader(required = false) clientUuid: String? = null,
             @RequestParam uuid: String): HashMap<String, Any> {
+
+        val client = if (clientUuid != null) clientService.getByUuid(clientUuid) else null
         val productCategory = productCategoryService.getProductCategoryByUuid(uuid) ?: return notFoundMap("Product category")
 
-        return okMap().add(productCategory)
+        return okMap().add(productCategory, client, productCategoryService)
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProductCategory(
             @RequestHeader clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
+
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
         val productCategory = productCategoryService.createProductCategory(client, name)
 
-        return okMap().add(productCategory)
+        return okMap().add(productCategory, client, productCategoryService)
     }
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
@@ -75,7 +80,7 @@ class ProductCategoryRestController @Autowired constructor(
             productCategoryService.editProductCategoryName(client, productCategory, name, modifyValues = { modifiedClient, modifiedProductCategory -> client = modifiedClient; productCategory = modifiedProductCategory })
         }
 
-        return okMap().add(productCategory)
+        return okMap().add(productCategory, client, productCategoryService)
     }
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
@@ -83,11 +88,12 @@ class ProductCategoryRestController @Autowired constructor(
             @RequestHeader clientUuid: String,
             @RequestParam productCategoryUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
+
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: return notFoundMap("Product category")
 
         productCategoryService.trustVoteProductCategoryName(client, productCategory, vote)
 
-        return okMap().add(productCategory)
+        return okMap().add(productCategory, client, productCategoryService)
     }
 }

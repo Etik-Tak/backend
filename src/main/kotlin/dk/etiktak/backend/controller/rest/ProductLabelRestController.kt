@@ -45,21 +45,25 @@ open class ProductLabelRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProductLabel(
+            @RequestHeader(required = false) clientUuid: String?,
             @RequestParam uuid: String): HashMap<String, Any> {
+
+        val client = if (clientUuid != null) clientService.getByUuid(clientUuid) else null
         val productLabel = productLabelService.getProductLabelByUuid(uuid) ?: return notFoundMap("Product label")
 
-        return okMap().add(productLabel)
+        return okMap().add(productLabel, client, productLabelService)
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProductLabel(
             @RequestHeader clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
+
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
         val productLabel = productLabelService.createProductLabel(client, name)
 
-        return okMap().add(productLabel)
+        return okMap().add(productLabel, client, productLabelService)
     }
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
@@ -75,7 +79,7 @@ open class ProductLabelRestController @Autowired constructor(
             productLabelService.editProductLabelName(client, productLabel, name, modifyValues = { modifiedClient, modifiedProductLabel -> client = modifiedClient; productLabel = modifiedProductLabel })
         }
 
-        return okMap().add(productLabel)
+        return okMap().add(productLabel, client, productLabelService)
     }
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
@@ -83,11 +87,12 @@ open class ProductLabelRestController @Autowired constructor(
             @RequestHeader clientUuid: String,
             @RequestParam productLabelUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
+
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: return notFoundMap("Product label")
 
         productLabelService.trustVoteProductLabelName(client, productLabel, vote)
 
-        return okMap().add(productLabel)
+        return okMap().add(productLabel, client, productLabelService)
     }
 }

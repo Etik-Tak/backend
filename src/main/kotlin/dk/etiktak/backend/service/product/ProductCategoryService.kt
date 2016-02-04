@@ -145,6 +145,17 @@ open class ProductCategoryService @Autowired constructor(
     }
 
     /**
+     * Returns whether the given client can edit the name of the product category.
+     *
+     * @param client           Client
+     * @param productCategory  Product category
+     * @return                 Yes, if the given client can edit the name of the product category, or else false
+     */
+    open fun canEditProductCategoryName(client: Client, productCategory: ProductCategory): Boolean {
+        return contributionService.hasSufficientTrustToEditContribution(client, productCategoryNameContribution(productCategory))
+    }
+
+    /**
      * Returns the product category name contribution which is currently active.
      *
      * @param productCategory   Product category

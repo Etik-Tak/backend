@@ -52,21 +52,25 @@ class InfoSourceRestController @Autowired constructor(
 
         val infoSource = infoSourceService.createInfoSource(client, domainList, name)
 
-        return okMap().add(infoSource)
+        return okMap().add(infoSource, client, infoSourceService)
     }
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.POST))
     fun getInfoSourceReference(
+            @RequestHeader(required = false) clientUuid: String? = null,
             @RequestParam(required = false) url: String?,
             @RequestParam(required = false) uuid: String?): HashMap<String, Any> {
+
+        val client = if (clientUuid != null) clientService.getByUuid(clientUuid) else null
+
         url?.let {
             val infoSource = infoSourceService.getInfoSourceByUrl(url) ?: return notFoundMap("Info source")
-            return okMap().add(infoSource)
+            return okMap().add(infoSource, client, infoSourceService)
         }
 
         uuid?.let {
             val infoSource = infoSourceService.getInfoSourceByUuid(uuid) ?: return notFoundMap("Info source")
-            return okMap().add(infoSource)
+            return okMap().add(infoSource, client, infoSourceService)
         }
 
         return notFoundMap("Info source")
@@ -85,7 +89,7 @@ class InfoSourceRestController @Autowired constructor(
             infoSourceService.editInfoSourceName(client, infoSource, name, modifyValues = { modifiedClient, modifiedInfoSource -> client = modifiedClient; infoSource = modifiedInfoSource })
         }
 
-        return okMap().add(infoSource)
+        return okMap().add(infoSource, client, infoSourceService)
     }
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
@@ -98,6 +102,6 @@ class InfoSourceRestController @Autowired constructor(
 
         infoSourceService.trustVoteInfoSourceName(client, infoSource, vote)
 
-        return okMap().add(infoSource)
+        return okMap().add(infoSource, client, infoSourceService)
     }
 }
