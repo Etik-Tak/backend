@@ -25,13 +25,17 @@
 
 package dk.etiktak.backend.service.infosource
 
+import dk.etiktak.backend.model.contribution.InfoSourceNameContribution
+import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.infosource.InfoSource
 import dk.etiktak.backend.model.infosource.InfoSourceDomain
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.contribution.InfoSourceNameContributionRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceDomainRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.security.ClientVerified
+import dk.etiktak.backend.service.trust.ContributionService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,7 +50,9 @@ import java.net.URI
 open class InfoSourceService @Autowired constructor(
         private val infoSourceRepository: InfoSourceRepository,
         private val infoSourceDomainRepository: InfoSourceDomainRepository,
-        private val clientRepository: ClientRepository) {
+        private val clientRepository: ClientRepository,
+        private val infoSourceNameContributionRepository: InfoSourceNameContributionRepository,
+        private val contributionService: ContributionService) {
 
     private val logger = LoggerFactory.getLogger(InfoSourceService::class.java)
 
@@ -74,13 +80,15 @@ open class InfoSourceService @Autowired constructor(
     /**
      * Creates an info source.
      *
-     * @param client         Creator
+     * @param inClient       Creator
      * @param domains        Domains
-     * @param friendlyName   Name of info source
+     * @param name           Name of info source
+     * @param modifyValues   Function called with modified client
      * @return               Created info source
      */
     @ClientVerified
-    open fun createInfoSource(client: Client, domains: List<String>, friendlyName: String? = null): InfoSource {
+    open fun createInfoSource(inClient: Client, domains: List<String>, name: String? = null, modifyValues: (Client) -> Unit = {}): InfoSource {
+        var client = inClient
 
         // Validate domains
         for (domain in domains) {
@@ -88,9 +96,9 @@ open class InfoSourceService @Autowired constructor(
         }
 
         // Create info source
-        val infoSource = InfoSource()
+        var infoSource = InfoSource()
         infoSource.uuid = CryptoUtil().uuid()
-        infoSource.name = friendlyName
+        infoSource.name = name
 
         // Create domains
         for (domain in domains) {
@@ -107,6 +115,12 @@ open class InfoSourceService @Autowired constructor(
         for (infoSourceDomain in infoSource.domains) {
             infoSourceDomainRepository.save(infoSourceDomain)
         }
+
+        // Create name contribution
+        editInfoSourceName(client, infoSource, name ?: "",
+                modifyValues = {modifiedClient, modifiedInfoSource -> client = modifiedClient; infoSource = modifiedInfoSource})
+
+        modifyValues(client)
 
         return infoSource
     }
@@ -146,9 +160,92 @@ open class InfoSourceService @Autowired constructor(
      * @throws            Exception if domain does not validate
      */
     open fun validateDomain(domain: String) {
-        // TODO! Implement domain validator!
         Assert.isTrue(
                 !StringUtils.isEmpty(domain),
                 "Domain must not be empty")
+
+        // Validate domain by creating an URI
+        URI(domain)
+    }
+
+    /**
+     * Edits an info source name.
+     *
+     * @param inClient        Client
+     * @param inInfoSource    Info source
+     * @param name            Name of info source
+     * @param modifyValues    Function called with modified client and info source
+     * @return                Product label name contribution
+     */
+    @ClientVerified
+    open fun editInfoSourceName(inClient: Client, inInfoSource: InfoSource, name: String, modifyValues: (Client, InfoSource) -> Unit = { client, infoSource -> Unit}): InfoSourceNameContribution {
+
+        var client = inClient
+        var infoSource = inInfoSource
+
+        // Get current name contribution
+        val contributions = infoSourceNameContributionRepository.findByInfoSourceUuidAndEnabled(infoSource.uuid)
+        val currentContribution = contributionService.uniqueContribution(contributions)
+
+        currentContribution?.let {
+
+            // Check sufficient trust
+            contributionService.assertSufficientTrustToEditContribution(client, currentContribution)
+
+            // Disable current contribution
+            currentContribution.enabled = false
+            infoSourceNameContributionRepository.save(currentContribution)
+        }
+
+        // Edit name
+        infoSource.name = name
+
+        // Create name contribution
+        var infoSourceNameContribution = InfoSourceNameContribution()
+        infoSourceNameContribution.uuid = CryptoUtil().uuid()
+        infoSourceNameContribution.client = client
+        infoSourceNameContribution.infoSource = infoSource
+        infoSourceNameContribution.name = name
+
+        // Glue it together
+        infoSource.contributions.add(infoSourceNameContribution)
+        client.contributions.add(infoSourceNameContribution)
+
+        // Save it all
+        client = clientRepository.save(client)
+        infoSource = infoSourceRepository.save(infoSource)
+        infoSourceNameContribution = infoSourceNameContributionRepository.save(infoSourceNameContribution)
+
+        // Update trust
+        contributionService.updateTrust(infoSourceNameContribution)
+
+        modifyValues(client, infoSource)
+
+        return infoSourceNameContribution
+    }
+
+    /**
+     * Returns the info source name contribution which is currently active.
+     *
+     * @param infoSource  Info source
+     * @return            info source name contribution
+     */
+    open fun infoSourceNameContribution(infoSource: InfoSource): InfoSourceNameContribution? {
+        val contributions = infoSourceNameContributionRepository.findByInfoSourceUuidAndEnabled(infoSource.uuid)
+        return contributionService.uniqueContribution(contributions)
+    }
+
+    /**
+     * Trust votes info source name.
+     *
+     * @param client            Client
+     * @param infoSource        Info source
+     * @param vote              Vote
+     * @param modifyValues      Function called with modified client
+     * @return                  Trust vote
+     */
+    open fun trustVoteInfoSourceName(client: Client, infoSource: InfoSource, vote: TrustVote.TrustVoteType, modifyValues: (Client) -> Unit = {}): TrustVote {
+        val contribution = infoSourceNameContribution(infoSource)!!
+        return contributionService.trustVoteItem(client, contribution, vote, modifyValues = {client, contribution -> modifyValues(client)})
     }
 }

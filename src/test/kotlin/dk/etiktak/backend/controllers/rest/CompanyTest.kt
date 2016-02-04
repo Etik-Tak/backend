@@ -42,10 +42,10 @@ import org.hamcrest.Matchers.notNullValue
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class ProductLabelServiceTest : BaseRestTest() {
+class CompanyTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "product/label/" + postfix
+        return super.serviceEndpoint() + "company/" + postfix
     }
 
     @Before
@@ -57,35 +57,35 @@ class ProductLabelServiceTest : BaseRestTest() {
     }
 
     /**
-     * Test that we can create a product label.
+     * Test that we can create a company.
      */
     @Test
-    fun createProductLabel() {
+    fun createCompany() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("clientuuid", client1Uuid)
-                        .param("name", "KRAV"))
+                        .header("clientUuid", client1Uuid)
+                        .param("name", "Coca Cola"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.productLabel.uuid", notNullValue()))
-                .andExpect(jsonPath("$.productLabel.name", `is`("KRAV")))
+                .andExpect(jsonPath("$.company.uuid", notNullValue()))
+                .andExpect(jsonPath("$.company.name", `is`("Coca Cola")))
     }
 
     /**
-     * Test that we can retrieve a product label.
+     * Test that we can retrieve a company.
      */
     @Test
-    fun retrieveProductLabel() {
-        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, "Ecocert")
+    fun retrieveCompany() {
+        company1Uuid = createAndSaveCompany(client1Uuid, "Pepsi Cola")
 
         mockMvc().perform(
                 get(serviceEndpoint("/"))
-                        .param("uuid", productLabel1Uuid))
+                        .param("uuid", company1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.productLabel.uuid", `is`(productLabel1Uuid)))
-                .andExpect(jsonPath("$.productLabel.name", `is`("Ecocert")))
+                .andExpect(jsonPath("$.company.uuid", `is`(company1Uuid)))
+                .andExpect(jsonPath("$.company.name", `is`("Pepsi Cola")))
     }
 }

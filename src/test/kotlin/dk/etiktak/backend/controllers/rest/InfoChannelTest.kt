@@ -27,6 +27,7 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
+import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,18 +35,18 @@ import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.notNullValue
+import org.junit.Assert
+import org.springframework.transaction.annotation.Transactional
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class CompanyServiceTest : BaseRestTest() {
+open class InfoChannelTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "company/" + postfix
+        return super.serviceEndpoint() + "infochannel/" + postfix
     }
 
     @Before
@@ -57,35 +58,67 @@ class CompanyServiceTest : BaseRestTest() {
     }
 
     /**
-     * Test that we can create a company.
+     * Test that we can create an info channel.
      */
     @Test
-    fun createCompany() {
+    fun createInfoChannel() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("clientUuid", client1Uuid)
-                        .param("name", "Coca Cola"))
+                        .param("name", "Test Info Channel 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.company.uuid", notNullValue()))
-                .andExpect(jsonPath("$.company.name", `is`("Coca Cola")))
+                .andExpect(jsonPath("$.infoChannel.uuid", Matchers.notNullValue()))
+                .andExpect(jsonPath("$.infoChannel.name", `is`("Test Info Channel 1")))
     }
 
     /**
-     * Test that we can retrieve a company.
+     * Test that we can follow an info channel.
      */
     @Test
-    fun retrieveCompany() {
-        company1Uuid = createAndSaveCompany(client1Uuid, "Pepsi Cola")
+    @Transactional
+    fun followInfoChannel() {
+        // TODO! Fix test! Make not transactional!
 
+        // Create info channels
+        infoChannel1Uuid = createAndSaveInfoChannel(client1Uuid)
+        infoChannel2Uuid = createAndSaveInfoChannel(client2Uuid)
+
+        // Verify clients are automatically following their own created info channel
+        Assert.assertEquals(
+                1,
+                infoChannelRepository!!.findByUuid(infoChannel1Uuid)!!.followers.size)
+
+        Assert.assertEquals(
+                1,
+                infoChannelRepository.findByUuid(infoChannel2Uuid)!!.followers.size)
+
+        // Test follow others info channel
         mockMvc().perform(
-                get(serviceEndpoint("/"))
-                        .param("uuid", company1Uuid))
+                post(serviceEndpoint("follow/"))
+                        .header("clientuuid", client1Uuid)
+                        .param("infoChannelUuid", infoChannel2Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.company.uuid", `is`(company1Uuid)))
-                .andExpect(jsonPath("$.company.name", `is`("Pepsi Cola")))
+
+        Assert.assertEquals(
+                2,
+                infoChannelRepository.findByUuid(infoChannel2Uuid)!!.followers.size
+        )
+
+        mockMvc().perform(
+                post(serviceEndpoint("follow/"))
+                        .header("clientuuid", client2Uuid)
+                        .param("infoChannelUuid", infoChannel1Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+
+        Assert.assertEquals(
+                2,
+                infoChannelRepository.findByUuid(infoChannel1Uuid)!!.followers.size
+        )
     }
 }

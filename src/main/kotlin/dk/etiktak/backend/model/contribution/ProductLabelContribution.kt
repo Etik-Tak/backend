@@ -34,9 +34,9 @@ import javax.persistence.*
 
 @Entity
 @DiscriminatorValue("ProductLabel")
-class ProductLabelContribution : ProductContribution() {
+open class ProductLabelContribution : ProductContribution() {
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "product_label_id")
-    var productLabel = ProductLabel()
+    var productLabel: ProductLabel? = null
 }

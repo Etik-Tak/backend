@@ -24,19 +24,17 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Represents a company contribution, e.g. name.
+ * Represents a product label name contribution.
  */
 
 package dk.etiktak.backend.model.contribution
 
-import dk.etiktak.backend.model.company.Company
 import javax.persistence.*
 
 @Entity
-@DiscriminatorValue("CompanyContribution")
-open class CompanyContribution : Contribution() {
+@DiscriminatorValue("ProductLabelName")
+class ProductLabelNameContribution : ProductLabelContribution() {
 
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "company_id")
-    var company: Company? = null
+    @Column(name = "product_label_name", nullable = true)
+    var name: String? = ""
 }

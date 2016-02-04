@@ -30,6 +30,7 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import org.springframework.beans.factory.annotation.Autowired
@@ -57,6 +58,35 @@ class ProductCategoryRestController @Autowired constructor(
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
         val productCategory = productCategoryService.createProductCategory(client, name)
+
+        return okMap().add(productCategory)
+    }
+
+    @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
+    fun editProductLabel(
+            @RequestHeader clientUuid: String,
+            @RequestParam productCategoryUuid: String,
+            @RequestParam(required = false) name: String?): HashMap<String, Any> {
+
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: return notFoundMap("Product category")
+
+        name?.let {
+            productCategoryService.editProductCategoryName(client, productCategory, name, modifyValues = { modifiedClient, modifiedProductCategory -> client = modifiedClient; productCategory = modifiedProductCategory })
+        }
+
+        return okMap().add(productCategory)
+    }
+
+    @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
+    fun trustVoteProduct(
+            @RequestHeader clientUuid: String,
+            @RequestParam productCategoryUuid: String,
+            @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: return notFoundMap("Product category")
+
+        productCategoryService.trustVoteProductCategoryName(client, productCategory, vote)
 
         return okMap().add(productCategory)
     }

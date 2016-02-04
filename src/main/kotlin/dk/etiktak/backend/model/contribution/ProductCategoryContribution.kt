@@ -34,9 +34,9 @@ import javax.persistence.*
 
 @Entity
 @DiscriminatorValue("ProductCategory")
-class ProductCategoryContribution : ProductContribution() {
+open class ProductCategoryContribution : ProductContribution() {
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "product_category_id")
-    var productCategory = ProductCategory()
+    var productCategory: ProductCategory? = null
 }

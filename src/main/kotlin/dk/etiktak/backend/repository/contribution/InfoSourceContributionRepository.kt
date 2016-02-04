@@ -23,20 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Represents a company contribution, e.g. name.
- */
+package dk.etiktak.backend.repository.contribution
 
-package dk.etiktak.backend.model.contribution
+import dk.etiktak.backend.model.contribution.InfoSourceContribution
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-import dk.etiktak.backend.model.company.Company
-import javax.persistence.*
-
-@Entity
-@DiscriminatorValue("CompanyContribution")
-open class CompanyContribution : Contribution() {
-
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "company_id")
-    var company: Company? = null
+@Repository
+interface InfoSourceContributionRepository : PagingAndSortingRepository<InfoSourceContribution, Long> {
+    fun findByUuid(uuid: String): InfoSourceContribution?
+    fun findByInfoSourceUuidAndEnabled(infoSourceUuid: String, enabled: Boolean = true): List<InfoSourceContribution>
 }

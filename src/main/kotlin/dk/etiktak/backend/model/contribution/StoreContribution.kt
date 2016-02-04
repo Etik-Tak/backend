@@ -38,5 +38,5 @@ open class StoreContribution : Contribution() {
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "store_id")
-    var store = Store()
+    var store: Store? = null
 }

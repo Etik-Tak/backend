@@ -27,7 +27,7 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
-import org.hamcrest.Matchers
+import dk.etiktak.backend.model.product.Product
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,16 +37,15 @@ import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
-import org.junit.Assert
-import org.springframework.transaction.annotation.Transactional
+import org.hamcrest.Matchers.notNullValue
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-open class InfoChannelServiceTest : BaseRestTest() {
+class InfoSourceReferenceTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "infochannel/" + postfix
+        return super.serviceEndpoint() + "infosourcereference/" + postfix
     }
 
     @Before
@@ -55,70 +54,42 @@ open class InfoChannelServiceTest : BaseRestTest() {
 
         client1Uuid = createAndSaveClient()
         client2Uuid = createAndSaveClient()
-    }
 
-    /**
-     * Test that we can create an info channel.
-     */
-    @Test
-    fun createInfoChannel() {
-        mockMvc().perform(
-                post(serviceEndpoint("create/"))
-                        .header("clientUuid", client1Uuid)
-                        .param("name", "Test Info Channel 1"))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.infoChannel.uuid", Matchers.notNullValue()))
-                .andExpect(jsonPath("$.infoChannel.name", `is`("Test Info Channel 1")))
-    }
+        infoSource1Uuid = createAndSaveInfoSource(client1Uuid, listOf("http://dr.dk", "http://www.dr.dk"))
+        infoSource2Uuid = createAndSaveInfoSource(client2Uuid, listOf("http://information.dk"))
 
-    /**
-     * Test that we can follow an info channel.
-     */
-    @Test
-    @Transactional
-    fun followInfoChannel() {
-        // TODO! Fix test! Make not transactional!
-
-        // Create info channels
         infoChannel1Uuid = createAndSaveInfoChannel(client1Uuid)
         infoChannel2Uuid = createAndSaveInfoChannel(client2Uuid)
 
-        // Verify clients are automatically following their own created info channel
-        Assert.assertEquals(
-                1,
-                infoChannelRepository!!.findByUuid(infoChannel1Uuid)!!.followers.size)
+        product1Uuid = createAndSaveProduct(client1Uuid, "12345678", Product.BarcodeType.EAN13)
+        product2Uuid = createAndSaveProduct(client2Uuid, "87654321", Product.BarcodeType.EAN13)
 
-        Assert.assertEquals(
-                1,
-                infoChannelRepository.findByUuid(infoChannel2Uuid)!!.followers.size)
+        productCategory1Uuid = createAndSaveProductCategory(client1Uuid, product1Uuid)
+        productCategory2Uuid = createAndSaveProductCategory(client2Uuid, product2Uuid)
 
-        // Test follow others info channel
+        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, product1Uuid)
+        productLabel2Uuid = createAndSaveProductLabel(client2Uuid, product2Uuid)
+
+        productRecommendation1Uuid = createAndSaveProductRecommendation(client1Uuid, infoChannel1Uuid, product1Uuid)
+        productRecommendation2Uuid = createAndSaveProductRecommendation(client2Uuid, infoChannel2Uuid, product2Uuid)
+    }
+
+    /**
+     * Test that we can create an info source reference.
+     */
+    @Test
+    fun createInfoSourceReference() {
         mockMvc().perform(
-                post(serviceEndpoint("follow/"))
+                post(serviceEndpoint("create/"))
                         .header("clientuuid", client1Uuid)
-                        .param("infoChannelUuid", infoChannel2Uuid))
+                        .param("recommendationUuid", productRecommendation1Uuid)
+                        .param("url", "http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")
+                        .param("title", "Fødevarestyrelsen: Spis ikke for meget mørk chokolade"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-
-        Assert.assertEquals(
-                2,
-                infoChannelRepository.findByUuid(infoChannel2Uuid)!!.followers.size
-        )
-
-        mockMvc().perform(
-                post(serviceEndpoint("follow/"))
-                        .header("clientuuid", client2Uuid)
-                        .param("infoChannelUuid", infoChannel1Uuid))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-
-        Assert.assertEquals(
-                2,
-                infoChannelRepository.findByUuid(infoChannel1Uuid)!!.followers.size
-        )
+                .andExpect(jsonPath("$.infoSourceReference.uuid", notNullValue()))
+                .andExpect(jsonPath("$.infoSourceReference.url", `is`("http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")))
+                .andExpect(jsonPath("$.infoSourceReference.title", `is`("Fødevarestyrelsen: Spis ikke for meget mørk chokolade")))
     }
 }

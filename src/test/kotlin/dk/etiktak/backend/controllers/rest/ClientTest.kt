@@ -34,7 +34,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.notNullValue
@@ -42,50 +41,27 @@ import org.hamcrest.Matchers.notNullValue
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class ProductTagServiceTest : BaseRestTest() {
+open class ClientTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "product/tag/" + postfix
+        return super.serviceEndpoint() + "client/" + postfix
     }
 
     @Before
     override fun setup() {
         super.setup()
-
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
     }
 
     /**
-     * Test that we can create a product tag.
+     * Test that we can create a client.
      */
     @Test
-    fun createProductTag() {
+    fun createClient() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
-                        .header("clientuuid", client1Uuid)
-                        .param("name", "Vegetarisk"))
+                post(serviceEndpoint("create/")))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.productTag.uuid", notNullValue()))
-                .andExpect(jsonPath("$.productTag.name", `is`("Vegetarisk")))
-    }
-
-    /**
-     * Test that we can retrieve a product tag.
-     */
-    @Test
-    fun retrieveProductTag() {
-        productTag1Uuid = createAndSaveProductTag(client1Uuid, "Glutenfrit")
-
-        mockMvc().perform(
-                get(serviceEndpoint("/"))
-                        .param("uuid", productTag1Uuid))
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(jsonContentType))
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.productTag.uuid", `is`(productTag1Uuid)))
-                .andExpect(jsonPath("$.productTag.name", `is`("Glutenfrit")))
+                .andExpect(jsonPath("$.client.uuid", notNullValue()))
     }
 }

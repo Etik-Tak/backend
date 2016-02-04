@@ -38,5 +38,5 @@ open class ProductContribution : Contribution() {
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "product_id")
-    var product = Product()
+    var product: Product? = null
 }

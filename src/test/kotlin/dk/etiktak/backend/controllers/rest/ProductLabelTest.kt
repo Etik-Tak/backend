@@ -34,6 +34,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.notNullValue
@@ -41,27 +42,50 @@ import org.hamcrest.Matchers.notNullValue
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-open class ClientServiceTest : BaseRestTest() {
+class ProductLabelTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "client/" + postfix
+        return super.serviceEndpoint() + "product/label/" + postfix
     }
 
     @Before
     override fun setup() {
         super.setup()
+
+        client1Uuid = createAndSaveClient()
+        client2Uuid = createAndSaveClient()
     }
 
     /**
-     * Test that we can create a client.
+     * Test that we can create a product label.
      */
     @Test
-    fun createClient() {
+    fun createProductLabel() {
         mockMvc().perform(
-                post(serviceEndpoint("create/")))
+                post(serviceEndpoint("/create/"))
+                        .header("clientuuid", client1Uuid)
+                        .param("name", "KRAV"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.client.uuid", notNullValue()))
+                .andExpect(jsonPath("$.productLabel.uuid", notNullValue()))
+                .andExpect(jsonPath("$.productLabel.name", `is`("KRAV")))
+    }
+
+    /**
+     * Test that we can retrieve a product label.
+     */
+    @Test
+    fun retrieveProductLabel() {
+        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, "Ecocert")
+
+        mockMvc().perform(
+                get(serviceEndpoint("/"))
+                        .param("uuid", productLabel1Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.productLabel.uuid", `is`(productLabel1Uuid)))
+                .andExpect(jsonPath("$.productLabel.name", `is`("Ecocert")))
     }
 }

@@ -44,7 +44,7 @@ import org.hamcrest.Matchers.notNullValue
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class SmsVerificationServiceTest : BaseRestTest() {
+class SmsVerificationTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
         return super.serviceEndpoint() + "verification/" + postfix

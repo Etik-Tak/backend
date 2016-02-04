@@ -45,7 +45,7 @@ import org.springframework.web.util.NestedServletException
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class RecommendationServiceTest : BaseRestTest() {
+class RecommendationTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
         return super.serviceEndpoint() + "recommendation/" + postfix

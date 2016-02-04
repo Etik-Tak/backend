@@ -30,7 +30,7 @@
 package dk.etiktak.backend.model.infosource
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.model.contribution.InfoSourceContribution
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
@@ -53,6 +53,9 @@ class InfoSource constructor() : BaseModel() {
     @NotNull
     @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)
     var domains: MutableList<InfoSourceDomain> = ArrayList()
+
+    @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)
+    var contributions: MutableList<InfoSourceContribution> = ArrayList()
 
     @NotNull
     @OneToMany(mappedBy = "infoSource", fetch = FetchType.LAZY)

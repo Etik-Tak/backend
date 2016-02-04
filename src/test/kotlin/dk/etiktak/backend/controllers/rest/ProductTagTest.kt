@@ -27,7 +27,6 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
-import org.hamcrest.Matchers.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,18 +34,18 @@ import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.springframework.http.MediaType
-import org.springframework.transaction.annotation.Transactional
+import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.notNullValue
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-@Transactional
-open class InfoSourceServiceTest : BaseRestTest() {
+class ProductTagTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "infosource/" + postfix
+        return super.serviceEndpoint() + "product/tag/" + postfix
     }
 
     @Before
@@ -58,20 +57,35 @@ open class InfoSourceServiceTest : BaseRestTest() {
     }
 
     /**
-     * Test that we can create an info source.
+     * Test that we can create a product tag.
      */
     @Test
-    fun createInfoSource() {
+    fun createProductTag() {
         mockMvc().perform(
-                post(serviceEndpoint("create/"))
+                post(serviceEndpoint("/create/"))
                         .header("clientuuid", client1Uuid)
-                        .param("domainList", "http://dr.dk,https://dr.dk")
-                        .param("friendlyName", "Test Info Source 1"))
+                        .param("name", "Vegetarisk"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.infoSource.uuid", notNullValue()))
-                .andExpect(jsonPath("$.infoSource.domains", containsInAnyOrder("http://dr.dk", "https://dr.dk")))
-                .andExpect(jsonPath("$.infoSource.friendlyName", `is`("Test Info Source 1")))
+                .andExpect(jsonPath("$.productTag.uuid", notNullValue()))
+                .andExpect(jsonPath("$.productTag.name", `is`("Vegetarisk")))
+    }
+
+    /**
+     * Test that we can retrieve a product tag.
+     */
+    @Test
+    fun retrieveProductTag() {
+        productTag1Uuid = createAndSaveProductTag(client1Uuid, "Glutenfrit")
+
+        mockMvc().perform(
+                get(serviceEndpoint("/"))
+                        .param("uuid", productTag1Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.productTag.uuid", `is`(productTag1Uuid)))
+                .andExpect(jsonPath("$.productTag.name", `is`("Glutenfrit")))
     }
 }

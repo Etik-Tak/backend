@@ -134,7 +134,7 @@ fun HashMap<String, Any>.add(infoSource: InfoSource): HashMap<String, Any> {
     return add(hashMapOf<String, Any>()
             .add("infoSource", hashMapOf<String, Any>()
                     .add("uuid", infoSource.uuid)
-                    .add("friendlyName", infoSource.name)
+                    .add("name", infoSource.name)
                     .add("domains", infoSource.domains, { domain -> domain.domain })))
 }
 

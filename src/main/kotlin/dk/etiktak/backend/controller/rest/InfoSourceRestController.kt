@@ -30,6 +30,7 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infosource.InfoSourceService
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,10 +47,10 @@ class InfoSourceRestController @Autowired constructor(
     fun createInfoSource(
             @RequestHeader clientUuid: String,
             @RequestParam domainList: List<String>,
-            @RequestParam(required = false) friendlyName: String?): HashMap<String, Any> {
+            @RequestParam(required = false) name: String?): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
-        val infoSource = infoSourceService.createInfoSource(client, domainList, friendlyName)
+        val infoSource = infoSourceService.createInfoSource(client, domainList, name)
 
         return okMap().add(infoSource)
     }
@@ -69,5 +70,34 @@ class InfoSourceRestController @Autowired constructor(
         }
 
         return notFoundMap("Info source")
+    }
+
+    @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
+    fun editInfoSource(
+            @RequestHeader clientUuid: String,
+            @RequestParam infoSourceUuid: String,
+            @RequestParam(required = false) name: String?): HashMap<String, Any> {
+
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid) ?: return notFoundMap("Info source")
+
+        name?.let {
+            infoSourceService.editInfoSourceName(client, infoSource, name, modifyValues = { modifiedClient, modifiedInfoSource -> client = modifiedClient; infoSource = modifiedInfoSource })
+        }
+
+        return okMap().add(infoSource)
+    }
+
+    @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
+    fun trustVoteProduct(
+            @RequestHeader clientUuid: String,
+            @RequestParam infoSourceUuid: String,
+            @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
+        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid) ?: return notFoundMap("Info source")
+
+        infoSourceService.trustVoteInfoSourceName(client, infoSource, vote)
+
+        return okMap().add(infoSource)
     }
 }

@@ -38,5 +38,5 @@ class ProductTagContribution : ProductContribution() {
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "product_tag_id")
-    var productTag = ProductTag()
+    var productTag: ProductTag? = null
 }
