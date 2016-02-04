@@ -11,6 +11,8 @@ Etik-Tak Backend
 Getting Started
 ---------------
 
+### Database setup
+
 Install postgresql. Then run the following psql:
 
 `create database etiktak;`
@@ -18,6 +20,8 @@ Install postgresql. Then run the following psql:
 `create role etiktak with password 'Test1234';`
 
 `alter role etiktak with login;`
+
+### Spring Boot
 
 Build and start the bundled container:
 
