@@ -41,6 +41,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.notNullValue
 import org.slf4j.LoggerFactory
+import org.springframework.util.Assert
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
@@ -74,6 +75,12 @@ class SmsVerificationTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
+
+        // Validate that recovery is not enabled
+        val client = clientRepository!!.findByUuid(client1Uuid)!!
+        Assert.isNull(
+                client.mobileNumber,
+                "Expected mobile number to be null by default, that is, recovery disabled")
     }
 
     /**
@@ -90,6 +97,12 @@ class SmsVerificationTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
+
+        // Validate that recovery is enabled
+        val client = clientRepository!!.findByUuid(client1Uuid)!!
+        Assert.notNull(
+                client.mobileNumber,
+                "Expected mobile number to be set when recovery is enabled")
     }
 
     /**
