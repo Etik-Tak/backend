@@ -33,5 +33,6 @@ import org.springframework.stereotype.Repository
 interface ClientRepository : PagingAndSortingRepository<Client, Long> {
 
     fun findByUuid(uuid: String): Client?
-    fun findByMobileNumberHashPasswordHashHashed(mobileNumberHashedPaswordHashedHashed: String): Client?
+    fun findBySmsChallengeHashClientChallengeHashHashed(hashOfHashes: String): Client?
+    fun findByMobileNumberMobileNumberHash(mobileNumberHash: String): Client?
 }

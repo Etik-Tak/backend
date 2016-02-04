@@ -47,28 +47,37 @@ class SmsVerificationRestController @Autowired constructor(
     fun requestSmsChallenge(
             @RequestHeader clientUuid: String,
             @RequestParam mobileNumber: String,
-            @RequestParam password: String): HashMap<String, Any> {
+            @RequestParam(required = false) recoveryEnabled: Boolean? = false): HashMap<String, Any> {
+
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
-        val smsVerification = smsVerificationService.requestSmsChallenge(client, mobileNumber, password)
+
+        val smsVerification = smsVerificationService.requestSmsChallenge(client, mobileNumber, recoveryEnabled ?: false)
+
         return okMap().add(smsVerification)
     }
 
     @RequestMapping(value = "/request/recovery/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
     fun requestRecoverySmsChallenge(
-            @RequestParam mobileNumber: String,
-            @RequestParam password: String): HashMap<String, Any> {
-        val smsVerification = smsVerificationService.requestRecoverySmsChallenge(mobileNumber, password)
+            @RequestParam mobileNumber: String): HashMap<String, Any> {
+
+        val smsVerification = smsVerificationService.requestRecoverySmsChallenge(mobileNumber)
+
         return okMap().add(smsVerification)
     }
 
     @RequestMapping(value = "/verify/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
-    fun verifySmsChallenge(@RequestParam mobileNumber: String,
-                           @RequestParam password: String,
-                           @RequestParam smsChallenge: String,
-                           @RequestParam clientChallenge: String): HashMap<String, Any> {
-        smsVerificationService.verifySmsChallenge(mobileNumber, password, smsChallenge, clientChallenge)
+    fun verifySmsChallenge(
+            @RequestHeader clientUuid: String,
+            @RequestParam mobileNumber: String,
+            @RequestParam smsChallenge: String,
+            @RequestParam clientChallenge: String): HashMap<String, Any> {
+
+        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+
+        smsVerificationService.verifySmsChallenge(client, mobileNumber, smsChallenge, clientChallenge)
+
         return okMap()
     }
 }

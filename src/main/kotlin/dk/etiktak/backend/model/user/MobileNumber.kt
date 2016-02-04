@@ -46,6 +46,9 @@ class MobileNumber constructor() {
     @Column(name = "mobileNumberHash", nullable = false, unique = true)
     var mobileNumberHash: String = ""
 
+    @OneToOne(mappedBy = "mobileNumber", optional = true)
+    var client: Client? = null
+
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()
 

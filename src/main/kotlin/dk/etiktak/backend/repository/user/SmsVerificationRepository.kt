@@ -33,4 +33,5 @@ import org.springframework.stereotype.Repository
 interface SmsVerificationRepository : PagingAndSortingRepository<SmsVerification, Long> {
 
     fun findByMobileNumberHash(mobileNumberHash: String): SmsVerification?
+    fun findBySmsChallengeHashAndClientChallenge(smsChallengeHash: String, clientChallenge: String): SmsVerification?
 }

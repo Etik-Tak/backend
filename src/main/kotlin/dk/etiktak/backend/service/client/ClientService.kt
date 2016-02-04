@@ -43,17 +43,19 @@ open class ClientService @Autowired constructor(
     private val logger = LoggerFactory.getLogger(ClientService::class.java)
 
     /**
-     * Creates a client entry. Throws exception if client with mobile number *and* given password already exists.
+     * Creates a client entry.
      *
      * @return  Created client entry
      */
-    open fun createClient(): Client {
+    open fun createClient(username: String? = null, password: String? = null): Client {
 
         // Create client
         var client = Client()
         client.uuid = CryptoUtil().uuid()
-        client.mobileNumberHashPasswordHashHashed = null
         client.verified = false
+        client.username = username
+        client.passwordHashed = if (password != null) CryptoUtil().hash(password) else null
+
         clientRepository.save(client)
 
         logger.info("Created new client with uuid: ${client.uuid}")

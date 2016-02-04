@@ -57,8 +57,11 @@ class Client constructor() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Column(name = "mobileNumberHash_passwordHash_hashed", nullable = true, unique = true)
-    var mobileNumberHashPasswordHashHashed: String? = null
+    @Column(name = "username", nullable = true, unique = true)
+    var username: String? = null
+
+    @Column(name = "passwordHash", nullable = true)
+    var passwordHashed: String? = null
 
     @Column(name = "verified", nullable = false)
     var verified: Boolean = false
@@ -71,6 +74,12 @@ class Client constructor() {
 
     @Column(name = "trustScore", nullable = false)
     var trustLevel: Double = 0.0
+
+    @Column(name = "smsChallengeHash_clientChallengeHash_hashed", nullable = true, unique = true)
+    var smsChallengeHashClientChallengeHashHashed: String? = null
+
+    @OneToOne(optional = true)
+    var mobileNumber: MobileNumber? = null
 
     @NotNull
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)

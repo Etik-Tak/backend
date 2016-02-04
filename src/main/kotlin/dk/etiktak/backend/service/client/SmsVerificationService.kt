@@ -50,50 +50,16 @@ open class SmsVerificationService @Autowired constructor(
     private val logger = LoggerFactory.getLogger(SmsVerificationService::class.java)
 
     /**
-     * Creates and returns a recovery SMS verification entry and sends the challenge part to the given mobile number.
-     *
-     * @param mobileNumber    Mobile number
-     * @param password        Password
-     * @return                Created SMS verification
-     */
-    open fun requestRecoverySmsChallenge(mobileNumber: String, password: String): SmsVerification {
-
-        // Check for empty fields
-        Assert.isTrue(
-                !StringUtils.isEmpty(mobileNumber),
-                "Mobile number must be provided")
-
-        logger.info("Requesting new recovery SMS challenge for user with mobile number: $mobileNumber")
-
-        // Can only recover users with password
-        Assert.isTrue(
-                !StringUtils.isEmpty(password),
-                "Can only recover users with password")
-
-        // Fetch client entry
-        val client = clientRepository.findByMobileNumberHashPasswordHashHashed(
-                CryptoUtil().hashOfHashes(mobileNumber, password))
-
-        Assert.notNull(
-                client,
-                "Client not found for mobile number $mobileNumber and given password")
-
-        client!!
-
-        return requestSmsChallenge(client, mobileNumber, password)
-    }
-
-    /**
      * Creates and returns an SMS verification entry and sends the challenge part to the given mobile number.
      *
      * @param client          Client for which to attach
      * @param mobileNumber    Mobile number
-     * @param password        Choosen password
      * @param modifyValues    Function called with modified client
      * @return                Created SMS verification
      */
     @ClientValid
-    open fun requestSmsChallenge(client: Client, mobileNumber: String, password: String, modifyValues: (Client) -> Unit = {}): SmsVerification {
+    open fun requestSmsChallenge(client: Client, mobileNumber: String, recoveryEnabled: Boolean = false, modifyValues: (Client) -> Unit = {}): SmsVerification {
+
         val smsChallenge = CryptoUtil().generateSmsChallenge()
         val clientChallenge = CryptoUtil().uuid()
 
@@ -102,59 +68,53 @@ open class SmsVerificationService @Autowired constructor(
                 !StringUtils.isEmpty(mobileNumber),
                 "Mobile number must be provided")
 
-        Assert.isTrue(
-                !StringUtils.isEmpty(password),
-                "Password must be provided")
-
         logger.info("Requesting new SMS challenge for user with mobile number: $mobileNumber")
 
         // Fetch existing SMS verification, if any
-        var smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber))
+        var smsVerification: SmsVerification?
 
         // Fetch existing mobile number, if any
         val mobile = mobileNumberRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber))
 
         if (mobile != null) {
+
             // Mobile number already exists
             logger.info("Mobile number already exists: $mobileNumber")
 
-            // Check that mobile number and password for client is correct
-            Assert.isTrue(
-                    client.mobileNumberHashPasswordHashHashed == CryptoUtil().hashOfHashes(mobileNumber, password),
-                    "Mobile number $mobileNumber already verified with other password than that provided")
+            // Fetch existing SMS verification
+            smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber))
+
         } else {
+
             // New mobile number registration
             logger.info("New mobile number: $mobileNumber")
 
-            // Client with given mobile number and password cannot already exist
-            Assert.isNull(
-                    client.mobileNumberHashPasswordHashHashed,
-                    "Internal error: Client with UUID ${client.uuid} already verified, though mobile number entry $mobileNumber did not exist")
-
-            // SMS challenge cannot already exist
-            Assert.isNull(
-                    smsVerification,
-                    "Internal error: SMS challenge already exists for mobile number $mobileNumber, though mobile number entry did not exist")
-
             // Create mobile number entry
-            createMobileNumber(mobileNumber)
+            val mobileNumberEntity = createMobileNumber(mobileNumber)
+
+            // Attach to client if recovery enabled
+            if (recoveryEnabled) {
+                client.mobileNumber = mobileNumberEntity
+                mobileNumberEntity.client = client
+                mobileNumberRepository.save(mobileNumberEntity)
+            }
 
             // Create new SMS verification
             smsVerification = SmsVerification()
             smsVerification.mobileNumberHash = CryptoUtil().hash(mobileNumber)
         }
 
-        // Mark client as not verified
-        client.mobileNumberHashPasswordHashHashed = CryptoUtil().hashOfHashes(mobileNumber, password)
-        client.verified = false
-        val modifiedClient = clientRepository.save(client)
-
         // Check SMS verification
         Assert.notNull(
                 smsVerification,
-                "Internal error: SMS verification null")
+                "Internal error: SMS verification cannot be null while creating verification")
 
         smsVerification!!
+
+        // Mark client as not verified
+        client.verified = false
+        client.smsChallengeHashClientChallengeHashHashed = CryptoUtil().hashOfHashes(smsChallenge, clientChallenge)
+        val modifiedClient = clientRepository.save(client)
 
         // Set challenges on verification
         smsVerification.smsChallengeHash = CryptoUtil().hash(smsChallenge)
@@ -178,22 +138,18 @@ open class SmsVerificationService @Autowired constructor(
     /**
      * Verifies a sent SMS challenge. Fails if client cannot be verified or SMS verification cannot be verified.
      *
+     * @param client             Client
      * @param mobileNumber       Mobile number
-     * @param password           Password
      * @param smsChallenge       Received SMS challenge
      * @param clientChallenge    Received client challenge
      * @return                   Verified client
      */
-    open fun verifySmsChallenge(mobileNumber: String, password: String, smsChallenge: String, clientChallenge: String): Client {
+    open fun verifySmsChallenge(client: Client, mobileNumber: String, smsChallenge: String, clientChallenge: String): Client {
 
         // Check for empty fields
         Assert.isTrue(
                 !StringUtils.isEmpty(mobileNumber),
                 "Mobile number must be provided")
-
-        Assert.isTrue(
-                !StringUtils.isEmpty(password),
-                "Password must be provided")
 
         Assert.isTrue(
                 !StringUtils.isEmpty(smsChallenge),
@@ -205,18 +161,10 @@ open class SmsVerificationService @Autowired constructor(
 
         logger.info("Verifying SMS challenge for mobile number: $mobileNumber")
 
-        // Verify mobile number and password
-        val client = clientRepository.findByMobileNumberHashPasswordHashHashed(
-                CryptoUtil().hashOfHashes(mobileNumber, password))
-
-        Assert.notNull(
-                client,
-                "Client not found for mobile number $mobileNumber and given password")
-
-        client!!
-
-        // Fetch SMS challenge
-        val smsVerification = smsVerificationRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber))
+        // Fetch SMS verification
+        val smsVerification = smsVerificationRepository.findBySmsChallengeHashAndClientChallenge(
+                CryptoUtil().hash(smsChallenge),
+                clientChallenge)
 
         Assert.notNull(
                 smsVerification,
@@ -228,24 +176,64 @@ open class SmsVerificationService @Autowired constructor(
         Assert.isTrue(
                 smsVerification.status === SmsVerification.SmsVerificationStatus.SENT,
                 "SMS verification has wrong status. Expected SENT but was '" + smsVerification.status.name + "'")
-        Assert.isTrue(
-                smsVerification.smsChallengeHash == CryptoUtil().hash(smsChallenge),
-                "Provided SMS challenge does not match sent challenge")
-        Assert.isTrue(
-                smsVerification.clientChallenge == clientChallenge,
-                "Provided client challenge does not match sent challenge")
 
-        // Change status of SMS verification entry
+        Assert.isTrue(
+                smsVerification.mobileNumberHash.equals(CryptoUtil().hash(mobileNumber)),
+                "SMS verification does not belong to given mobile number: $mobileNumber")
+
+        // Verify client
+        val challengedClient = clientRepository.findBySmsChallengeHashClientChallengeHashHashed(
+                CryptoUtil().hashOfHashes(smsChallenge, clientChallenge))
+
+        Assert.notNull(
+                challengedClient,
+                "Client not found for mobile number $mobileNumber and given challenges")
+
+        challengedClient!!
+
+        Assert.isTrue(
+                client.uuid.equals(challengedClient.uuid),
+                "Given client with UUID: ${client.uuid} not the one challenged!")
+
+        // Change status of SMS verification
         smsVerification.status = SmsVerification.SmsVerificationStatus.VERIFIED
         smsVerificationRepository.save(smsVerification)
 
         // Mark client as verified
         client.verified = true
+        client.smsChallengeHashClientChallengeHashHashed = null
         clientRepository.save(client)
 
         logger.info("SMS challenge verified successfully for mobile number: $mobileNumber")
 
         return client
+    }
+
+    /**
+     * Creates and returns a recovery SMS verification and sends the challenge part to the given mobile number.
+     *
+     * @param mobileNumber    Mobile number
+     * @return                Created SMS verification
+     */
+    open fun requestRecoverySmsChallenge(mobileNumber: String): SmsVerification {
+
+        // Check for empty fields
+        Assert.isTrue(
+                !StringUtils.isEmpty(mobileNumber),
+                "Mobile number must be provided")
+
+        logger.info("Requesting new recovery SMS challenge for user with mobile number: $mobileNumber")
+
+        // Fetch client from mobile number (which can only be done if recovery is enabled)
+        val client = clientRepository.findByMobileNumberMobileNumberHash(CryptoUtil().hash(mobileNumber))
+
+        Assert.notNull(
+                client,
+                "Can only recover users with recovery enabled")
+
+        client!!
+
+        return requestSmsChallenge(client, mobileNumber)
     }
 
     /**
