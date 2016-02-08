@@ -23,18 +23,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.user
+package dk.etiktak.backend.security
 
-import dk.etiktak.backend.model.user.Client
-import org.springframework.data.repository.PagingAndSortingRepository
-import org.springframework.stereotype.Repository
+import org.springframework.security.authentication.AbstractAuthenticationToken
 
-@Repository
-interface ClientRepository : PagingAndSortingRepository<Client, Long> {
+open class ClientUuidAuthenticationToken constructor(
+        private val clientUuid: String): AbstractAuthenticationToken(null) {
 
-    fun findByUuid(uuid: String): Client?
-    fun findByUsernameAndPasswordHashed(username: String, passwordHashed: String): Client?
+    override fun getPrincipal(): Any? {
+        return clientUuid
+    }
 
-    fun findBySmsChallengeHashClientChallengeHashHashed(hashOfHashes: String): Client?
-    fun findByMobileNumberMobileNumberHash(mobileNumberHash: String): Client?
+    override fun getCredentials(): Any? {
+        return null
+    }
 }

@@ -34,6 +34,7 @@ import dk.etiktak.backend.service.client.ClientService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
@@ -43,8 +44,10 @@ class ClientRestController @Autowired constructor(
         private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
-    fun create(): HashMap<String, Any> {
-        val client = clientService.createClient()
+    fun create(
+            @RequestParam(required = false) username: String?,
+            @RequestParam(required = false) password: String?): HashMap<String, Any> {
+        val client = clientService.createClient(username, password)
         return okMap().add(client)
     }
 }

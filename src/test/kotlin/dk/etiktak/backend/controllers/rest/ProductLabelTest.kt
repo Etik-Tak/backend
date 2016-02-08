@@ -63,7 +63,7 @@ class ProductLabelTest : BaseRestTest() {
     fun createProductLabel() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("name", "KRAV"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

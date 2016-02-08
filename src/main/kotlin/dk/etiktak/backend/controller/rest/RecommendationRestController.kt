@@ -60,7 +60,7 @@ class RecommendationRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getRecommendation(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam productUuid: String): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -73,7 +73,7 @@ class RecommendationRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createRecommendation(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam infoChannelUuid: String,
             @RequestParam summary: String,
             @RequestParam score: String,

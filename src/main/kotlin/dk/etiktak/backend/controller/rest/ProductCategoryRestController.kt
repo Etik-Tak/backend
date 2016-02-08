@@ -57,7 +57,7 @@ class ProductCategoryRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProductCategory(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -69,7 +69,7 @@ class ProductCategoryRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editProductLabel(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam productCategoryUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
@@ -85,7 +85,7 @@ class ProductCategoryRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam productCategoryUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
 

@@ -70,7 +70,7 @@ class ProductContributionTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("productUuid", product1Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
@@ -90,7 +90,7 @@ class ProductContributionTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("productUuid", product1Uuid)
                         .param("name", "Pepsi Cola"))
     }
@@ -102,7 +102,7 @@ class ProductContributionTest : BaseRestTest() {
     fun trustVoteProductName() {
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("clientuuid", client2Uuid)
+                        .header("X-Auth-ClientUuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -117,7 +117,7 @@ class ProductContributionTest : BaseRestTest() {
     fun cannotTrustVoteMoreThanOnceOnSameProductName() {
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("clientuuid", client2Uuid)
+                        .header("X-Auth-ClientUuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -127,7 +127,7 @@ class ProductContributionTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("clientuuid", client2Uuid)
+                        .header("X-Auth-ClientUuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
     }
@@ -140,7 +140,7 @@ class ProductContributionTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)

@@ -23,41 +23,38 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Rest controller responsible for handling product tags.
- */
+package dk.etiktak.backend.security
 
-package dk.etiktak.backend.controller.rest
-
-import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.service.client.ClientService
-import dk.etiktak.backend.service.product.ProductTagService
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.*
-import java.util.*
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
+import org.springframework.stereotype.Service
 
-@RestController
-@RequestMapping("/service/product/tag")
-class ProductTagRestController @Autowired constructor(
-        private val productTagService: ProductTagService,
-        private val clientService: ClientService) : BaseRestController() {
+@Service
+open class ClientUuidAuthenticationProvider @Autowired constructor(
+        private val clientService: ClientService) : AuthenticationProvider {
 
-    @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
-    fun getProductTag(
-            @RequestParam uuid: String): HashMap<String, Any> {
-        val productTag = productTagService.getProductTagByUuid(uuid) ?: return notFoundMap("Product tag")
+    private val logger = LoggerFactory.getLogger(ClientUuidAuthenticationProvider::class.java)
 
-        return okMap().add(productTag)
+    @Throws(AuthenticationException::class)
+    override fun authenticate(authentication: Authentication): Authentication {
+        val clientUuid: String = authentication.principal as String? ?: throw BadCredentialsException("Invalid client UUID")
+
+        logger.info("Authenticating with client UUID $clientUuid")
+
+        val client = clientService.getByUuid(clientUuid) ?: throw BadCredentialsException("Invalid client UUID")
+
+        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client.uuid, null)
+        resultOfAuthentication.isAuthenticated = true
+        return resultOfAuthentication
     }
 
-    @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
-    fun createProductTag(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
-            @RequestParam name: String): HashMap<String, Any> {
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
-
-        val productTag = productTagService.createProductTag(client, name)
-
-        return okMap().add(productTag)
+    override fun supports(authentication: Class<*>?): Boolean {
+        return authentication!!.equals(ClientUuidAuthenticationToken::class.java)
     }
 }

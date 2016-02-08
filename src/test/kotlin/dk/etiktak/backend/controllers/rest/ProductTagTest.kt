@@ -63,7 +63,7 @@ class ProductTagTest : BaseRestTest() {
     fun createProductTag() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("name", "Vegetarisk"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

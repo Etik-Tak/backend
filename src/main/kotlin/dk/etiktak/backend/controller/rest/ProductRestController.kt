@@ -75,7 +75,7 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProduct(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam name: String,
             @RequestParam(required = false) barcode: String,
             @RequestParam(required = false) barcodeType: String? = null,
@@ -138,7 +138,7 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editProduct(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
@@ -154,7 +154,7 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/category/", method = arrayOf(RequestMethod.POST))
     fun assignCategoryToProduct(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam categoryUuid: String): HashMap<String, Any> {
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -169,7 +169,7 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/label/", method = arrayOf(RequestMethod.POST))
     fun assignLabelToProduct(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam labelUuid: String): HashMap<String, Any> {
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -184,7 +184,7 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/tag/", method = arrayOf(RequestMethod.POST))
     fun assignTagToProduct(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam tagUuid: String): HashMap<String, Any> {
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -199,7 +199,7 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/company/", method = arrayOf(RequestMethod.POST))
     fun assignCompanyToProduct(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam companyUuid: String): HashMap<String, Any> {
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -214,7 +214,7 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")

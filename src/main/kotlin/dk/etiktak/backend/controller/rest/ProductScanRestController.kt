@@ -46,7 +46,7 @@ class ProductScanRestController @Autowired constructor(
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.POST))
     fun scanProduct(
             @RequestParam barcode: String,
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam(required = false) latitude: Double? = null,
             @RequestParam(required = false) longitude: Double? = null): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -71,7 +71,7 @@ class ProductScanRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/location/", method = arrayOf(RequestMethod.POST))
     fun provideProductScanLocation(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam productScanUuid: String,
             @RequestParam latitude: Double,
             @RequestParam longitude: Double): HashMap<String, Any> {

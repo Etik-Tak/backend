@@ -23,18 +23,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.user
+package dk.etiktak.backend.security
 
-import dk.etiktak.backend.model.user.Client
-import org.springframework.data.repository.PagingAndSortingRepository
-import org.springframework.stereotype.Repository
+import org.springframework.security.web.bind.annotation.AuthenticationPrincipal
 
-@Repository
-interface ClientRepository : PagingAndSortingRepository<Client, Long> {
-
-    fun findByUuid(uuid: String): Client?
-    fun findByUsernameAndPasswordHashed(username: String, passwordHashed: String): Client?
-
-    fun findBySmsChallengeHashClientChallengeHashHashed(hashOfHashes: String): Client?
-    fun findByMobileNumberMobileNumberHash(mobileNumberHash: String): Client?
-}
+@Target( AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
+@Retention(AnnotationRetention.RUNTIME)
+@AuthenticationPrincipal
+annotation class CurrentlyLoggedUser

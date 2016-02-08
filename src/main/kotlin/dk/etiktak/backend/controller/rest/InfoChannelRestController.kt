@@ -51,7 +51,7 @@ class InfoChannelRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoChannel(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
@@ -62,7 +62,7 @@ class InfoChannelRestController @Autowired constructor(
 
     @RequestMapping(value = "/follow/", method = arrayOf(RequestMethod.POST))
     fun followInfoChannel(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam infoChannelUuid: String): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid) ?: return notFoundMap("Info channel")

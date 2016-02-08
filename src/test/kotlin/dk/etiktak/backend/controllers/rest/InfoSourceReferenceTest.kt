@@ -81,7 +81,7 @@ class InfoSourceReferenceTest : BaseRestTest() {
     fun createInfoSourceReference() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("recommendationUuid", productRecommendation1Uuid)
                         .param("url", "http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")
                         .param("title", "Fødevarestyrelsen: Spis ikke for meget mørk chokolade"))

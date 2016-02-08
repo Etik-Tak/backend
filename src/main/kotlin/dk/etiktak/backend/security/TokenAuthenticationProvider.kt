@@ -23,18 +23,31 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.user
+package dk.etiktak.backend.security
 
-import dk.etiktak.backend.model.user.Client
-import org.springframework.data.repository.PagingAndSortingRepository
-import org.springframework.stereotype.Repository
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
+import org.springframework.stereotype.Service
 
-@Repository
-interface ClientRepository : PagingAndSortingRepository<Client, Long> {
+@Service
+open class TokenAuthenticationProvider @Autowired constructor(
+        private val tokenService: TokenService) : AuthenticationProvider {
 
-    fun findByUuid(uuid: String): Client?
-    fun findByUsernameAndPasswordHashed(username: String, passwordHashed: String): Client?
+    @Throws(AuthenticationException::class)
+    override fun authenticate(authentication: Authentication): Authentication {
+        val token: String = authentication.principal as String? ?: throw BadCredentialsException("Invalid token")
 
-    fun findBySmsChallengeHashClientChallengeHashHashed(hashOfHashes: String): Client?
-    fun findByMobileNumberMobileNumberHash(mobileNumberHash: String): Client?
+        if (!tokenService.contains(token)) {
+            throw BadCredentialsException("Invalid token or token expired")
+        }
+        return tokenService.retrieve(token)
+    }
+
+    override fun supports(authentication: Class<*>?): Boolean {
+        return authentication!!.equals(PreAuthenticatedAuthenticationToken::class.java)
+    }
 }

@@ -118,7 +118,7 @@ class TrustTest : BaseRestTest() {
         // Trust vote product name
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("productUuid", product2Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -158,7 +158,7 @@ class TrustTest : BaseRestTest() {
         // Edit product name
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("clientuuid", client2Uuid)
+                        .header("X-Auth-ClientUuid", client2Uuid)
                         .param("productUuid", product1Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
@@ -177,7 +177,7 @@ class TrustTest : BaseRestTest() {
         // Edit product name
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("productUuid", product2Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
@@ -195,7 +195,7 @@ class TrustTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("clientuuid", client2Uuid)
+                        .header("X-Auth-ClientUuid", client2Uuid)
                         .param("productUuid", product2Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
@@ -231,7 +231,7 @@ class TrustTest : BaseRestTest() {
             // Vote
             mockMvc().perform(
                     post(serviceEndpoint("/trust/name/"))
-                            .header("clientuuid", currentClientUuid)
+                            .header("X-Auth-ClientUuid", currentClientUuid)
                             .param("productUuid", productUuid)
                             .param("vote", trustVoteType.name))
                     .andExpect(status().isOk)

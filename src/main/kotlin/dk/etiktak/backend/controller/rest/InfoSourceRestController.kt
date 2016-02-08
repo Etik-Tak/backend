@@ -45,7 +45,7 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoSource(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam domainList: List<String>,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -78,7 +78,7 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editInfoSource(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam infoSourceUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
@@ -94,7 +94,7 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam infoSourceUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")

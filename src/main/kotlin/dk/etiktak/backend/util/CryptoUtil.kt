@@ -25,7 +25,6 @@
 
 package dk.etiktak.backend.util
 
-import org.springframework.security.crypto.bcrypt.BCrypt
 import java.io.UnsupportedEncodingException
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -57,27 +56,6 @@ class CryptoUtil {
         val hashedBytes = digest.digest(text.toByteArray(Charsets.UTF_8))
 
         return hashedBytes.convertByteArrayToHexString()
-    }
-
-    /**
-     * Encrypts the given text using OpenBSD bcrypt scheme.
-     *
-     * @param plainText    Text to encrypt
-     * @return             Encrypted text
-     */
-    fun encryptPassword(plainText: String): String {
-        return BCrypt.hashpw(plainText, BCrypt.gensalt())
-    }
-
-    /**
-     * Validates the given plain text password against the encrypted.
-     *
-     * @param plainText    Plain text password
-     * @param hashed       Encrypted password
-     * @return             True, if successfully validated, else false
-     */
-    fun validatePassword(plainText: String, hashed: String): Boolean {
-        return BCrypt.checkpw(plainText, hashed)
     }
 
     /**

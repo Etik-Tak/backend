@@ -47,6 +47,8 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "clients")
+@Table(uniqueConstraints = arrayOf(
+        UniqueConstraint(columnNames = arrayOf("username", "passwordHashed"))))
 class Client constructor() {
 
     @Id
@@ -60,7 +62,7 @@ class Client constructor() {
     @Column(name = "username", nullable = true, unique = true)
     var username: String? = null
 
-    @Column(name = "passwordHash", nullable = true)
+    @Column(name = "passwordHashed", nullable = true)
     var passwordHashed: String? = null
 
     @Column(name = "verified", nullable = false)

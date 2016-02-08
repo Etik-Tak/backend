@@ -25,8 +25,10 @@
 
 package dk.etiktak.backend.config
 
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
+import org.springframework.cache.annotation.EnableCaching
+import org.springframework.scheduling.annotation.EnableScheduling
 
-@EnableGlobalMethodSecurity
+@EnableScheduling
+@EnableCaching
 class MainConfiguration {
 }

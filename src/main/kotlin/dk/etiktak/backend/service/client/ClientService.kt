@@ -75,4 +75,14 @@ open class ClientService @Autowired constructor(
     open fun getByUuid(uuid: String): Client? {
         return clientRepository.findByUuid(uuid)
     }
+
+    /**
+     * Finds client by username and password.
+     *
+     * @param uuid    Client UUID
+     * @return        Client
+     */
+    open fun getByUsernameAndPassword(username: String, password: String): Client? {
+        return clientRepository.findByUsernameAndPasswordHashed(username, CryptoUtil().hash(password))
+    }
 }

@@ -63,7 +63,7 @@ class CompanyTest : BaseRestTest() {
     fun createCompany() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("clientUuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("name", "Coca Cola"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

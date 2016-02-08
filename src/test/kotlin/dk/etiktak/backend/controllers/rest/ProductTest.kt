@@ -124,7 +124,7 @@ class ProductTest : BaseRestTest() {
     fun createProduct() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
                         .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
@@ -146,7 +146,7 @@ class ProductTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("name", "Coca Cola")
                         .param("categoryUuidList", "${productCategory1Uuid}, ${productCategory2Uuid}")
                         .param("labelUuidList", "${productLabel1Uuid}, ${productLabel2Uuid}"))
@@ -159,7 +159,7 @@ class ProductTest : BaseRestTest() {
     fun createProductWithoutCategories() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
                         .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
@@ -179,7 +179,7 @@ class ProductTest : BaseRestTest() {
     fun createProductWithoutLabels() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("clientuuid", client1Uuid)
+                        .header("X-Auth-ClientUuid", client1Uuid)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
                         .param("barcodeType", "${Product.BarcodeType.EAN13.name}")

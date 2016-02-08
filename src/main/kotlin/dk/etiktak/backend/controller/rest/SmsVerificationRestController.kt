@@ -45,7 +45,7 @@ class SmsVerificationRestController @Autowired constructor(
     @RequestMapping(value = "/request/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
     fun requestSmsChallenge(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam mobileNumber: String,
             @RequestParam(required = false) recoveryEnabled: Boolean? = false): HashMap<String, Any> {
 
@@ -69,7 +69,7 @@ class SmsVerificationRestController @Autowired constructor(
     @RequestMapping(value = "/verify/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
     fun verifySmsChallenge(
-            @RequestHeader clientUuid: String,
+            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
             @RequestParam mobileNumber: String,
             @RequestParam smsChallenge: String,
             @RequestParam clientChallenge: String): HashMap<String, Any> {
