@@ -25,6 +25,7 @@
 
 package dk.etiktak.backend.service.client
 
+import dk.etiktak.backend.model.acl.AclRole
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.trust.ContributionService
@@ -53,6 +54,7 @@ open class ClientService @Autowired constructor(
         var client = Client()
         client.uuid = CryptoUtil().uuid()
         client.verified = false
+        client.role = AclRole.USER
         client.username = username
         client.passwordHashed = if (password != null) CryptoUtil().hash(password) else null
 

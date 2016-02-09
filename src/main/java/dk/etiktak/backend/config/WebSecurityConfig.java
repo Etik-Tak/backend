@@ -80,14 +80,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .antMatchers(unprotectedUrls()).permitAll()
-                .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(authenticationFilter(), BasicAuthenticationFilter.class)
                 .exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint())
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .csrf().disable();
+                .csrf().disable()
+                .anonymous().disable();
     }
 
     @Override

@@ -33,6 +33,7 @@
 
 package dk.etiktak.backend.model.user
 
+import dk.etiktak.backend.model.acl.AclRole
 import dk.etiktak.backend.model.changelog.ChangeLog
 import dk.etiktak.backend.model.contribution.Contribution
 import dk.etiktak.backend.model.infochannel.InfoChannelClient
@@ -73,6 +74,9 @@ class Client constructor() {
 
     @Column(name = "banned", nullable = false)
     var banned: Boolean = false
+
+    @Column(name = "role", nullable = false)
+    var role: AclRole = AclRole.USER
 
     @Column(name = "trustScore", nullable = false)
     var trustLevel: Double = 0.0

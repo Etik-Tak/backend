@@ -34,6 +34,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 open class UsernamePasswordAuthenticationProvider @Autowired constructor(
@@ -46,14 +47,15 @@ open class UsernamePasswordAuthenticationProvider @Autowired constructor(
         val password: Any? = authentication.credentials
 
         if (username == null || password == null) {
-            throw BadCredentialsException("User with username $username and password ### not found")
+            throw BadCredentialsException("User with username $username and given password not found")
         }
 
-        val client = clientService.getByUsernameAndPassword(username as String, password as String) ?: throw BadCredentialsException("User with username $username and password ### not found")
+        val client = clientService.getByUsernameAndPassword(username as String, password as String) ?: throw BadCredentialsException("User with username $username and given password not found")
 
         val token = tokenService.generateNewToken()
 
-        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client.uuid, null)
+        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client.uuid, null, HashSet(listOf(AuthenticationAuthority(client.role))))
+        resultOfAuthentication.isAuthenticated = true
         resultOfAuthentication.details = token
         tokenService.store(token, resultOfAuthentication)
 

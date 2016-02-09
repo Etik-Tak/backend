@@ -30,6 +30,8 @@
 package dk.etiktak.backend.model.acl
 
 enum class AclRole {
+    USER,
+    ADMIN,
     MEMBER,
     FOLLOWER,
     OWNER
