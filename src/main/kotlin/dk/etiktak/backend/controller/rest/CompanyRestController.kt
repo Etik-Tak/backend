@@ -30,11 +30,12 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
-import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -47,14 +48,17 @@ class CompanyRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getCompany(
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam uuid: String): HashMap<String, Any> {
+
         val company = companyService.getCompanyByUuid(uuid) ?: return notFoundMap("Company")
+
         return okMap().add(company, client = null, companyService = companyService)
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createCompany(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -66,7 +70,7 @@ class CompanyRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editCompany(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam companyUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
@@ -83,9 +87,10 @@ class CompanyRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/", method = arrayOf(RequestMethod.POST))
     fun trustVoteCompany(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam companyUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
+
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         val company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
 

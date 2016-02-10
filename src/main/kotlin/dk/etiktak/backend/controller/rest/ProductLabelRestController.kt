@@ -31,6 +31,7 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.contribution.TrustVote
+import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductLabelService
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,7 +46,7 @@ open class ProductLabelRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProductLabel(
-            @RequestHeader(required = false) clientUuid: String?,
+            @CurrentlyLoggedClientUuid clientUuid: String?,
             @RequestParam uuid: String): HashMap<String, Any> {
 
         val client = if (clientUuid != null) clientService.getByUuid(clientUuid) else null
@@ -56,7 +57,7 @@ open class ProductLabelRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProductLabel(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -68,7 +69,7 @@ open class ProductLabelRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editProductLabel(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productLabelUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
@@ -84,7 +85,7 @@ open class ProductLabelRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productLabelUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
 

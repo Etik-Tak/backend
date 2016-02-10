@@ -31,6 +31,7 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.recommendation.*
+import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,9 +47,10 @@ class ProductScanRestController @Autowired constructor(
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.POST))
     fun scanProduct(
             @RequestParam barcode: String,
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam(required = false) latitude: Double? = null,
             @RequestParam(required = false) longitude: Double? = null): HashMap<String, Any> {
+
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
         val productScanResult = productService.scanProduct(client, barcode, latitude, longitude)
@@ -71,10 +73,11 @@ class ProductScanRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/location/", method = arrayOf(RequestMethod.POST))
     fun provideProductScanLocation(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productScanUuid: String,
             @RequestParam latitude: Double,
             @RequestParam longitude: Double): HashMap<String, Any> {
+
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var productScan = productService.getProductScanByUuid(productScanUuid) ?: return notFoundMap("Product")
 

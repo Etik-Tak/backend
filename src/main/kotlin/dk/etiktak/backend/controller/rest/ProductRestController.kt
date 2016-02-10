@@ -36,6 +36,7 @@ import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductTag
+import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.product.ProductCategoryService
@@ -70,12 +71,13 @@ class ProductRestController @Autowired constructor(
             val product = productService.getProductByBarcode(barcode) ?: return notFoundMap("Product")
             return okMap().add(product, client = null, productService = productService)
         }
+
         return notFoundMap("Product")
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProduct(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam name: String,
             @RequestParam(required = false) barcode: String,
             @RequestParam(required = false) barcodeType: String? = null,
@@ -138,7 +140,7 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editProduct(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
@@ -154,9 +156,10 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/category/", method = arrayOf(RequestMethod.POST))
     fun assignCategoryToProduct(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam categoryUuid: String): HashMap<String, Any> {
+
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
         var productCategory = productCategoryService.getProductCategoryByUuid(categoryUuid) ?: return notFoundMap("Product category")
@@ -169,9 +172,10 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/label/", method = arrayOf(RequestMethod.POST))
     fun assignLabelToProduct(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam labelUuid: String): HashMap<String, Any> {
+
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
         var productLabel = productLabelService.getProductLabelByUuid(labelUuid) ?: return notFoundMap("Product label")
@@ -184,9 +188,10 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/tag/", method = arrayOf(RequestMethod.POST))
     fun assignTagToProduct(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam tagUuid: String): HashMap<String, Any> {
+
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
         var productTag = productTagService.getProductTagByUuid(tagUuid) ?: return notFoundMap("Product tag")
@@ -199,9 +204,10 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/assign/company/", method = arrayOf(RequestMethod.POST))
     fun assignCompanyToProduct(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam companyUuid: String): HashMap<String, Any> {
+
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
         var company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
@@ -214,9 +220,10 @@ class ProductRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
+
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 

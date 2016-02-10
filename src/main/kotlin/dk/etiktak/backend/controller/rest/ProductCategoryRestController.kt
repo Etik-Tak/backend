@@ -31,10 +31,10 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.contribution.TrustVote
+import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -46,7 +46,7 @@ class ProductCategoryRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProductCategory(
-            @RequestHeader(required = false) clientUuid: String? = null,
+            @CurrentlyLoggedClientUuid clientUuid: String?,
             @RequestParam uuid: String): HashMap<String, Any> {
 
         val client = if (clientUuid != null) clientService.getByUuid(clientUuid) else null
@@ -57,7 +57,7 @@ class ProductCategoryRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProductCategory(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam name: String): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -69,7 +69,7 @@ class ProductCategoryRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editProductLabel(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productCategoryUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
@@ -85,7 +85,7 @@ class ProductCategoryRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productCategoryUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
 

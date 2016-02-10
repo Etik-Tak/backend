@@ -30,6 +30,7 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infosource.InfoSourceReferenceService
 import dk.etiktak.backend.service.recommendation.RecommendationService
@@ -46,10 +47,11 @@ class InfoSourceReferenceRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoSourceReference(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam recommendationUuid: String,
             @RequestParam url: String,
             @RequestParam(required = false) title: String?): HashMap<String, Any> {
+
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         val recommendation = recommendationService.getRecommendation(recommendationUuid) ?: return notFoundMap("Recommendation")
 

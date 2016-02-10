@@ -113,7 +113,9 @@ class SmsVerificationTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("mobileNumber", "12345678"))
-                .andExpect(status().`is`(400))
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.NotFound.value)))
+                .andExpect(jsonPath("$.message", `is`("Client not found")))
     }
 
     /**

@@ -47,6 +47,7 @@ class ClientRestController @Autowired constructor(
     fun create(
             @RequestParam(required = false) username: String?,
             @RequestParam(required = false) password: String?): HashMap<String, Any> {
+
         val client = clientService.createClient(username, password)
         return okMap().add(client)
     }

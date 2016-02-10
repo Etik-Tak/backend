@@ -30,6 +30,7 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.client.SmsVerificationService
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,7 +46,7 @@ class SmsVerificationRestController @Autowired constructor(
     @RequestMapping(value = "/request/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
     fun requestSmsChallenge(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam mobileNumber: String,
             @RequestParam(required = false) recoveryEnabled: Boolean? = false): HashMap<String, Any> {
 
@@ -69,7 +70,7 @@ class SmsVerificationRestController @Autowired constructor(
     @RequestMapping(value = "/verify/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
     fun verifySmsChallenge(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam mobileNumber: String,
             @RequestParam smsChallenge: String,
             @RequestParam clientChallenge: String): HashMap<String, Any> {

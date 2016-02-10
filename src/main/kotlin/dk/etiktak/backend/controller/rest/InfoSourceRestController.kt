@@ -31,6 +31,7 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.contribution.TrustVote
+import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infosource.InfoSourceService
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,9 +46,10 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoSource(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam domainList: List<String>,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
+
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
 
         val infoSource = infoSourceService.createInfoSource(client, domainList, name)
@@ -57,7 +59,7 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.POST))
     fun getInfoSourceReference(
-            @RequestHeader(required = false) clientUuid: String? = null,
+            @CurrentlyLoggedClientUuid clientUuid: String?,
             @RequestParam(required = false) url: String?,
             @RequestParam(required = false) uuid: String?): HashMap<String, Any> {
 
@@ -78,7 +80,7 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editInfoSource(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam infoSourceUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
@@ -94,9 +96,10 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam infoSourceUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
+
         var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
         var infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid) ?: return notFoundMap("Info source")
 

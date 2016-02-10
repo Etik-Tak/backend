@@ -244,7 +244,7 @@ open class ProductScanTest : BaseRestTest() {
     private fun scanProduct(): String {
         return postAndExtract(serviceEndpoint(""),
                 hashMapOf(
-                        "clientUuid" to client1Uuid),
+                        "X-Auth-ClientUuid" to client1Uuid),
                 hashMapOf(
                         "barcode" to "12345678a"),
                 "$.scan.uuid")

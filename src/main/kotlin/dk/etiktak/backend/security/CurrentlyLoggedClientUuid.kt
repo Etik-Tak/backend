@@ -25,9 +25,9 @@
 
 package dk.etiktak.backend.security
 
-import org.springframework.security.web.bind.annotation.AuthenticationPrincipal
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 
 @Target( AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
 @Retention(AnnotationRetention.RUNTIME)
 @AuthenticationPrincipal
-annotation class CurrentlyLoggedUser
+annotation class CurrentlyLoggedClientUuid

@@ -30,12 +30,11 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
-import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.recommendation.RecommendationScore
+import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
-import dk.etiktak.backend.service.infosource.InfoSourceReferenceService
 import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
 import dk.etiktak.backend.service.product.ProductService
@@ -55,12 +54,11 @@ class RecommendationRestController @Autowired constructor(
         private val productTagService: ProductTagService,
         private val companyService: CompanyService,
         private val infoChannelService: InfoChannelService,
-        private val infoSourceReferenceService: InfoSourceReferenceService,
         private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getRecommendation(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam productUuid: String): HashMap<String, Any> {
 
         val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
@@ -73,7 +71,7 @@ class RecommendationRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createRecommendation(
-            @RequestHeader(value="X-Auth-ClientUuid") clientUuid: String,
+            @CurrentlyLoggedClientUuid clientUuid: String,
             @RequestParam infoChannelUuid: String,
             @RequestParam summary: String,
             @RequestParam score: String,

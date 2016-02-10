@@ -34,7 +34,6 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 open class UsernamePasswordAuthenticationProvider @Autowired constructor(
@@ -54,7 +53,7 @@ open class UsernamePasswordAuthenticationProvider @Autowired constructor(
 
         val token = tokenService.generateNewToken()
 
-        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client.uuid, null, HashSet(listOf(AuthenticationAuthority(client.role))))
+        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client.uuid, null)
         resultOfAuthentication.isAuthenticated = true
         resultOfAuthentication.details = token
         tokenService.store(token, resultOfAuthentication)

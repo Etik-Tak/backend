@@ -86,10 +86,6 @@ open class AuthenticationFilter constructor(
 
             logger.info("AuthenticationFilter is passing request down the filter chain")
 
-            if (isAuthenticated()) {
-                requestWithClientUuidInHeader(httpRequest)
-            }
-
             addSessionContextToLogging()
             chain.doFilter(httpRequest, response)
 
@@ -167,30 +163,5 @@ open class AuthenticationFilter constructor(
 
     private fun isPostToAuthenticate(httpRequest: HttpServletRequest, resourcePath: String): Boolean {
         return WebSecurityConfig.authenticationEndpoint.equals(resourcePath) && httpRequest.method == "POST"
-    }
-
-    private fun requestWithClientUuidInHeader(httpServletRequest: HttpServletRequest): HttpServletRequest {
-        return object : HttpServletRequestWrapper(httpServletRequest) {
-            override fun getHeader(name: String): String {
-                if (super.getHeader(name) != null) {
-                    return super.getHeader(name)
-                }
-                if ("X-Auth-ClientUuid".equals(name)) {
-                    if (isAuthenticated()) {
-                        val authentication = SecurityContextHolder.getContext().authentication
-                        return authentication.principal as String
-                    } else {
-                        return "OH NO"
-                    }
-                }
-                return super.getHeader(name)
-            }
-
-            override fun getHeaderNames(): Enumeration<String> {
-                val headerNames = Collections.list(super.getHeaderNames())
-                headerNames.add("X-Auth-ClientUuid")
-                return Collections.enumeration(headerNames)
-            }
-        }
     }
 }

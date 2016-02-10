@@ -34,7 +34,6 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 open class ClientUuidAuthenticationProvider @Autowired constructor(
@@ -50,7 +49,7 @@ open class ClientUuidAuthenticationProvider @Autowired constructor(
 
         val client = clientService.getByUuid(clientUuid) ?: throw BadCredentialsException("Invalid client UUID")
 
-        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client.uuid, null, HashSet(listOf(AuthenticationAuthority(client.role))))
+        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client.uuid, null)
         resultOfAuthentication.isAuthenticated = true
         return resultOfAuthentication
     }

@@ -51,10 +51,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import java.nio.charset.Charset
 
@@ -192,13 +195,16 @@ open class BaseRestTest {
     val changeLogRepository: ChangeLogRepository? = null
 
     @get:Rule
-    public val exception = ExpectedException.none()
+    val exception = ExpectedException.none()
 
 
 
     @Throws(Exception::class)
     open fun setup() {
-        mockMvcVar = webAppContextSetup(webApplicationContext).build()
+        mockMvcVar = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
+                .build()
 
         cleanRepository()
     }
@@ -244,7 +250,7 @@ open class BaseRestTest {
     fun createAndSaveCompany(clientUuid: String, name: String = "Test company", productUuid: String? = null): String {
         val companyUuid = postAndExtract(CompanyTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "name" to name),
                 "$.company.uuid")
@@ -252,7 +258,7 @@ open class BaseRestTest {
         productUuid?.let {
             postAndExtract(ProductTest().serviceEndpoint("assign/company/"),
                     hashMapOf(
-                            "clientUuid" to clientUuid),
+                            "X-Auth-ClientUuid" to clientUuid),
                     hashMapOf(
                             "productUuid" to productUuid,
                             "companyUuid" to companyUuid),
@@ -265,7 +271,7 @@ open class BaseRestTest {
     fun createAndSaveProduct(clientUuid: String, barcode: String, barcodeType: Product.BarcodeType, name: String = "Test product"): String {
         return postAndExtract(ProductTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "name" to name,
                         "barcode" to barcode,
@@ -276,7 +282,7 @@ open class BaseRestTest {
     fun createAndSaveProductCategory(clientUuid: String, name: String, productUuid: String? = null): String {
         val categoryUuid = postAndExtract(ProductCategoryTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "name" to name),
                 "$.productCategory.uuid")
@@ -284,7 +290,7 @@ open class BaseRestTest {
         productUuid?.let {
             postAndExtract(ProductTest().serviceEndpoint("assign/category/"),
                     hashMapOf(
-                            "clientUuid" to clientUuid),
+                            "X-Auth-ClientUuid" to clientUuid),
                     hashMapOf(
                             "productUuid" to productUuid,
                             "categoryUuid" to categoryUuid),
@@ -297,7 +303,7 @@ open class BaseRestTest {
     fun createAndSaveProductLabel(clientUuid: String, name: String, productUuid: String? = null): String {
         val labelUuid = postAndExtract(ProductLabelTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "name" to name),
                 "$.productLabel.uuid")
@@ -305,7 +311,7 @@ open class BaseRestTest {
         productUuid?.let {
             postAndExtract(ProductTest().serviceEndpoint("assign/label/"),
                     hashMapOf(
-                            "clientUuid" to clientUuid),
+                            "X-Auth-ClientUuid" to clientUuid),
                     hashMapOf(
                             "productUuid" to productUuid,
                             "labelUuid" to labelUuid),
@@ -318,7 +324,7 @@ open class BaseRestTest {
     fun createAndSaveProductTag(clientUuid: String, name: String, productUuid: String? = null): String {
         val tagUuid = postAndExtract(ProductTagTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "name" to name),
                 "$.productTag.uuid")
@@ -326,7 +332,7 @@ open class BaseRestTest {
         productUuid?.let {
             postAndExtract(ProductTest().serviceEndpoint("assign/tag/"),
                     hashMapOf(
-                            "clientUuid" to clientUuid),
+                            "X-Auth-ClientUuid" to clientUuid),
                     hashMapOf(
                             "productUuid" to productUuid,
                             "tagUuid" to tagUuid),
@@ -339,7 +345,7 @@ open class BaseRestTest {
     fun createAndSaveInfoChannel(clientUuid: String, name: String = "Test info channel"): String {
         return postAndExtract(InfoChannelTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "name" to name),
                 "$.infoChannel.uuid")
@@ -355,7 +361,7 @@ open class BaseRestTest {
         }
         return postAndExtract(InfoSourceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "name" to "Test info source",
                         "domainList" to domainString),
@@ -365,7 +371,7 @@ open class BaseRestTest {
     fun createAndSaveInfoSourceReference(clientUuid: String, infoChannelUuid: String, infoSourceUuid: String, url: String): String {
         return postAndExtract(InfoSourceReferenceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "infoSourceUuid" to infoSourceUuid,
@@ -378,7 +384,7 @@ open class BaseRestTest {
     fun createAndSaveProductRecommendation(clientUuid: String, infoChannelUuid: String, productUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productUuid" to productUuid,
@@ -391,7 +397,7 @@ open class BaseRestTest {
     fun createAndSaveProductCategoryRecommendation(clientUuid: String, infoChannelUuid: String, productCategoryUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productCategoryUuid" to productCategoryUuid,
@@ -404,7 +410,7 @@ open class BaseRestTest {
     fun createAndSaveProductLabelRecommendation(clientUuid: String, infoChannelUuid: String, productLabelUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productLabelUuid" to productLabelUuid,
@@ -417,7 +423,7 @@ open class BaseRestTest {
     fun createAndSaveProductTagRecommendation(clientUuid: String, infoChannelUuid: String, productTagUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productTagUuid" to productTagUuid,
@@ -430,7 +436,7 @@ open class BaseRestTest {
     fun createAndSaveCompanyRecommendation(clientUuid: String, infoChannelUuid: String, companyUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "clientUuid" to clientUuid),
+                        "X-Auth-ClientUuid" to clientUuid),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "companyUuid" to companyUuid,
