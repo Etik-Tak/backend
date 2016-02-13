@@ -62,7 +62,7 @@ class ProductLabelTest : BaseRestTest() {
     @Test
     fun createProductLabel() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "KRAV"))
                 .andExpect(status().isOk)
@@ -80,7 +80,7 @@ class ProductLabelTest : BaseRestTest() {
         productLabel1Uuid = createAndSaveProductLabel(client1DeviceId, "Ecocert")
 
         mockMvc().perform(
-                get(serviceEndpoint("/"))
+                get(serviceEndpoint(""))
                         .param("uuid", productLabel1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

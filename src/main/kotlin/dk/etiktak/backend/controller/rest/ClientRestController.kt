@@ -60,7 +60,7 @@ class ClientRestController @Autowired constructor(
     @RequestMapping(value = "/device/create/", method = arrayOf(RequestMethod.POST))
     fun createDevice(
             @CurrentlyLoggedClient loggedClient: Client,
-            @RequestParam(required = false) deviceType: ClientDevice.DeviceType = ClientDevice.DeviceType.Unknown): HashMap<String, Any> {
+            @RequestParam(required = false) deviceType: ClientDevice.DeviceType? = ClientDevice.DeviceType.Unknown): HashMap<String, Any> {
 
         var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 

@@ -464,6 +464,18 @@ open class BaseRestTest {
         return deviceId
     }
 
+    fun createAndSaveClient(username: String, password: String, verified: Boolean = true): String {
+        val deviceId = postAndExtract(ClientTest().serviceEndpoint("create/"),
+                hashMapOf(),
+                hashMapOf("username" to username, "password" to password),
+                "$.device.id")
+
+        val client = clientDeviceRepository!!.findByIdHashed(CryptoUtil().hash(deviceId))!!.client
+        client.verified = verified
+        clientRepository!!.save(client)
+        return deviceId
+    }
+
     fun createLocation(latitude: Double, longitude: Double): TestLocation {
         return TestLocation(latitude, longitude)
     }

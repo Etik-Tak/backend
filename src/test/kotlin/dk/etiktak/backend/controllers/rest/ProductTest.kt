@@ -106,7 +106,7 @@ class ProductTest : BaseRestTest() {
     @Test
     fun retrieveProductByUPCBarcode() {
         mockMvc().perform(
-                get(serviceEndpoint("/"))
+                get(serviceEndpoint(""))
                         .param("barcode", "12345678b"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -123,7 +123,7 @@ class ProductTest : BaseRestTest() {
     @Test
     fun createProduct() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
@@ -145,7 +145,7 @@ class ProductTest : BaseRestTest() {
     fun cannotCreateProductWithoutBarcode() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("categoryUuidList", "${productCategory1Uuid}, ${productCategory2Uuid}")
@@ -158,7 +158,7 @@ class ProductTest : BaseRestTest() {
     @Test
     fun createProductWithoutCategories() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
@@ -178,7 +178,7 @@ class ProductTest : BaseRestTest() {
     @Test
     fun createProductWithoutLabels() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")

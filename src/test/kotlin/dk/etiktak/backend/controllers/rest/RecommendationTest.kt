@@ -83,7 +83,7 @@ class RecommendationTest : BaseRestTest() {
     @Test
     fun createProductRecommendation() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test product 1")
@@ -98,7 +98,7 @@ class RecommendationTest : BaseRestTest() {
                 .andExpect(jsonPath("$.recommendation.score", `is`(RecommendationScore.THUMBS_UP.name)))
 
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test product 2")
@@ -132,7 +132,7 @@ class RecommendationTest : BaseRestTest() {
     @Test
     fun createProductCategoryRecommendation() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category 1")
@@ -147,7 +147,7 @@ class RecommendationTest : BaseRestTest() {
                 .andExpect(jsonPath("$.recommendation.score", `is`(RecommendationScore.THUMBS_UP.name)))
 
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category 2")
@@ -181,7 +181,7 @@ class RecommendationTest : BaseRestTest() {
     @Test
     fun createProductLabelRecommendation() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label 1")
@@ -196,7 +196,7 @@ class RecommendationTest : BaseRestTest() {
                 .andExpect(jsonPath("$.recommendation.score", `is`(RecommendationScore.THUMBS_UP.name)))
 
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label 2")
@@ -230,7 +230,7 @@ class RecommendationTest : BaseRestTest() {
     @Test
     fun createProductTagRecommendation() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test tag 1")
@@ -245,7 +245,7 @@ class RecommendationTest : BaseRestTest() {
                 .andExpect(jsonPath("$.recommendation.score", `is`(RecommendationScore.THUMBS_UP.name)))
 
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test tag 2")
@@ -279,7 +279,7 @@ class RecommendationTest : BaseRestTest() {
     @Test
     fun createCompanyRecommendation() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test company 1")
@@ -294,7 +294,7 @@ class RecommendationTest : BaseRestTest() {
                 .andExpect(jsonPath("$.recommendation.score", `is`(RecommendationScore.THUMBS_UP.name)))
 
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test company 2")
@@ -328,7 +328,7 @@ class RecommendationTest : BaseRestTest() {
     @Test
     fun cannotCreateSeveralRecommendationsForSameProductAndInfoChannel() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
@@ -339,7 +339,7 @@ class RecommendationTest : BaseRestTest() {
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
@@ -354,7 +354,7 @@ class RecommendationTest : BaseRestTest() {
     @Test
     fun cannotCreateSeveralRecommendationsForSameProductCategoryAndInfoChannel() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
@@ -365,7 +365,7 @@ class RecommendationTest : BaseRestTest() {
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test category")
@@ -380,7 +380,7 @@ class RecommendationTest : BaseRestTest() {
     @Test
     fun cannotCreateSeveralRecommendationsForSameProductLabelAndInfoChannel() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label")
@@ -391,7 +391,7 @@ class RecommendationTest : BaseRestTest() {
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test label")
@@ -406,7 +406,7 @@ class RecommendationTest : BaseRestTest() {
     @Test
     fun cannotCreateSeveralRecommendationsForSameProductTagAndInfoChannel() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test tag")
@@ -417,7 +417,7 @@ class RecommendationTest : BaseRestTest() {
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test tag")
@@ -432,7 +432,7 @@ class RecommendationTest : BaseRestTest() {
     @Test
     fun cannotCreateSeveralRecommendationsForSameCompanyAndInfoChannel() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test company")
@@ -443,7 +443,7 @@ class RecommendationTest : BaseRestTest() {
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid)
                         .param("summary", "Test company")

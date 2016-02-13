@@ -68,7 +68,7 @@ class InfoSourceContributionTest : BaseRestTest() {
         setInfoSourceNameTrustScore(infoSource1Uuid, 0.4)
 
         mockMvc().perform(
-                post(serviceEndpoint("/edit/"))
+                post(serviceEndpoint("edit/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("name", "New info source"))
@@ -88,7 +88,7 @@ class InfoSourceContributionTest : BaseRestTest() {
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/edit/"))
+                post(serviceEndpoint("edit/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("name", "New info source"))
@@ -100,7 +100,7 @@ class InfoSourceContributionTest : BaseRestTest() {
     @Test
     fun trustVoteInfoSource() {
         mockMvc().perform(
-                post(serviceEndpoint("/trust/name/"))
+                post(serviceEndpoint("trust/name/"))
                         .header("X-Auth-DeviceId", client2DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -115,7 +115,7 @@ class InfoSourceContributionTest : BaseRestTest() {
     @Test
     fun cannotTrustVoteMoreThanOnceOnSameInfoSourceName() {
         mockMvc().perform(
-                post(serviceEndpoint("/trust/name/"))
+                post(serviceEndpoint("trust/name/"))
                         .header("X-Auth-DeviceId", client2DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -125,7 +125,7 @@ class InfoSourceContributionTest : BaseRestTest() {
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/trust/name/"))
+                post(serviceEndpoint("trust/name/"))
                         .header("X-Auth-DeviceId", client2DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -138,7 +138,7 @@ class InfoSourceContributionTest : BaseRestTest() {
     fun cannotTrustVoteOwnInfoSourceName() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/trust/name/"))
+                post(serviceEndpoint("trust/name/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))

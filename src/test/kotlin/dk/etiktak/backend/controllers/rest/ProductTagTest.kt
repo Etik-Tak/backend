@@ -62,7 +62,7 @@ class ProductTagTest : BaseRestTest() {
     @Test
     fun createProductTag() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Vegetarisk"))
                 .andExpect(status().isOk)
@@ -80,7 +80,7 @@ class ProductTagTest : BaseRestTest() {
         productTag1Uuid = createAndSaveProductTag(client1DeviceId, "Glutenfrit")
 
         mockMvc().perform(
-                get(serviceEndpoint("/"))
+                get(serviceEndpoint(""))
                         .param("uuid", productTag1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

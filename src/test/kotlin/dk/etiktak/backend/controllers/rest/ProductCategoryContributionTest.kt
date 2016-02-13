@@ -72,7 +72,7 @@ class ProductCategoryContributionTest : BaseRestTest() {
         setProductCategoryNameTrustScore(productCategory1Uuid, 0.4)
 
         mockMvc().perform(
-                post(serviceEndpoint("/edit/"))
+                post(serviceEndpoint("edit/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productCategoryUuid", productCategory1Uuid)
                         .param("name", "Product category new"))
@@ -92,7 +92,7 @@ class ProductCategoryContributionTest : BaseRestTest() {
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/edit/"))
+                post(serviceEndpoint("edit/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productCategoryUuid", productCategory1Uuid)
                         .param("name", "Product category new"))
@@ -104,7 +104,7 @@ class ProductCategoryContributionTest : BaseRestTest() {
     @Test
     fun trustVoteProductCategoryName() {
         mockMvc().perform(
-                post(serviceEndpoint("/trust/name/"))
+                post(serviceEndpoint("trust/name/"))
                         .header("X-Auth-DeviceId", client2DeviceId)
                         .param("productCategoryUuid", productCategory1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -119,7 +119,7 @@ class ProductCategoryContributionTest : BaseRestTest() {
     @Test
     fun cannotTrustVoteMoreThanOnceOnSameProductCategoryName() {
         mockMvc().perform(
-                post(serviceEndpoint("/trust/name/"))
+                post(serviceEndpoint("trust/name/"))
                         .header("X-Auth-DeviceId", client2DeviceId)
                         .param("productCategoryUuid", productCategory1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -129,7 +129,7 @@ class ProductCategoryContributionTest : BaseRestTest() {
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/trust/name/"))
+                post(serviceEndpoint("trust/name/"))
                         .header("X-Auth-DeviceId", client2DeviceId)
                         .param("productCategoryUuid", productCategory1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -142,7 +142,7 @@ class ProductCategoryContributionTest : BaseRestTest() {
     fun cannotTrustVoteOwnProductCategoryName() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
-                post(serviceEndpoint("/trust/name/"))
+                post(serviceEndpoint("trust/name/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productCategoryUuid", productCategory1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))

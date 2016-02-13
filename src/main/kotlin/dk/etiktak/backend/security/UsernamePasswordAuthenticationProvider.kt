@@ -42,21 +42,21 @@ open class UsernamePasswordAuthenticationProvider @Autowired constructor(
 
     @Throws(AuthenticationException::class)
     override fun authenticate(authentication: Authentication): Authentication {
-        val username: Any? = authentication.principal
-        val password: Any? = authentication.credentials
+        val username: String? = authentication.principal as String
+        val password: String? = authentication.credentials as String
 
+        System.out.println("a");
         if (username == null || password == null) {
             throw BadCredentialsException("Both username and password must be provided")
         }
 
-        val client = clientService.getByUsernameAndPassword(username as String, password as String) ?: throw BadCredentialsException("User with username $username and given password not found")
+        val client = clientService.getByUsernameAndPassword(username, password) ?: throw BadCredentialsException("User with username $username and given password not found")
 
-        val token = tokenService.generateNewToken()
+        val token = tokenService.generateNewToken(client)
 
         val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client, null)
         resultOfAuthentication.isAuthenticated = true
         resultOfAuthentication.details = token
-        tokenService.store(token, resultOfAuthentication)
 
         return resultOfAuthentication
     }

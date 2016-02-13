@@ -34,7 +34,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.notNullValue
@@ -42,10 +41,10 @@ import org.hamcrest.Matchers.notNullValue
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
 @WebAppConfiguration
-class CompanyTest : BaseRestTest() {
+open class SecurityTest : BaseRestTest() {
 
     fun serviceEndpoint(postfix: String): String {
-        return super.serviceEndpoint() + "company/" + postfix
+        return super.serviceEndpoint() + postfix
     }
 
     @Before
@@ -53,39 +52,47 @@ class CompanyTest : BaseRestTest() {
         super.setup()
 
         client1DeviceId = createAndSaveClient()
-        client2DeviceId = createAndSaveClient()
     }
 
     /**
-     * Test that we can create a company.
+     * Test that we can create a company by authenticating with device ID.
      */
     @Test
-    fun createCompany() {
+    fun authenticateWithDeviceId() {
         mockMvc().perform(
-                post(serviceEndpoint("create/"))
+                post(serviceEndpoint("company/create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.company.uuid", notNullValue()))
-                .andExpect(jsonPath("$.company.name", `is`("Coca Cola")))
     }
 
     /**
-     * Test that we can retrieve a company.
+     * Test that we can create a company by authenticating with username and password.
      */
     @Test
-    fun retrieveCompany() {
-        company1Uuid = createAndSaveCompany(client1DeviceId, "Pepsi Cola")
+    fun authenticateWithUsernameAndPassword() {
 
+        // Create client with username and password
+        createAndSaveClient(username = "test", password = "Test1234")
+
+        // Authenticate to get token
+        val token = postAndExtract(
+                serviceEndpoint("authenticate"),
+                hashMapOf(
+                        "X-Auth-Username" to "test",
+                        "X-Auth-Password" to "Test1234"),
+                hashMapOf(),
+                "$.token")
+
+        // Create company with provided token
         mockMvc().perform(
-                get(serviceEndpoint(""))
-                        .param("uuid", company1Uuid))
+                post(serviceEndpoint("company/create/"))
+                        .header("X-Auth-Token", token)
+                        .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.company.uuid", `is`(company1Uuid)))
-                .andExpect(jsonPath("$.company.name", `is`("Pepsi Cola")))
     }
 }

@@ -25,30 +25,59 @@
 
 package dk.etiktak.backend.security
 
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.authentication.AuthenticationProvider
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.AuthenticationException
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
-import org.springframework.stereotype.Service
+import dk.etiktak.backend.util.CryptoUtil
+import org.slf4j.LoggerFactory
+import org.springframework.security.crypto.encrypt.TextEncryptor
 
-@Service
-open class TokenAuthenticationProvider @Autowired constructor(
-        private val tokenService: TokenService) : AuthenticationProvider {
+open class TokenEncryptionCache {
+    private val logger = LoggerFactory.getLogger(TokenEncryptionCache::class.java)
 
-    @Throws(AuthenticationException::class)
-    override fun authenticate(authentication: Authentication): Authentication {
-        val token: String = authentication.principal as String? ?: throw BadCredentialsException("Invalid token")
-
-        val client = tokenService.getClientFromToken(token) ?: throw BadCredentialsException("Invalid token or token timed out")
-
-        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client, null)
-        resultOfAuthentication.isAuthenticated = true
-        return resultOfAuthentication
+    companion object {
+        val sharedInstance = TokenEncryptionCache()
+        val encryptorCount = 4
     }
 
-    override fun supports(authentication: Class<*>?): Boolean {
-        return authentication!!.equals(PreAuthenticatedAuthenticationToken::class.java)
+    private var textEncryptors = arrayListOf<TextEncryptor>()
+
+    constructor() {
+        for (i in 1..encryptorCount) {
+            generateNewEncryptor()
+        }
+    }
+
+    /**
+     * Encrypts the given token with first text encryptor.
+     *
+     * @param token  Token
+     * @return       Encrypted token
+     */
+    fun encryptToken(token: String): String {
+        return textEncryptors[0].encrypt(token)
+    }
+
+    /**
+     * Decrypts the given token with the text encryptor at the given index.
+     *
+     * @param token           Token
+     * @param encryptorIndex  Index of encryptor to use
+     * @return                Decrypted token
+     */
+    fun decryptToken(token: String, encryptorIndex: Int): String {
+        return textEncryptors[encryptorIndex].decrypt(token)
+    }
+
+    /**
+     * Generates a new encryptor. Rolls the encryptor cache.
+     */
+    fun generateNewEncryptor() {
+        logger.info("Creating new token encryptor")
+
+        // Create new encryptor
+        textEncryptors.add(0, CryptoUtil().createTextEncryptor())
+
+        // Remove last
+        if (textEncryptors.size > encryptorCount) {
+            textEncryptors.remove(textEncryptors.last())
+        }
     }
 }

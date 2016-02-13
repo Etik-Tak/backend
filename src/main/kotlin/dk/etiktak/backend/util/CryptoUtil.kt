@@ -25,6 +25,9 @@
 
 package dk.etiktak.backend.util
 
+import org.springframework.security.crypto.encrypt.Encryptors
+import org.springframework.security.crypto.encrypt.TextEncryptor
+import org.springframework.security.crypto.keygen.KeyGenerators
 import java.io.UnsupportedEncodingException
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -56,6 +59,17 @@ class CryptoUtil {
         val hashedBytes = digest.digest(text.toByteArray(Charsets.UTF_8))
 
         return hashedBytes.convertByteArrayToHexString()
+    }
+
+    /**
+     * Creates a new text encryptor to encrypt and decrypt strings. Uses random password and salt.
+     *
+     * @return Text encryptor
+     */
+    fun createTextEncryptor(): TextEncryptor {
+        val password = uuid()
+        val salt = KeyGenerators.string().generateKey()
+        return Encryptors.delux(password, salt)
     }
 
     /**

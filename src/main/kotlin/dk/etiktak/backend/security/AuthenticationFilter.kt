@@ -116,6 +116,7 @@ open class AuthenticationFilter constructor(
 
         val tokenResponse = TokenResponse(resultOfAuthentication.details.toString())
         val tokenJsonResponse = ObjectMapper().writeValueAsString(tokenResponse)
+        logger.info("Wrote: $tokenJsonResponse")
 
         httpResponse.status = HttpServletResponse.SC_OK
         httpResponse.addHeader("Content-Type", "application/json")

@@ -62,7 +62,7 @@ class ProductCategoryTest : BaseRestTest() {
     @Test
     fun createProductCategory() {
         mockMvc().perform(
-                post(serviceEndpoint("/create/"))
+                post(serviceEndpoint("create/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Chokolade"))
                 .andExpect(status().isOk)
@@ -80,7 +80,7 @@ class ProductCategoryTest : BaseRestTest() {
         productCategory1Uuid = createAndSaveProductCategory(client1DeviceId, "Pandekager")
 
         mockMvc().perform(
-                get(serviceEndpoint("/"))
+                get(serviceEndpoint(""))
                         .param("uuid", productCategory1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

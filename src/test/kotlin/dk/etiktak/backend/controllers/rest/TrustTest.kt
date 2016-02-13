@@ -117,7 +117,7 @@ class TrustTest : BaseRestTest() {
 
         // Trust vote product name
         mockMvc().perform(
-                post(serviceEndpoint("/trust/name/"))
+                post(serviceEndpoint("trust/name/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productUuid", product2Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
@@ -157,7 +157,7 @@ class TrustTest : BaseRestTest() {
 
         // Edit product name
         mockMvc().perform(
-                post(serviceEndpoint("/edit/"))
+                post(serviceEndpoint("edit/"))
                         .header("X-Auth-DeviceId", client2DeviceId)
                         .param("productUuid", product1Uuid)
                         .param("name", "Pepsi Cola"))
@@ -176,7 +176,7 @@ class TrustTest : BaseRestTest() {
 
         // Edit product name
         mockMvc().perform(
-                post(serviceEndpoint("/edit/"))
+                post(serviceEndpoint("edit/"))
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productUuid", product2Uuid)
                         .param("name", "Pepsi Cola"))
@@ -194,7 +194,7 @@ class TrustTest : BaseRestTest() {
         var initialClientTrust = clientTrustLevel(client1DeviceId)
 
         mockMvc().perform(
-                post(serviceEndpoint("/edit/"))
+                post(serviceEndpoint("edit/"))
                         .header("X-Auth-DeviceId", client2DeviceId)
                         .param("productUuid", product2Uuid)
                         .param("name", "Pepsi Cola"))
@@ -230,7 +230,7 @@ class TrustTest : BaseRestTest() {
 
             // Vote
             mockMvc().perform(
-                    post(serviceEndpoint("/trust/name/"))
+                    post(serviceEndpoint("trust/name/"))
                             .header("X-Auth-DeviceId", currentDeviceId)
                             .param("productUuid", productUuid)
                             .param("vote", trustVoteType.name))

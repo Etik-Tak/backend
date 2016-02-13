@@ -11,6 +11,10 @@ Etik-Tak Backend
 Getting Started
 ---------------
 
+### Encryption
+
+Be sure to install unlimited key strength (local_policy.jar & US_export_policy.jar) in .
+
 ### Database setup
 
 Install postgresql. Then run the following psql:

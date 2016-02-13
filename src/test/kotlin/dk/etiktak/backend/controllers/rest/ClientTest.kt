@@ -50,6 +50,8 @@ open class ClientTest : BaseRestTest() {
     @Before
     override fun setup() {
         super.setup()
+
+        client1DeviceId = createAndSaveClient()
     }
 
     /**
@@ -59,6 +61,21 @@ open class ClientTest : BaseRestTest() {
     fun createClient() {
         mockMvc().perform(
                 post(serviceEndpoint("create/")))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.device.id", notNullValue()))
+    }
+
+    /**
+     * Test that we can create a client device.
+     */
+    @Test
+    fun createClientDevice() {
+        mockMvc().perform(
+                post(serviceEndpoint("device/create/"))
+                        .header("X-Auth-DeviceId", client1DeviceId)
+                        .param("deviceType", "Android"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))

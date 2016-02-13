@@ -95,7 +95,7 @@ open class ClientService @Autowired constructor(
      * @return              Created (non-hashed) device ID
      */
     @ClientValid
-    open fun createDevice(inClient: Client, deviceType: ClientDevice.DeviceType = ClientDevice.DeviceType.Unknown, modifyValues: (Client) -> Unit = {}): String {
+    open fun createDevice(inClient: Client, deviceType: ClientDevice.DeviceType? = ClientDevice.DeviceType.Unknown, modifyValues: (Client) -> Unit = {}): String {
 
         var client = inClient
 
@@ -133,8 +133,9 @@ open class ClientService @Autowired constructor(
     /**
      * Finds client by username and password.
      *
-     * @param uuid    Client UUID
-     * @return        Client
+     * @param username   Username
+     * @param password   Password
+     * @return           Client
      */
     open fun getByUsernameAndPassword(username: String, password: String): Client? {
         return clientRepository.findByUsernameAndPasswordHashed(username, CryptoUtil().hash(password))

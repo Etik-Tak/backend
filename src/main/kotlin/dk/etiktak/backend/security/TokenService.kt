@@ -25,53 +25,46 @@
 
 package dk.etiktak.backend.security
 
+import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.util.CryptoUtil
-import org.ehcache.Cache
-import org.ehcache.CacheManager
-import org.ehcache.CacheManagerBuilder
-import org.ehcache.config.CacheConfigurationBuilder
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 
 @Service
-open class TokenService {
+open class TokenService @Autowired constructor(
+        private val clientRepository: ClientRepository) {
 
     private val logger = LoggerFactory.getLogger(TokenService::class.java)
 
-    private val cacheManager: CacheManager
-
-    private var cache: Cache<String, Authentication>
-
-    constructor() {
-        cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
-                .withCache("restApiAuthTokenCache",
-                        CacheConfigurationBuilder.newCacheConfigurationBuilder<String, Authentication>().buildConfig(String::class.java, Authentication::class.java))
-                .build(true)
-
-        cache = cacheManager.getCache("restApiAuthTokenCache", String::class.java, Authentication::class.java)
-    }
-
     @Scheduled(fixedRate = 30*60*1000)
-    fun evictExpiredTokens() {
-        logger.info("Evicting expired tokens")
-        //cache.evictExpiredElements()
+    fun generateNewEncryptor() {
+        TokenEncryptionCache.sharedInstance.generateNewEncryptor()
     }
 
-    fun generateNewToken(): String {
-        return CryptoUtil().uuid()
+    /**
+     * Generates a new token from the given client.
+     *
+     * @param client   Client
+     * @return         Token
+     */
+    fun generateNewToken(client: Client): String {
+        return TokenEncryptionCache.sharedInstance.encryptToken(client.uuid)
     }
 
-    fun store(token: String, authentication: Authentication) {
-        cache.put(token, authentication)
-    }
-
-    operator fun contains(token: String): Boolean {
-        return cache.containsKey(token)
-    }
-
-    fun retrieve(token: String): Authentication {
-        return cache.get(token)
+    /**
+     * Finds the client from a given token, or null, if the token is invalid or outdated.
+     *
+     * @param token    Token
+     * @return         Client
+     */
+    fun getClientFromToken(token: String): Client? {
+        for (i in 0..(TokenEncryptionCache.encryptorCount - 1)) {
+            val clientUuid = TokenEncryptionCache.sharedInstance.decryptToken(token, i)
+            return clientRepository.findByUuid(clientUuid) ?: continue
+        }
+        return null
     }
 }

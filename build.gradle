@@ -43,7 +43,6 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-data-jpa")
     compile("postgresql:postgresql:9.0-801.jdbc4")
     compile("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
-    compile("org.ehcache:ehcache:3.0.0.m4")
 
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("org.springframework.security:spring-security-test")
