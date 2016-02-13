@@ -30,6 +30,9 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.model.user.ClientDevice
+import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -45,10 +48,24 @@ class ClientRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun create(
+            @RequestParam(required = false) deviceType: ClientDevice.DeviceType?,
             @RequestParam(required = false) username: String?,
             @RequestParam(required = false) password: String?): HashMap<String, Any> {
 
-        val client = clientService.createClient(username, password)
-        return okMap().add(client)
+        val deviceId = clientService.createClient(deviceType ?: ClientDevice.DeviceType.Unknown, username, password)
+
+        return okMap().add("device", hashMapOf("id" to deviceId))
+    }
+
+    @RequestMapping(value = "/device/create/", method = arrayOf(RequestMethod.POST))
+    fun createDevice(
+            @CurrentlyLoggedClient loggedClient: Client,
+            @RequestParam(required = false) deviceType: ClientDevice.DeviceType = ClientDevice.DeviceType.Unknown): HashMap<String, Any> {
+
+        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
+
+        val deviceId = clientService.createDevice(client, deviceType)
+
+        return okMap().add("device", hashMapOf("id" to deviceId))
     }
 }

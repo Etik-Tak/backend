@@ -52,8 +52,8 @@ class CompanyTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
     }
 
     /**
@@ -63,7 +63,7 @@ class CompanyTest : BaseRestTest() {
     fun createCompany() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -77,7 +77,7 @@ class CompanyTest : BaseRestTest() {
      */
     @Test
     fun retrieveCompany() {
-        company1Uuid = createAndSaveCompany(client1Uuid, "Pepsi Cola")
+        company1Uuid = createAndSaveCompany(client1DeviceId, "Pepsi Cola")
 
         mockMvc().perform(
                 get(serviceEndpoint("/"))

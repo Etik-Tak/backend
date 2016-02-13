@@ -40,9 +40,11 @@ import dk.etiktak.backend.repository.infosource.InfoSourceDomainRepository
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.*
 import dk.etiktak.backend.repository.recommendation.*
+import dk.etiktak.backend.repository.user.ClientDeviceRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository
+import dk.etiktak.backend.util.CryptoUtil
 import org.junit.After
 import org.junit.Assert
 import org.junit.Rule
@@ -73,8 +75,8 @@ open class BaseRestTest {
 
 
 
-    var client1Uuid = ""
-    var client2Uuid = ""
+    var client1DeviceId = ""
+    var client2DeviceId = ""
 
     var nonVerifiedClient1Uuid = ""
     var nonVerifiedClient2Uuid = ""
@@ -162,6 +164,9 @@ open class BaseRestTest {
     val clientRepository: ClientRepository? = null
 
     @Autowired
+    val clientDeviceRepository: ClientDeviceRepository? = null
+
+    @Autowired
     val locationRepository: LocationRepository? = null
 
     @Autowired
@@ -239,6 +244,7 @@ open class BaseRestTest {
 
         companyRepository!!.deleteAll()
 
+        clientDeviceRepository!!.deleteAll()
         clientRepository!!.deleteAll()
 
         mobileNumberRepository!!.deleteAll()
@@ -247,10 +253,10 @@ open class BaseRestTest {
         changeLogRepository!!.deleteAll()
     }
 
-    fun createAndSaveCompany(clientUuid: String, name: String = "Test company", productUuid: String? = null): String {
+    fun createAndSaveCompany(deviceId: String, name: String = "Test company", productUuid: String? = null): String {
         val companyUuid = postAndExtract(CompanyTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "name" to name),
                 "$.company.uuid")
@@ -258,7 +264,7 @@ open class BaseRestTest {
         productUuid?.let {
             postAndExtract(ProductTest().serviceEndpoint("assign/company/"),
                     hashMapOf(
-                            "X-Auth-ClientUuid" to clientUuid),
+                            "X-Auth-deviceId" to deviceId),
                     hashMapOf(
                             "productUuid" to productUuid,
                             "companyUuid" to companyUuid),
@@ -268,10 +274,10 @@ open class BaseRestTest {
         return companyUuid
     }
 
-    fun createAndSaveProduct(clientUuid: String, barcode: String, barcodeType: Product.BarcodeType, name: String = "Test product"): String {
+    fun createAndSaveProduct(deviceId: String, barcode: String, barcodeType: Product.BarcodeType, name: String = "Test product"): String {
         return postAndExtract(ProductTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "name" to name,
                         "barcode" to barcode,
@@ -279,10 +285,10 @@ open class BaseRestTest {
                 "$.product.uuid")
     }
 
-    fun createAndSaveProductCategory(clientUuid: String, name: String, productUuid: String? = null): String {
+    fun createAndSaveProductCategory(deviceId: String, name: String, productUuid: String? = null): String {
         val categoryUuid = postAndExtract(ProductCategoryTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "name" to name),
                 "$.productCategory.uuid")
@@ -290,7 +296,7 @@ open class BaseRestTest {
         productUuid?.let {
             postAndExtract(ProductTest().serviceEndpoint("assign/category/"),
                     hashMapOf(
-                            "X-Auth-ClientUuid" to clientUuid),
+                            "X-Auth-deviceId" to deviceId),
                     hashMapOf(
                             "productUuid" to productUuid,
                             "categoryUuid" to categoryUuid),
@@ -300,10 +306,10 @@ open class BaseRestTest {
         return categoryUuid
     }
 
-    fun createAndSaveProductLabel(clientUuid: String, name: String, productUuid: String? = null): String {
+    fun createAndSaveProductLabel(deviceId: String, name: String, productUuid: String? = null): String {
         val labelUuid = postAndExtract(ProductLabelTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "name" to name),
                 "$.productLabel.uuid")
@@ -311,7 +317,7 @@ open class BaseRestTest {
         productUuid?.let {
             postAndExtract(ProductTest().serviceEndpoint("assign/label/"),
                     hashMapOf(
-                            "X-Auth-ClientUuid" to clientUuid),
+                            "X-Auth-deviceId" to deviceId),
                     hashMapOf(
                             "productUuid" to productUuid,
                             "labelUuid" to labelUuid),
@@ -321,10 +327,10 @@ open class BaseRestTest {
         return labelUuid
     }
 
-    fun createAndSaveProductTag(clientUuid: String, name: String, productUuid: String? = null): String {
+    fun createAndSaveProductTag(deviceId: String, name: String, productUuid: String? = null): String {
         val tagUuid = postAndExtract(ProductTagTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "name" to name),
                 "$.productTag.uuid")
@@ -332,7 +338,7 @@ open class BaseRestTest {
         productUuid?.let {
             postAndExtract(ProductTest().serviceEndpoint("assign/tag/"),
                     hashMapOf(
-                            "X-Auth-ClientUuid" to clientUuid),
+                            "X-Auth-deviceId" to deviceId),
                     hashMapOf(
                             "productUuid" to productUuid,
                             "tagUuid" to tagUuid),
@@ -342,16 +348,16 @@ open class BaseRestTest {
         return tagUuid
     }
 
-    fun createAndSaveInfoChannel(clientUuid: String, name: String = "Test info channel"): String {
+    fun createAndSaveInfoChannel(deviceId: String, name: String = "Test info channel"): String {
         return postAndExtract(InfoChannelTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "name" to name),
                 "$.infoChannel.uuid")
     }
 
-    fun createAndSaveInfoSource(clientUuid: String, domains: List<String>): String {
+    fun createAndSaveInfoSource(deviceId: String, domains: List<String>): String {
         var domainString = ""
         var delimiter = ""
         for (domain in domains) {
@@ -361,17 +367,17 @@ open class BaseRestTest {
         }
         return postAndExtract(InfoSourceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "name" to "Test info source",
                         "domainList" to domainString),
                 "$.infoSource.uuid")
     }
 
-    fun createAndSaveInfoSourceReference(clientUuid: String, infoChannelUuid: String, infoSourceUuid: String, url: String): String {
+    fun createAndSaveInfoSourceReference(deviceId: String, infoChannelUuid: String, infoSourceUuid: String, url: String): String {
         return postAndExtract(InfoSourceReferenceTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "infoSourceUuid" to infoSourceUuid,
@@ -381,10 +387,10 @@ open class BaseRestTest {
                 "$.infoSourceReference.uuid")
     }
 
-    fun createAndSaveProductRecommendation(clientUuid: String, infoChannelUuid: String, productUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
+    fun createAndSaveProductRecommendation(deviceId: String, infoChannelUuid: String, productUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productUuid" to productUuid,
@@ -394,10 +400,10 @@ open class BaseRestTest {
                 "$.recommendation.uuid")
     }
 
-    fun createAndSaveProductCategoryRecommendation(clientUuid: String, infoChannelUuid: String, productCategoryUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
+    fun createAndSaveProductCategoryRecommendation(deviceId: String, infoChannelUuid: String, productCategoryUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productCategoryUuid" to productCategoryUuid,
@@ -407,10 +413,10 @@ open class BaseRestTest {
                 "$.recommendation.uuid")
     }
 
-    fun createAndSaveProductLabelRecommendation(clientUuid: String, infoChannelUuid: String, productLabelUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
+    fun createAndSaveProductLabelRecommendation(deviceId: String, infoChannelUuid: String, productLabelUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productLabelUuid" to productLabelUuid,
@@ -420,10 +426,10 @@ open class BaseRestTest {
                 "$.recommendation.uuid")
     }
 
-    fun createAndSaveProductTagRecommendation(clientUuid: String, infoChannelUuid: String, productTagUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
+    fun createAndSaveProductTagRecommendation(deviceId: String, infoChannelUuid: String, productTagUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "productTagUuid" to productTagUuid,
@@ -433,10 +439,10 @@ open class BaseRestTest {
                 "$.recommendation.uuid")
     }
 
-    fun createAndSaveCompanyRecommendation(clientUuid: String, infoChannelUuid: String, companyUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
+    fun createAndSaveCompanyRecommendation(deviceId: String, infoChannelUuid: String, companyUuid: String, urlListString: String = "http://dr.dk/somenews"): String {
         return postAndExtract(RecommendationTest().serviceEndpoint("create/"),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to clientUuid),
+                        "X-Auth-deviceId" to deviceId),
                 hashMapOf(
                         "infoChannelUuid" to infoChannelUuid,
                         "companyUuid" to companyUuid,
@@ -447,15 +453,15 @@ open class BaseRestTest {
     }
 
     fun createAndSaveClient(verified: Boolean = true): String {
-        val clientUuid = postAndExtract(ClientTest().serviceEndpoint("create/"),
+        val deviceId = postAndExtract(ClientTest().serviceEndpoint("create/"),
                 hashMapOf(),
                 hashMapOf(),
-                "$.client.uuid")
+                "$.device.id")
 
-        val client = clientRepository!!.findByUuid(clientUuid)!!
+        val client = clientDeviceRepository!!.findByIdHashed(CryptoUtil().hash(deviceId))!!.client
         client.verified = verified
-        clientRepository.save(client)
-        return clientUuid
+        clientRepository!!.save(client)
+        return deviceId
     }
 
     fun createLocation(latitude: Double, longitude: Double): TestLocation {
@@ -464,14 +470,14 @@ open class BaseRestTest {
 
 
 
-    fun setClientTrustLevel(clientUuid: String, trustLevel: Double) {
-        val client = clientRepository!!.findByUuid(clientUuid)
-        client!!.trustLevel = trustLevel
-        clientRepository.save(client)
+    fun setClientTrustLevel(deviceId: String, trustLevel: Double) {
+        val client = clientDeviceRepository!!.findByIdHashed(CryptoUtil().hash(deviceId))!!.client
+        client.trustLevel = trustLevel
+        clientRepository!!.save(client)
     }
 
-    fun clientTrustLevel(clientUuid: String): Double {
-        return clientRepository!!.findByUuid(clientUuid)!!.trustLevel
+    fun clientTrustLevel(deviceId: String): Double {
+        return clientDeviceRepository!!.findByIdHashed(CryptoUtil().hash(deviceId))!!.client.trustLevel
     }
 
     fun setProductNameTrustScore(productUuid: String, trustScore: Double) {

@@ -44,6 +44,7 @@ open class TrustVote constructor() : BaseModel() {
         Trusted,
         NotTrusted
     }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "trust_vote_id")

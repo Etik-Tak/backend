@@ -52,8 +52,8 @@ class ProductCategoryTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
     }
 
     /**
@@ -63,7 +63,7 @@ class ProductCategoryTest : BaseRestTest() {
     fun createProductCategory() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Chokolade"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -77,7 +77,7 @@ class ProductCategoryTest : BaseRestTest() {
      */
     @Test
     fun retrieveProductCategory() {
-        productCategory1Uuid = createAndSaveProductCategory(client1Uuid, "Pandekager")
+        productCategory1Uuid = createAndSaveProductCategory(client1DeviceId, "Pandekager")
 
         mockMvc().perform(
                 get(serviceEndpoint("/"))

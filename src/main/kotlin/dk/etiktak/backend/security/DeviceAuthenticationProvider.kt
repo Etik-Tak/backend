@@ -36,25 +36,25 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Service
 
 @Service
-open class ClientUuidAuthenticationProvider @Autowired constructor(
+open class DeviceAuthenticationProvider @Autowired constructor(
         private val clientService: ClientService) : AuthenticationProvider {
 
-    private val logger = LoggerFactory.getLogger(ClientUuidAuthenticationProvider::class.java)
+    private val logger = LoggerFactory.getLogger(DeviceAuthenticationProvider::class.java)
 
     @Throws(AuthenticationException::class)
     override fun authenticate(authentication: Authentication): Authentication {
-        val clientUuid: String = authentication.principal as String? ?: throw BadCredentialsException("Invalid client UUID")
+        val deviceId : String = authentication.principal as String? ?: throw BadCredentialsException("Invalid device ID")
 
-        logger.info("Authenticating with client UUID $clientUuid")
+        logger.info("Authenticating with device ID: ${deviceId}")
 
-        val client = clientService.getByUuid(clientUuid) ?: throw BadCredentialsException("Invalid client UUID")
+        val client = clientService.getByDeviceId(deviceId) ?: throw BadCredentialsException("Invalid device ID")
 
-        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client.uuid, null)
+        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client, null)
         resultOfAuthentication.isAuthenticated = true
         return resultOfAuthentication
     }
 
     override fun supports(authentication: Class<*>?): Boolean {
-        return authentication!!.equals(ClientUuidAuthenticationToken::class.java)
+        return authentication!!.equals(DeviceAuthenticationToken::class.java)
     }
 }

@@ -52,11 +52,11 @@ class InfoSourceContributionTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
 
-        infoSource1Uuid = createAndSaveInfoSource(client1Uuid, arrayListOf("http://dr.dk"))
-        infoSource2Uuid = createAndSaveInfoSource(client1Uuid, arrayListOf("http://politiken.dk"))
+        infoSource1Uuid = createAndSaveInfoSource(client1DeviceId, arrayListOf("http://dr.dk"))
+        infoSource2Uuid = createAndSaveInfoSource(client1DeviceId, arrayListOf("http://politiken.dk"))
     }
 
     /**
@@ -64,12 +64,12 @@ class InfoSourceContributionTest : BaseRestTest() {
      */
     @Test
     fun editInfoSourceNameWhenSufficientTrusLevelt() {
-        setClientTrustLevel(client1Uuid, 0.7)
+        setClientTrustLevel(client1DeviceId, 0.7)
         setInfoSourceNameTrustScore(infoSource1Uuid, 0.4)
 
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("name", "New info source"))
                 .andExpect(status().isOk)
@@ -83,13 +83,13 @@ class InfoSourceContributionTest : BaseRestTest() {
      */
     @Test
     fun cannotEditInfoSourceNameWhenInsufficientTrustLevel() {
-        setClientTrustLevel(client1Uuid, 0.5)
+        setClientTrustLevel(client1DeviceId, 0.5)
         setInfoSourceNameTrustScore(infoSource1Uuid, 0.8)
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("name", "New info source"))
     }
@@ -101,7 +101,7 @@ class InfoSourceContributionTest : BaseRestTest() {
     fun trustVoteInfoSource() {
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -116,7 +116,7 @@ class InfoSourceContributionTest : BaseRestTest() {
     fun cannotTrustVoteMoreThanOnceOnSameInfoSourceName() {
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -126,7 +126,7 @@ class InfoSourceContributionTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
     }
@@ -139,7 +139,7 @@ class InfoSourceContributionTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoSourceUuid", infoSource1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)

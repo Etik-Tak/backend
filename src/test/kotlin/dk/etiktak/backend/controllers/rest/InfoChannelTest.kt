@@ -53,8 +53,8 @@ open class InfoChannelTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
     }
 
     /**
@@ -64,7 +64,7 @@ open class InfoChannelTest : BaseRestTest() {
     fun createInfoChannel() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Test Info Channel 1"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -82,8 +82,8 @@ open class InfoChannelTest : BaseRestTest() {
         // TODO! Fix test! Make not transactional!
 
         // Create info channels
-        infoChannel1Uuid = createAndSaveInfoChannel(client1Uuid)
-        infoChannel2Uuid = createAndSaveInfoChannel(client2Uuid)
+        infoChannel1Uuid = createAndSaveInfoChannel(client1DeviceId)
+        infoChannel2Uuid = createAndSaveInfoChannel(client2DeviceId)
 
         // Verify clients are automatically following their own created info channel
         Assert.assertEquals(
@@ -97,7 +97,7 @@ open class InfoChannelTest : BaseRestTest() {
         // Test follow others info channel
         mockMvc().perform(
                 post(serviceEndpoint("follow/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("infoChannelUuid", infoChannel2Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -110,7 +110,7 @@ open class InfoChannelTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("follow/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("infoChannelUuid", infoChannel1Uuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

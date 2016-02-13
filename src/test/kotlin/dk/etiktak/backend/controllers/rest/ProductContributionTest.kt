@@ -53,11 +53,11 @@ class ProductContributionTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
 
-        product1Uuid = createAndSaveProduct(client1Uuid, "12345678a", Product.BarcodeType.EAN13, "Test product 1")
-        product2Uuid = createAndSaveProduct(client2Uuid, "12345678b", Product.BarcodeType.UPC, "Test product 2")
+        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN13, "Test product 1")
+        product2Uuid = createAndSaveProduct(client2DeviceId, "12345678b", Product.BarcodeType.UPC, "Test product 2")
     }
 
     /**
@@ -65,12 +65,12 @@ class ProductContributionTest : BaseRestTest() {
      */
     @Test
     fun editProductNameWhenSufficientTrusLevelt() {
-        setClientTrustLevel(client1Uuid, 0.7)
+        setClientTrustLevel(client1DeviceId, 0.7)
         setProductNameTrustScore(product1Uuid, 0.4)
 
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productUuid", product1Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
@@ -84,13 +84,13 @@ class ProductContributionTest : BaseRestTest() {
      */
     @Test
     fun cannotEditProductNameWhenInsufficientTrustLevel() {
-        setClientTrustLevel(client1Uuid, 0.5)
+        setClientTrustLevel(client1DeviceId, 0.5)
         setProductNameTrustScore(product1Uuid, 0.8)
 
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productUuid", product1Uuid)
                         .param("name", "Pepsi Cola"))
     }
@@ -102,7 +102,7 @@ class ProductContributionTest : BaseRestTest() {
     fun trustVoteProductName() {
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -117,7 +117,7 @@ class ProductContributionTest : BaseRestTest() {
     fun cannotTrustVoteMoreThanOnceOnSameProductName() {
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
@@ -127,7 +127,7 @@ class ProductContributionTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
     }
@@ -140,7 +140,7 @@ class ProductContributionTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productUuid", product1Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)

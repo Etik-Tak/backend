@@ -52,26 +52,26 @@ class InfoSourceReferenceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
 
-        infoSource1Uuid = createAndSaveInfoSource(client1Uuid, listOf("http://dr.dk", "http://www.dr.dk"))
-        infoSource2Uuid = createAndSaveInfoSource(client2Uuid, listOf("http://information.dk"))
+        infoSource1Uuid = createAndSaveInfoSource(client1DeviceId, listOf("http://dr.dk", "http://www.dr.dk"))
+        infoSource2Uuid = createAndSaveInfoSource(client2DeviceId, listOf("http://information.dk"))
 
-        infoChannel1Uuid = createAndSaveInfoChannel(client1Uuid)
-        infoChannel2Uuid = createAndSaveInfoChannel(client2Uuid)
+        infoChannel1Uuid = createAndSaveInfoChannel(client1DeviceId)
+        infoChannel2Uuid = createAndSaveInfoChannel(client2DeviceId)
 
-        product1Uuid = createAndSaveProduct(client1Uuid, "12345678", Product.BarcodeType.EAN13)
-        product2Uuid = createAndSaveProduct(client2Uuid, "87654321", Product.BarcodeType.EAN13)
+        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678", Product.BarcodeType.EAN13)
+        product2Uuid = createAndSaveProduct(client2DeviceId, "87654321", Product.BarcodeType.EAN13)
 
-        productCategory1Uuid = createAndSaveProductCategory(client1Uuid, product1Uuid)
-        productCategory2Uuid = createAndSaveProductCategory(client2Uuid, product2Uuid)
+        productCategory1Uuid = createAndSaveProductCategory(client1DeviceId, product1Uuid)
+        productCategory2Uuid = createAndSaveProductCategory(client2DeviceId, product2Uuid)
 
-        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, product1Uuid)
-        productLabel2Uuid = createAndSaveProductLabel(client2Uuid, product2Uuid)
+        productLabel1Uuid = createAndSaveProductLabel(client1DeviceId, product1Uuid)
+        productLabel2Uuid = createAndSaveProductLabel(client2DeviceId, product2Uuid)
 
-        productRecommendation1Uuid = createAndSaveProductRecommendation(client1Uuid, infoChannel1Uuid, product1Uuid)
-        productRecommendation2Uuid = createAndSaveProductRecommendation(client2Uuid, infoChannel2Uuid, product2Uuid)
+        productRecommendation1Uuid = createAndSaveProductRecommendation(client1DeviceId, infoChannel1Uuid, product1Uuid)
+        productRecommendation2Uuid = createAndSaveProductRecommendation(client2DeviceId, infoChannel2Uuid, product2Uuid)
     }
 
     /**
@@ -81,7 +81,7 @@ class InfoSourceReferenceTest : BaseRestTest() {
     fun createInfoSourceReference() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("recommendationUuid", productRecommendation1Uuid)
                         .param("url", "http://www.dr.dk/nyheder/viden/miljoe/foedevarestyrelsen-spis-ikke-meget-moerk-chokolade")
                         .param("title", "Fødevarestyrelsen: Spis ikke for meget mørk chokolade"))

@@ -62,6 +62,6 @@ open class ClientTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.client.uuid", notNullValue()))
+                .andExpect(jsonPath("$.device.id", notNullValue()))
     }
 }

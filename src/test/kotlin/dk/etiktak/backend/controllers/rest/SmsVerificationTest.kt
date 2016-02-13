@@ -58,8 +58,8 @@ class SmsVerificationTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
     }
 
     /**
@@ -69,7 +69,7 @@ class SmsVerificationTest : BaseRestTest() {
     fun requestSmsVerification() {
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -77,7 +77,7 @@ class SmsVerificationTest : BaseRestTest() {
                 .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
 
         // Validate that recovery is not enabled
-        val client = clientRepository!!.findByUuid(client1Uuid)!!
+        val client = clientDeviceRepository!!.findByIdHashed(CryptoUtil().hash(client1DeviceId))!!.client
         Assert.isNull(
                 client.mobileNumber,
                 "Expected mobile number to be null by default, that is, recovery disabled")
@@ -90,7 +90,7 @@ class SmsVerificationTest : BaseRestTest() {
     fun requestSmsVerificationWithRecoveryEnabled() {
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678")
                         .param("recoveryEnabled", "true"))
                 .andExpect(status().isOk)
@@ -99,7 +99,7 @@ class SmsVerificationTest : BaseRestTest() {
                 .andExpect(jsonPath("$.smsVerification.challenge", notNullValue()))
 
         // Validate that recovery is enabled
-        val client = clientRepository!!.findByUuid(client1Uuid)!!
+        val client = clientDeviceRepository!!.findByIdHashed(CryptoUtil().hash(client1DeviceId))!!.client
         Assert.notNull(
                 client.mobileNumber,
                 "Expected mobile number to be set when recovery is enabled")
@@ -110,12 +110,10 @@ class SmsVerificationTest : BaseRestTest() {
      */
     @Test
     fun cannotRequestSmsVerificationWithEmptyClientUuid() {
+        exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
                         .param("mobileNumber", "12345678"))
-                .andExpect(status().isOk)
-                .andExpect(jsonPath("$.result", `is`(WebserviceResult.NotFound.value)))
-                .andExpect(jsonPath("$.message", `is`("Client not found")))
     }
 
     /**
@@ -125,7 +123,7 @@ class SmsVerificationTest : BaseRestTest() {
     fun cannotRequestSmsVerificationWithEmptyMobileNumber() {
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
-                        .header("X-Auth-ClientUuid", client1Uuid))
+                        .header("X-Auth-DeviceId", client1DeviceId))
                 .andExpect(status().`is`(400))
     }
 
@@ -148,7 +146,7 @@ class SmsVerificationTest : BaseRestTest() {
         // Request first SMS verification
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -158,7 +156,7 @@ class SmsVerificationTest : BaseRestTest() {
         // Request second SMS verification
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -175,7 +173,7 @@ class SmsVerificationTest : BaseRestTest() {
         // Request first SMS verification
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -185,7 +183,7 @@ class SmsVerificationTest : BaseRestTest() {
         // Request second SMS verification with another client uuid
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("mobileNumber", "12345678"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -202,7 +200,7 @@ class SmsVerificationTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("verify/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678")
                         .param("smsChallenge", smsChallenge)
                         .param("clientChallenge", smsVerification.clientChallenge))
@@ -221,7 +219,7 @@ class SmsVerificationTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("verify/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678")
                         .param("smsChallenge", smsChallenge + "_wrong")
                         .param("clientChallenge", smsVerification.clientChallenge))
@@ -237,7 +235,7 @@ class SmsVerificationTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("verify/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678")
                         .param("smsChallenge", smsChallenge)
                         .param("clientChallenge", smsVerification.clientChallenge + "_wrong"))
@@ -253,7 +251,7 @@ class SmsVerificationTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("verify/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "wrong")
                         .param("smsChallenge", smsChallenge)
                         .param("clientChallenge", smsVerification.clientChallenge))
@@ -269,7 +267,7 @@ class SmsVerificationTest : BaseRestTest() {
         // Request first SMS verification with client 2
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("mobileNumber", "12345678"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -282,7 +280,7 @@ class SmsVerificationTest : BaseRestTest() {
         // Verify with client 1
         mockMvc().perform(
                 post(serviceEndpoint("verify/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678")
                         .param("smsChallenge", smsChallenge)
                         .param("clientChallenge", smsVerification.clientChallenge))
@@ -304,7 +302,7 @@ class SmsVerificationTest : BaseRestTest() {
         // Request again, but with client 2
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("mobileNumber", "12345678"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -315,7 +313,7 @@ class SmsVerificationTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("verify/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678")
                         .param("smsChallenge", smsChallenge)
                         .param("clientChallenge", smsVerification.clientChallenge))
@@ -393,7 +391,7 @@ class SmsVerificationTest : BaseRestTest() {
         // Verify challenge
         mockMvc().perform(
                 post(serviceEndpoint("verify/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678")
                         .param("smsChallenge", smsChallenge)
                         .param("clientChallenge", smsVerification.clientChallenge))
@@ -409,7 +407,7 @@ class SmsVerificationTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("verify/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678")
                         .param("smsChallenge", smsChallenge)
                         .param("clientChallenge", smsVerification.clientChallenge))
@@ -418,7 +416,7 @@ class SmsVerificationTest : BaseRestTest() {
     private fun requestAndModifySmsVerification(recoveryEnabled: Boolean = false): SmsVerification {
         mockMvc().perform(
                 post(serviceEndpoint("request/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("mobileNumber", "12345678")
                         .param("recoveryEnabled", "$recoveryEnabled"))
 
@@ -445,9 +443,9 @@ class SmsVerificationTest : BaseRestTest() {
         smsVerificationRepository.save(smsVerification)
 
         // Overwrite challenges in client entity
-        val client = clientRepository!!.findByUuid(client1Uuid)!!
+        val client = clientDeviceRepository!!.findByIdHashed(CryptoUtil().hash(client1DeviceId))!!.client
         client.smsChallengeHashClientChallengeHashHashed = CryptoUtil().hashOfHashes(smsChallenge, smsVerification.clientChallenge!!)
-        clientRepository.save(client)
+        clientRepository!!.save(client)
 
         return smsVerification
     }

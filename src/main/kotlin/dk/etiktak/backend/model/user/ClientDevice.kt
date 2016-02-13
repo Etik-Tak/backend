@@ -23,11 +23,62 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.security
+/**
+ * A client device; each client can have one or more devices attached.
+ **/
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal
+package dk.etiktak.backend.model.user
 
-@Target( AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
-@Retention(AnnotationRetention.RUNTIME)
-@AuthenticationPrincipal
-annotation class CurrentlyLoggedClientUuid
+import org.springframework.format.annotation.DateTimeFormat
+import java.util.*
+import javax.persistence.*
+
+@Entity(name = "client_devices")
+class ClientDevice constructor() {
+
+    enum class DeviceType {
+        Android,
+        iOS,
+        Unknown
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "client_device_id")
+    var id: Long = 0
+
+    @Column(name = "uuid", nullable = false, unique = true)
+    var uuid: String = ""
+
+    @Column(name = "id_hashed", nullable = false, unique = true)
+    var idHashed: String = ""
+
+    @Column(name = "type", nullable = false)
+    var type = DeviceType.Unknown
+
+    @Column(name = "enabled", nullable = false)
+    var enabled: Boolean = true
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    var client = Client()
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var creationTime = Date()
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var modificationTime = Date()
+
+
+    @PreUpdate
+    fun preUpdate() {
+        modificationTime = Date()
+    }
+
+    @PrePersist
+    fun prePersist() {
+        val now = Date()
+        creationTime = now
+        modificationTime = now
+    }
+}

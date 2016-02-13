@@ -30,7 +30,7 @@
 package dk.etiktak.backend.config;
 
 import dk.etiktak.backend.security.AuthenticationFilter;
-import dk.etiktak.backend.security.ClientUuidAuthenticationProvider;
+import dk.etiktak.backend.security.DeviceAuthenticationProvider;
 import dk.etiktak.backend.security.TokenAuthenticationProvider;
 import dk.etiktak.backend.security.UsernamePasswordAuthenticationProvider;
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public static final String authenticationEndpoint = "/service/authenticate";
 
     @Autowired
-    private ClientUuidAuthenticationProvider clientUuidAuthenticationProvider;
+    private DeviceAuthenticationProvider deviceAuthenticationProvider;
 
     @Autowired
     private TokenAuthenticationProvider tokenAuthenticationProvider;
@@ -91,7 +91,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
-                .authenticationProvider(clientUuidAuthenticationProvider)
+                .authenticationProvider(deviceAuthenticationProvider)
                 .authenticationProvider(usernamePasswordAuthenticationProvider)
                 .authenticationProvider(tokenAuthenticationProvider);
     }

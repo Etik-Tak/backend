@@ -54,11 +54,11 @@ class TrustTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
 
-        product1Uuid = createAndSaveProduct(client1Uuid, "12345678a", Product.BarcodeType.EAN13, "Test product 1")
-        product2Uuid = createAndSaveProduct(client2Uuid, "12345678b", Product.BarcodeType.UPC, "Test product 2")
+        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN13, "Test product 1")
+        product2Uuid = createAndSaveProduct(client2DeviceId, "12345678b", Product.BarcodeType.UPC, "Test product 2")
     }
 
     /**
@@ -69,8 +69,8 @@ class TrustTest : BaseRestTest() {
 
         // Check initial trust values
         Assert.isTrue(
-                clientTrustLevel(client1Uuid) == ContributionService.initialClientTrustLevel,
-                "Client trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${clientTrustLevel(client1Uuid)}"
+                clientTrustLevel(client1DeviceId) == ContributionService.initialClientTrustLevel,
+                "Client trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${clientTrustLevel(client1DeviceId)}"
         )
         Assert.isTrue(
                 productNameTrustLevel(product1Uuid) == ContributionService.initialClientTrustLevel,
@@ -78,7 +78,7 @@ class TrustTest : BaseRestTest() {
         )
 
         // Perform 5 trusted votes on product name and see that trust increases
-        trustVoteProductName(productUuid = product1Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
+        trustVoteProductName(productUuid = product1Uuid, deviceId = client1DeviceId, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
                     clientTrustScoreDelta >= 0.0,
                     "Client trust level expected to increase, but delta was $clientTrustScoreDelta"
@@ -90,7 +90,7 @@ class TrustTest : BaseRestTest() {
         })
 
         // Perform 5 not-trusted votes on product name and see that trust decreases
-        trustVoteProductName(productUuid = product1Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
+        trustVoteProductName(productUuid = product1Uuid, deviceId = client1DeviceId, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
 
             Assert.isTrue(
                     clientTrustScoreDelta <= 0.0,
@@ -111,20 +111,20 @@ class TrustTest : BaseRestTest() {
 
         // Check initial trust values
         Assert.isTrue(
-                clientTrustLevel(client1Uuid) == ContributionService.initialClientTrustLevel,
-                "Client trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${clientTrustLevel(client1Uuid)}"
+                clientTrustLevel(client1DeviceId) == ContributionService.initialClientTrustLevel,
+                "Client trust level expected to be ${ContributionService.initialClientTrustLevel}, but was ${clientTrustLevel(client1DeviceId)}"
         )
 
         // Trust vote product name
         mockMvc().perform(
                 post(serviceEndpoint("/trust/name/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productUuid", product2Uuid)
                         .param("vote", TrustVote.TrustVoteType.Trusted.name))
                 .andExpect(status().isOk)
 
         // Perform 5 trusted votes on product name and see that trust increases
-        trustVoteProductName(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
+        trustVoteProductName(productUuid = product2Uuid, deviceId = client1DeviceId, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
                     clientTrustScoreDelta >= 0.0,
                     "Client trust level expected to increase, but delta was $clientTrustScoreDelta"
@@ -132,7 +132,7 @@ class TrustTest : BaseRestTest() {
         })
 
         // Perform 5 not-trusted votes on product name and see that trust decreases
-        trustVoteProductName(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
+        trustVoteProductName(productUuid = product2Uuid, deviceId = client1DeviceId, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
                     clientTrustScoreDelta <= 0.0,
                     "Client trust level expected to decrease, but delta was $clientTrustScoreDelta"
@@ -153,12 +153,12 @@ class TrustTest : BaseRestTest() {
         )
 
         // Set client trust level to 0.7
-        setClientTrustLevel(client2Uuid, 0.7)
+        setClientTrustLevel(client2DeviceId, 0.7)
 
         // Edit product name
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("productUuid", product1Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
@@ -177,13 +177,13 @@ class TrustTest : BaseRestTest() {
         // Edit product name
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productUuid", product2Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
 
         // Perform 5 not-trusted votes on product name and see that trust decreases
-        trustVoteProductName(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
+        trustVoteProductName(productUuid = product2Uuid, deviceId = client1DeviceId, trustVoteType = TrustVote.TrustVoteType.NotTrusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
                     clientTrustScoreDelta <= 0.0,
                     "Client trust level expected to decrease, but delta was $clientTrustScoreDelta"
@@ -191,23 +191,23 @@ class TrustTest : BaseRestTest() {
         })
 
         // Make another client edit on product name
-        var initialClientTrust = clientTrustLevel(client1Uuid)
+        var initialClientTrust = clientTrustLevel(client1DeviceId)
 
         mockMvc().perform(
                 post(serviceEndpoint("/edit/"))
-                        .header("X-Auth-ClientUuid", client2Uuid)
+                        .header("X-Auth-DeviceId", client2DeviceId)
                         .param("productUuid", product2Uuid)
                         .param("name", "Pepsi Cola"))
                 .andExpect(status().isOk)
 
         // Check trust unaffected
         Assert.isTrue(
-                clientTrustLevel(client1Uuid) == initialClientTrust,
-                "Client trust level expected to be the same as before edit: ${initialClientTrust}, but was ${clientTrustLevel(client1Uuid)}"
+                clientTrustLevel(client1DeviceId) == initialClientTrust,
+                "Client trust level expected to be the same as before edit: ${initialClientTrust}, but was ${clientTrustLevel(client1DeviceId)}"
         )
 
         // Perform 5 trusted votes on product name and see that trust stays the same
-        trustVoteProductName(productUuid = product2Uuid, clientUuid = client1Uuid, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
+        trustVoteProductName(productUuid = product2Uuid, deviceId = client1DeviceId, trustVoteType = TrustVote.TrustVoteType.Trusted, count = 5, assertion = { productTrustScoreDelta, clientTrustScoreDelta ->
             Assert.isTrue(
                     clientTrustScoreDelta == 0.0,
                     "Client trust level expected to stay the same, but delta was $clientTrustScoreDelta"
@@ -217,30 +217,30 @@ class TrustTest : BaseRestTest() {
 
 
 
-    private fun trustVoteProductName(productUuid: String, clientUuid: String, createClient: Boolean = true, trustVoteType: TrustVote.TrustVoteType, count: Int,
+    private fun trustVoteProductName(productUuid: String, deviceId: String, createClient: Boolean = true, trustVoteType: TrustVote.TrustVoteType, count: Int,
                                      assertion: (productTrustScoreDelta: Double, clientTrustScoreDelta: Double) -> Unit) {
 
-        var currentClientTrust = clientTrustLevel(clientUuid)
+        var currentClientTrust = clientTrustLevel(deviceId)
         var currentProductTrust = productNameTrustLevel(productUuid)
 
         for (i in 1..count) {
 
             // Create client
-            val currentClientUuid = if (createClient) createAndSaveClient() else clientUuid
+            val currentDeviceId = if (createClient) createAndSaveClient() else deviceId
 
             // Vote
             mockMvc().perform(
                     post(serviceEndpoint("/trust/name/"))
-                            .header("X-Auth-ClientUuid", currentClientUuid)
+                            .header("X-Auth-DeviceId", currentDeviceId)
                             .param("productUuid", productUuid)
                             .param("vote", trustVoteType.name))
                     .andExpect(status().isOk)
 
             // Assert
-            assertion(productNameTrustLevel(productUuid) - currentProductTrust, clientTrustLevel(clientUuid) - currentClientTrust);
+            assertion(productNameTrustLevel(productUuid) - currentProductTrust, clientTrustLevel(deviceId) - currentClientTrust);
 
             // Update trust
-            currentClientTrust = clientTrustLevel(clientUuid)
+            currentClientTrust = clientTrustLevel(deviceId)
             currentProductTrust = productNameTrustLevel(productUuid)
         }
     }

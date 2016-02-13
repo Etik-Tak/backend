@@ -27,28 +27,43 @@ package dk.etiktak.backend.service.client
 
 import dk.etiktak.backend.model.acl.AclRole
 import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.model.user.ClientDevice
+import dk.etiktak.backend.repository.user.ClientDeviceRepository
 import dk.etiktak.backend.repository.user.ClientRepository
+import dk.etiktak.backend.service.security.ClientValid
 import dk.etiktak.backend.service.trust.ContributionService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.Assert
+import org.springframework.util.StringUtils
 
 @Service
 @Transactional
 open class ClientService @Autowired constructor(
         private val clientRepository: ClientRepository,
+        private val clientDeviceRepository: ClientDeviceRepository,
         private val contributionService: ContributionService) {
 
     private val logger = LoggerFactory.getLogger(ClientService::class.java)
 
     /**
-     * Creates a client entry.
+     * Creates a client entry. Either both of or none of username and password must be provided.
      *
-     * @return  Created client entry
+     * @param deviceType   Device type
+     * @param username     Optional username
+     * @param password     Optional password
+     * @return Created (non-hashed) device ID
      */
-    open fun createClient(username: String? = null, password: String? = null): Client {
+    open fun createClient(deviceType: ClientDevice.DeviceType = ClientDevice.DeviceType.Unknown,
+                          username: String? = null, password: String? = null): String {
+
+        // Ensure that either both of or none of username and password are provided
+        Assert.isTrue(
+                StringUtils.isEmpty(username) == StringUtils.isEmpty(password),
+                "Either both of or none of username and password must be provided")
 
         // Create client
         var client = Client()
@@ -60,12 +75,49 @@ open class ClientService @Autowired constructor(
 
         clientRepository.save(client)
 
+        // Create and attach device
+        val deviceId = createDevice(client, deviceType, modifyValues = {modifiedClient -> client = modifiedClient})
+
         logger.info("Created new client with uuid: ${client.uuid}")
 
         // Update initial trust
         contributionService.recalculateClientTrustLevel(client, modifyValues = { modifiedClient -> client = modifiedClient})
 
-        return client
+        return deviceId
+    }
+
+    /**
+     * Creates a new client device.
+     *
+     * @param inClient      Client
+     * @param deviceType    Device type
+     * @param modifyValues  Function called with modified client
+     * @return              Created (non-hashed) device ID
+     */
+    @ClientValid
+    open fun createDevice(inClient: Client, deviceType: ClientDevice.DeviceType = ClientDevice.DeviceType.Unknown, modifyValues: (Client) -> Unit = {}): String {
+
+        var client = inClient
+
+        // Get random device ID
+        val deviceId = CryptoUtil().uuid()
+
+        // Create device
+        var device = ClientDevice()
+        device.uuid = CryptoUtil().uuid()
+        device.idHashed = CryptoUtil().hash(deviceId)
+
+        // Glue it together
+        device.client = client
+        client.devices.add(device)
+
+        // Save it all
+        client = clientRepository.save(client)
+        clientDeviceRepository.save(device)
+
+        modifyValues(client)
+
+        return deviceId
     }
 
     /**
@@ -86,5 +138,15 @@ open class ClientService @Autowired constructor(
      */
     open fun getByUsernameAndPassword(username: String, password: String): Client? {
         return clientRepository.findByUsernameAndPasswordHashed(username, CryptoUtil().hash(password))
+    }
+
+    /**
+     * Finds client by device ID.
+     *
+     * @param deviceId  Non-hashed device ID
+     * @return          Client
+     */
+    open fun getByDeviceId(deviceId: String): Client? {
+        return clientRepository.findByDevicesIdHashed(CryptoUtil().hash(deviceId))
     }
 }

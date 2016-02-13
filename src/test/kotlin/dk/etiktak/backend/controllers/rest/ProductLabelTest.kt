@@ -52,8 +52,8 @@ class ProductLabelTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
     }
 
     /**
@@ -63,7 +63,7 @@ class ProductLabelTest : BaseRestTest() {
     fun createProductLabel() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "KRAV"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -77,7 +77,7 @@ class ProductLabelTest : BaseRestTest() {
      */
     @Test
     fun retrieveProductLabel() {
-        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, "Ecocert")
+        productLabel1Uuid = createAndSaveProductLabel(client1DeviceId, "Ecocert")
 
         mockMvc().perform(
                 get(serviceEndpoint("/"))

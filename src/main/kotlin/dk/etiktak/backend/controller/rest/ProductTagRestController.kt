@@ -30,7 +30,8 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
-import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
+import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductTagService
 import org.springframework.beans.factory.annotation.Autowired
@@ -53,10 +54,10 @@ class ProductTagRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProductTag(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam name: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 
         val productTag = productTagService.createProductTag(client, name)
 

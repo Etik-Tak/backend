@@ -30,7 +30,8 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
-import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
+import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.client.SmsVerificationService
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,11 +47,11 @@ class SmsVerificationRestController @Autowired constructor(
     @RequestMapping(value = "/request/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
     fun requestSmsChallenge(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam mobileNumber: String,
             @RequestParam(required = false) recoveryEnabled: Boolean? = false): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 
         val smsVerification = smsVerificationService.requestSmsChallenge(client, mobileNumber, recoveryEnabled ?: false)
 
@@ -70,12 +71,12 @@ class SmsVerificationRestController @Autowired constructor(
     @RequestMapping(value = "/verify/", method = arrayOf(RequestMethod.POST))
     @Throws(Exception::class)
     fun verifySmsChallenge(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam mobileNumber: String,
             @RequestParam smsChallenge: String,
             @RequestParam clientChallenge: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 
         smsVerificationService.verifySmsChallenge(client, mobileNumber, smsChallenge, clientChallenge)
 

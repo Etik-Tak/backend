@@ -46,14 +46,14 @@ open class UsernamePasswordAuthenticationProvider @Autowired constructor(
         val password: Any? = authentication.credentials
 
         if (username == null || password == null) {
-            throw BadCredentialsException("User with username $username and given password not found")
+            throw BadCredentialsException("Both username and password must be provided")
         }
 
         val client = clientService.getByUsernameAndPassword(username as String, password as String) ?: throw BadCredentialsException("User with username $username and given password not found")
 
         val token = tokenService.generateNewToken()
 
-        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client.uuid, null)
+        val resultOfAuthentication = PreAuthenticatedAuthenticationToken(client, null)
         resultOfAuthentication.isAuthenticated = true
         resultOfAuthentication.details = token
         tokenService.store(token, resultOfAuthentication)

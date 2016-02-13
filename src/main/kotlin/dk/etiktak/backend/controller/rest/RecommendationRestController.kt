@@ -31,7 +31,8 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.recommendation.RecommendationScore
-import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
+import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
@@ -58,10 +59,10 @@ class RecommendationRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getRecommendation(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam productUuid: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
         val product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 
         val recommendations = recommendationService.getRecommendations(client, product)
@@ -71,7 +72,7 @@ class RecommendationRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createRecommendation(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam infoChannelUuid: String,
             @RequestParam summary: String,
             @RequestParam score: String,
@@ -82,7 +83,7 @@ class RecommendationRestController @Autowired constructor(
             @RequestParam(required = false) productTagUuid: String? = null,
             @RequestParam(required = false) companyUuid: String? = null): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
         val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid) ?: return notFoundMap("Info channel")
 
         val scoreType = RecommendationScore.valueOf(score)

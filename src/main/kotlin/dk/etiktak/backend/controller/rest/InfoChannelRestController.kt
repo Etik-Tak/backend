@@ -30,7 +30,8 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
-import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
+import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infochannel.InfoChannelService
 import org.springframework.beans.factory.annotation.Autowired
@@ -54,10 +55,10 @@ class InfoChannelRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoChannel(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam name: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 
         val infoChannel = infoChannelService.createInfoChannel(client, name)
 
@@ -66,10 +67,10 @@ class InfoChannelRestController @Autowired constructor(
 
     @RequestMapping(value = "/follow/", method = arrayOf(RequestMethod.POST))
     fun followInfoChannel(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam infoChannelUuid: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
         val infoChannel = infoChannelService.getInfoChannelByUuid(infoChannelUuid) ?: return notFoundMap("Info channel")
 
         infoChannelService.followInfoChannel(client, infoChannel)

@@ -53,17 +53,17 @@ class ProductTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
 
-        product1Uuid = createAndSaveProduct(client1Uuid, "12345678a", Product.BarcodeType.EAN13, "Test product 1")
-        product2Uuid = createAndSaveProduct(client2Uuid, "12345678b", Product.BarcodeType.UPC, "Test product 2")
+        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN13, "Test product 1")
+        product2Uuid = createAndSaveProduct(client2DeviceId, "12345678b", Product.BarcodeType.UPC, "Test product 2")
 
-        productCategory1Uuid = createAndSaveProductCategory(client1Uuid, "Product category 1", product1Uuid)
-        productCategory2Uuid = createAndSaveProductCategory(client1Uuid, "Product category 2", product1Uuid)
+        productCategory1Uuid = createAndSaveProductCategory(client1DeviceId, "Product category 1", product1Uuid)
+        productCategory2Uuid = createAndSaveProductCategory(client1DeviceId, "Product category 2", product1Uuid)
 
-        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, "Product label 1", product1Uuid)
-        productLabel2Uuid = createAndSaveProductLabel(client1Uuid, "Product label 2", product1Uuid)
+        productLabel1Uuid = createAndSaveProductLabel(client1DeviceId, "Product label 1", product1Uuid)
+        productLabel2Uuid = createAndSaveProductLabel(client1DeviceId, "Product label 2", product1Uuid)
     }
 
     /**
@@ -124,7 +124,7 @@ class ProductTest : BaseRestTest() {
     fun createProduct() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
                         .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
@@ -146,7 +146,7 @@ class ProductTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("categoryUuidList", "${productCategory1Uuid}, ${productCategory2Uuid}")
                         .param("labelUuidList", "${productLabel1Uuid}, ${productLabel2Uuid}"))
@@ -159,7 +159,7 @@ class ProductTest : BaseRestTest() {
     fun createProductWithoutCategories() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
                         .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
@@ -179,7 +179,7 @@ class ProductTest : BaseRestTest() {
     fun createProductWithoutLabels() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
                         .param("barcodeType", "${Product.BarcodeType.EAN13.name}")

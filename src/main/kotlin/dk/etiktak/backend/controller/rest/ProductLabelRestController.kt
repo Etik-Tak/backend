@@ -31,7 +31,8 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.contribution.TrustVote
-import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
+import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.product.ProductLabelService
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,10 +47,10 @@ open class ProductLabelRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProductLabel(
-            @CurrentlyLoggedClientUuid clientUuid: String?,
+            @CurrentlyLoggedClient loggedClient: Client?,
             @RequestParam uuid: String): HashMap<String, Any> {
 
-        val client = if (clientUuid != null) clientService.getByUuid(clientUuid) else null
+        val client = if (loggedClient != null) clientService.getByUuid(loggedClient.uuid) else null
         val productLabel = productLabelService.getProductLabelByUuid(uuid) ?: return notFoundMap("Product label")
 
         return okMap().add(productLabel, client, productLabelService)
@@ -57,10 +58,10 @@ open class ProductLabelRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createProductLabel(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam name: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 
         val productLabel = productLabelService.createProductLabel(client, name)
 
@@ -69,11 +70,11 @@ open class ProductLabelRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editProductLabel(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam productLabelUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
-        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
         var productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: return notFoundMap("Product label")
 
         name?.let {
@@ -85,11 +86,11 @@ open class ProductLabelRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam productLabelUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
 
-        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
         var productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: return notFoundMap("Product label")
 
         productLabelService.trustVoteProductLabelName(client, productLabel, vote)

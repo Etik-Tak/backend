@@ -27,8 +27,10 @@ package dk.etiktak.backend.security
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import dk.etiktak.backend.config.WebSecurityConfig
+import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.MDC
+import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.InternalAuthenticationServiceException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -63,7 +65,7 @@ open class AuthenticationFilter constructor(
         val username = httpRequest.getHeader("X-Auth-Username")
         val password = httpRequest.getHeader("X-Auth-Password")
         val token = httpRequest.getHeader("X-Auth-Token")
-        val clientUuid = httpRequest.getHeader("X-Auth-ClientUuid")
+        val deviceId = httpRequest.getHeader("X-Auth-DeviceId")
 
         val resourcePath = UrlPathHelper().getPathWithinApplication(httpRequest)
 
@@ -74,9 +76,9 @@ open class AuthenticationFilter constructor(
                 return
             }
 
-            if (!StringUtils.isEmpty(clientUuid)) {
-                logger.info("Trying to authenticate user by X-Auth-ClientUuid method. Client UUID: $clientUuid")
-                processClientUuidAuthentication(clientUuid!!)
+            if (!StringUtils.isEmpty(deviceId)) {
+                logger.info("Trying to authenticate user by X-Auth-DeviceId method. Device ID: $deviceId")
+                processDeviceIdAuthentication(deviceId!!)
             }
 
             if (!StringUtils.isEmpty(token)) {
@@ -85,6 +87,13 @@ open class AuthenticationFilter constructor(
             }
 
             logger.info("AuthenticationFilter is passing request down the filter chain")
+
+            // Clear anonymous user
+            val authentication = SecurityContextHolder.getContext().authentication
+            if (authentication is AnonymousAuthenticationToken) {
+                logger.info("Clearing anonymous user authentication")
+                SecurityContextHolder.getContext().authentication = null
+            }
 
             addSessionContextToLogging()
             chain.doFilter(httpRequest, response)
@@ -128,13 +137,13 @@ open class AuthenticationFilter constructor(
         return tryToAuthenticate(requestAuthentication)
     }
 
-    private fun processClientUuidAuthentication(clientUuid: String) {
-        val resultOfAuthentication = tryToAuthenticateWithClientUuid(clientUuid)
+    private fun processDeviceIdAuthentication(deviceId: String) {
+        val resultOfAuthentication = tryToAuthenticateWithDeviceId(deviceId)
         SecurityContextHolder.getContext().authentication = resultOfAuthentication
     }
 
-    private fun tryToAuthenticateWithClientUuid(clientUuid: String): Authentication {
-        val requestAuthentication = ClientUuidAuthenticationToken(clientUuid)
+    private fun tryToAuthenticateWithDeviceId(deviceId: String): Authentication {
+        val requestAuthentication = DeviceAuthenticationToken(deviceId)
         return tryToAuthenticate(requestAuthentication)
     }
 
@@ -156,7 +165,8 @@ open class AuthenticationFilter constructor(
         var tokenValue = "EMPTY"
         if (isAuthenticated()) {
             val authentication = SecurityContextHolder.getContext().authentication
-            tokenValue = CryptoUtil().hash(authentication.principal.toString())
+            val client = authentication.principal as Client
+            tokenValue = client.uuid
         }
         MDC.put(CLIENT_UUID_SESSION_KEY, tokenValue)
     }

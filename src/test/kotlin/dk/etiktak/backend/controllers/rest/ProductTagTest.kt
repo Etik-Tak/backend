@@ -52,8 +52,8 @@ class ProductTagTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
     }
 
     /**
@@ -63,7 +63,7 @@ class ProductTagTest : BaseRestTest() {
     fun createProductTag() {
         mockMvc().perform(
                 post(serviceEndpoint("/create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Vegetarisk"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -77,7 +77,7 @@ class ProductTagTest : BaseRestTest() {
      */
     @Test
     fun retrieveProductTag() {
-        productTag1Uuid = createAndSaveProductTag(client1Uuid, "Glutenfrit")
+        productTag1Uuid = createAndSaveProductTag(client1DeviceId, "Glutenfrit")
 
         mockMvc().perform(
                 get(serviceEndpoint("/"))

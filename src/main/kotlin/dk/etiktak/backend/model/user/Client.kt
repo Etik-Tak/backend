@@ -89,6 +89,10 @@ class Client constructor() {
 
     @NotNull
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
+    var devices: MutableList<ClientDevice> = ArrayList()
+
+    @NotNull
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     var productScans: MutableList<ProductScan> = ArrayList()
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)

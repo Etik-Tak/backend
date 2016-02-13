@@ -32,7 +32,7 @@ package dk.etiktak.backend.controller.rest
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.user.Client
-import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
+import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import org.slf4j.LoggerFactory
@@ -48,20 +48,20 @@ class CompanyRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getCompany(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client?,
             @RequestParam uuid: String): HashMap<String, Any> {
 
         val company = companyService.getCompanyByUuid(uuid) ?: return notFoundMap("Company")
 
-        return okMap().add(company, client = null, companyService = companyService)
+        return okMap().add(company, loggedClient, companyService = companyService)
     }
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createCompany(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam name: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 
         val company = companyService.createCompany(client, name)
 
@@ -70,11 +70,11 @@ class CompanyRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editCompany(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam companyUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
-        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
         var company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
 
         name?.let {
@@ -87,11 +87,11 @@ class CompanyRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/", method = arrayOf(RequestMethod.POST))
     fun trustVoteCompany(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam companyUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
         val company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
 
         companyService.trustVoteCompanyName(client, company, vote)

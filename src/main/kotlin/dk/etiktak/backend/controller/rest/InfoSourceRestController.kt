@@ -31,7 +31,8 @@ package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
 import dk.etiktak.backend.model.contribution.TrustVote
-import dk.etiktak.backend.security.CurrentlyLoggedClientUuid
+import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.infosource.InfoSourceService
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,11 +47,11 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createInfoSource(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam domainList: List<String>,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 
         val infoSource = infoSourceService.createInfoSource(client, domainList, name)
 
@@ -59,11 +60,11 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.POST))
     fun getInfoSourceReference(
-            @CurrentlyLoggedClientUuid clientUuid: String?,
+            @CurrentlyLoggedClient loggedClient: Client?,
             @RequestParam(required = false) url: String?,
             @RequestParam(required = false) uuid: String?): HashMap<String, Any> {
 
-        val client = if (clientUuid != null) clientService.getByUuid(clientUuid) else null
+        val client = if (loggedClient!= null) clientService.getByUuid(loggedClient.uuid) else null
 
         url?.let {
             val infoSource = infoSourceService.getInfoSourceByUrl(url) ?: return notFoundMap("Info source")
@@ -80,11 +81,11 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
     fun editInfoSource(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam infoSourceUuid: String,
             @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
-        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
         var infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid) ?: return notFoundMap("Info source")
 
         name?.let {
@@ -96,11 +97,11 @@ class InfoSourceRestController @Autowired constructor(
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProduct(
-            @CurrentlyLoggedClientUuid clientUuid: String,
+            @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam infoSourceUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
 
-        var client = clientService.getByUuid(clientUuid) ?: return notFoundMap("Client")
+        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
         var infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid) ?: return notFoundMap("Info source")
 
         infoSourceService.trustVoteInfoSourceName(client, infoSource, vote)

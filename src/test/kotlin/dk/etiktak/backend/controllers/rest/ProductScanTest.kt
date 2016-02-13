@@ -30,6 +30,7 @@ import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductScan
+import dk.etiktak.backend.util.CryptoUtil
 import org.hamcrest.Matchers.*
 
 import org.junit.Before
@@ -56,44 +57,44 @@ open class ProductScanTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
 
-        product1Uuid = createAndSaveProduct(client1Uuid, "12345678a", Product.BarcodeType.EAN13)
-        product2Uuid = createAndSaveProduct(client2Uuid, "12345678b", Product.BarcodeType.UPC)
+        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN13)
+        product2Uuid = createAndSaveProduct(client2DeviceId, "12345678b", Product.BarcodeType.UPC)
 
-        productCategory1Uuid = createAndSaveProductCategory(client1Uuid, "Test category 1", product1Uuid)
-        productCategory2Uuid = createAndSaveProductCategory(client2Uuid, "Test category 2", product2Uuid)
+        productCategory1Uuid = createAndSaveProductCategory(client1DeviceId, "Test category 1", product1Uuid)
+        productCategory2Uuid = createAndSaveProductCategory(client2DeviceId, "Test category 2", product2Uuid)
 
-        productLabel1Uuid = createAndSaveProductLabel(client1Uuid, "Test label 1", product1Uuid)
-        productLabel2Uuid = createAndSaveProductLabel(client2Uuid, "Test label 2", product2Uuid)
+        productLabel1Uuid = createAndSaveProductLabel(client1DeviceId, "Test label 1", product1Uuid)
+        productLabel2Uuid = createAndSaveProductLabel(client2DeviceId, "Test label 2", product2Uuid)
 
-        productTag1Uuid = createAndSaveProductTag(client1Uuid, "Test tag 1", product1Uuid)
-        productTag2Uuid = createAndSaveProductTag(client2Uuid, "Test tag 2", product2Uuid)
+        productTag1Uuid = createAndSaveProductTag(client1DeviceId, "Test tag 1", product1Uuid)
+        productTag2Uuid = createAndSaveProductTag(client2DeviceId, "Test tag 2", product2Uuid)
 
-        company1Uuid = createAndSaveCompany(client1Uuid, "Test company 1", product1Uuid)
-        company2Uuid = createAndSaveCompany(client2Uuid, "Test company 2", product2Uuid)
+        company1Uuid = createAndSaveCompany(client1DeviceId, "Test company 1", product1Uuid)
+        company2Uuid = createAndSaveCompany(client2DeviceId, "Test company 2", product2Uuid)
 
         location1 = TestLocation(56.0, 60.0)
         location2 = TestLocation(56.1, 60.1)
 
-        infoChannel1Uuid = createAndSaveInfoChannel(client1Uuid)
-        infoChannel2Uuid = createAndSaveInfoChannel(client2Uuid)
+        infoChannel1Uuid = createAndSaveInfoChannel(client1DeviceId)
+        infoChannel2Uuid = createAndSaveInfoChannel(client2DeviceId)
 
-        productRecommendation1Uuid = createAndSaveProductRecommendation(client1Uuid, infoChannel1Uuid, product1Uuid)
-        productRecommendation2Uuid = createAndSaveProductRecommendation(client2Uuid, infoChannel2Uuid, product2Uuid)
+        productRecommendation1Uuid = createAndSaveProductRecommendation(client1DeviceId, infoChannel1Uuid, product1Uuid)
+        productRecommendation2Uuid = createAndSaveProductRecommendation(client2DeviceId, infoChannel2Uuid, product2Uuid)
 
-        productCategoryRecommendation1Uuid = createAndSaveProductCategoryRecommendation(client1Uuid, infoChannel1Uuid, productCategory1Uuid)
-        productCategoryRecommendation2Uuid = createAndSaveProductCategoryRecommendation(client2Uuid, infoChannel2Uuid, productCategory2Uuid)
+        productCategoryRecommendation1Uuid = createAndSaveProductCategoryRecommendation(client1DeviceId, infoChannel1Uuid, productCategory1Uuid)
+        productCategoryRecommendation2Uuid = createAndSaveProductCategoryRecommendation(client2DeviceId, infoChannel2Uuid, productCategory2Uuid)
 
-        productLabelRecommendation1Uuid = createAndSaveProductLabelRecommendation(client1Uuid, infoChannel1Uuid, productLabel1Uuid)
-        productLabelRecommendation2Uuid = createAndSaveProductLabelRecommendation(client2Uuid, infoChannel2Uuid, productLabel2Uuid)
+        productLabelRecommendation1Uuid = createAndSaveProductLabelRecommendation(client1DeviceId, infoChannel1Uuid, productLabel1Uuid)
+        productLabelRecommendation2Uuid = createAndSaveProductLabelRecommendation(client2DeviceId, infoChannel2Uuid, productLabel2Uuid)
 
-        productTagRecommendation1Uuid = createAndSaveProductTagRecommendation(client1Uuid, infoChannel1Uuid, productTag1Uuid)
-        productTagRecommendation2Uuid = createAndSaveProductTagRecommendation(client2Uuid, infoChannel2Uuid, productTag2Uuid)
+        productTagRecommendation1Uuid = createAndSaveProductTagRecommendation(client1DeviceId, infoChannel1Uuid, productTag1Uuid)
+        productTagRecommendation2Uuid = createAndSaveProductTagRecommendation(client2DeviceId, infoChannel2Uuid, productTag2Uuid)
 
-        companyRecommendation1Uuid = createAndSaveCompanyRecommendation(client1Uuid, infoChannel1Uuid, company1Uuid)
-        companyRecommendation2Uuid = createAndSaveCompanyRecommendation(client2Uuid, infoChannel2Uuid, company2Uuid)
+        companyRecommendation1Uuid = createAndSaveCompanyRecommendation(client1DeviceId, infoChannel1Uuid, company1Uuid)
+        companyRecommendation2Uuid = createAndSaveCompanyRecommendation(client2DeviceId, infoChannel2Uuid, company2Uuid)
     }
 
     /**
@@ -104,7 +105,7 @@ open class ProductScanTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", "12345678a")
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
                 .andExpect(status().isOk)
@@ -118,7 +119,7 @@ open class ProductScanTest : BaseRestTest() {
                 .andExpect(jsonPath("$.scan.product.tags", hasSize<Any>(1)))
                 .andExpect(jsonPath("$.scan.recommendations", hasSize<Any>(5)))
 
-        validateProductScan(product1Uuid, client1Uuid, location1)
+        validateProductScan(product1Uuid, client1DeviceId, location1)
     }
 
     /**
@@ -129,14 +130,14 @@ open class ProductScanTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", "12345678a")
-                        .header("X-Auth-ClientUuid", client1Uuid))
+                        .header("X-Auth-DeviceId", client1DeviceId))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.scan.product.uuid", `is`(product1Uuid)))
                 .andExpect(jsonPath("$.scan.product.name", `is`("Test product")))
 
-        validateProductScan(product1Uuid, client1Uuid)
+        validateProductScan(product1Uuid, client1DeviceId)
     }
 
     /**
@@ -147,7 +148,7 @@ open class ProductScanTest : BaseRestTest() {
         val json = mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", "product_that_does_not_exist")
-                        .header("X-Auth-ClientUuid", client1Uuid))
+                        .header("X-Auth-DeviceId", client1DeviceId))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -161,7 +162,7 @@ open class ProductScanTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", "product_that_does_not_exist")
-                        .header("X-Auth-ClientUuid", client1Uuid))
+                        .header("X-Auth-DeviceId", client1DeviceId))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
@@ -179,7 +180,7 @@ open class ProductScanTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productScanUuid", productScanUuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
@@ -209,7 +210,7 @@ open class ProductScanTest : BaseRestTest() {
         // Assign first location
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productScanUuid", productScanUuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
@@ -219,7 +220,7 @@ open class ProductScanTest : BaseRestTest() {
         exception.expect(NestedServletException::class.java)
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productScanUuid", productScanUuid)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
@@ -234,7 +235,7 @@ open class ProductScanTest : BaseRestTest() {
 
         mockMvc().perform(
                 post(serviceEndpoint("assign/location/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("productScanUuid", productScanUuid))
                 .andExpect(status().`is`(400))
     }
@@ -244,31 +245,36 @@ open class ProductScanTest : BaseRestTest() {
     private fun scanProduct(): String {
         return postAndExtract(serviceEndpoint(""),
                 hashMapOf(
-                        "X-Auth-ClientUuid" to client1Uuid),
+                        "X-Auth-DeviceId" to client1DeviceId),
                 hashMapOf(
                         "barcode" to "12345678a"),
                 "$.scan.uuid")
     }
 
-    private fun validateProductScan(productUuid: String, clientUuid: String) {
-        validateProductScan(productUuid, clientUuid, null)
+    private fun validateProductScan(productUuid: String, deviceId: String) {
+        validateProductScan(productUuid, deviceId, null)
     }
 
-    private fun validateProductScan(productUuid: String, clientUuid: String, location: TestLocation?) {
+    private fun validateProductScan(productUuid: String, deviceId: String, location: TestLocation?) {
+        val client = clientDeviceRepository!!.findByIdHashed(CryptoUtil().hash(deviceId))!!.client
+
         val productScansFromProduct = productScanRepository!!.findByProductUuid(productUuid)
         Assert.notEmpty(productScansFromProduct, "Did not find product scan for product with uuid: " + productUuid)
         Assert.isTrue(productScansFromProduct.size == 1, "More than one product scan found for product with uuid: " + productUuid)
-        validateProductScan(productScansFromProduct[0], productUuid, clientUuid, location)
+        validateProductScan(productScansFromProduct[0], productUuid, deviceId, location)
 
-        val productScansFromClient = productScanRepository.findByClientUuid(clientUuid)
-        Assert.notEmpty(productScansFromClient, "Did not find product scan for client with uuid: " + clientUuid)
-        Assert.isTrue(productScansFromClient.size == 1, "More than one product scan found for client with uuid: " + clientUuid)
-        validateProductScan(productScansFromClient[0], productUuid, clientUuid, location)
+        val productScansFromClient = productScanRepository.findByClientUuid(client.uuid)
+        Assert.notEmpty(productScansFromClient, "Did not find product scan for client with uuid: " + client.uuid)
+        Assert.isTrue(productScansFromClient.size == 1, "More than one product scan found for client with uuid: " + client.uuid)
+        validateProductScan(productScansFromClient[0], productUuid, deviceId, location)
     }
 
-    private fun validateProductScan(productScan: ProductScan, productUuid: String, clientUuid: String, location: TestLocation?) {
+    private fun validateProductScan(productScan: ProductScan, productUuid: String, deviceId: String, location: TestLocation?) {
+        val client = clientDeviceRepository!!.findByIdHashed(CryptoUtil().hash(deviceId))!!.client
+
         Assert.isTrue(productScan.product.uuid == productUuid, "Product scan's product was not the product expected!")
-        Assert.isTrue(productScan.client.uuid == clientUuid, "Product scan's client was not the client expected!")
+        Assert.isTrue(productScan.client.uuid == client.uuid, "Product scan's client was not the client expected!")
+
         if (location != null && productScan.location != null) {
             Assert.isTrue(productScan.location!!.latitude == location.latitude, "Latitude for product scan not correct")
             Assert.isTrue(productScan.location!!.longitude == location.longitude, "Longitude for product scan not correct")

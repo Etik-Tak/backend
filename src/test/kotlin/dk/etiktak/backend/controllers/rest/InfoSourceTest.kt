@@ -53,8 +53,8 @@ open class InfoSourceTest : BaseRestTest() {
     override fun setup() {
         super.setup()
 
-        client1Uuid = createAndSaveClient()
-        client2Uuid = createAndSaveClient()
+        client1DeviceId = createAndSaveClient()
+        client2DeviceId = createAndSaveClient()
     }
 
     /**
@@ -64,7 +64,7 @@ open class InfoSourceTest : BaseRestTest() {
     fun createInfoSource() {
         mockMvc().perform(
                 post(serviceEndpoint("create/"))
-                        .header("X-Auth-ClientUuid", client1Uuid)
+                        .header("X-Auth-DeviceId", client1DeviceId)
                         .param("domainList", "http://dr.dk,https://dr.dk")
                         .param("name", "Test Info Source 1"))
                 .andExpect(status().isOk)

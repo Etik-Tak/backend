@@ -27,11 +27,11 @@ package dk.etiktak.backend.security
 
 import org.springframework.security.authentication.AbstractAuthenticationToken
 
-open class ClientUuidAuthenticationToken constructor(
-        private val clientUuid: String): AbstractAuthenticationToken(null) {
+open class DeviceAuthenticationToken constructor(
+        private val deviceId: String): AbstractAuthenticationToken(null) {
 
     override fun getPrincipal(): Any? {
-        return clientUuid
+        return deviceId
     }
 
     override fun getCredentials(): Any? {

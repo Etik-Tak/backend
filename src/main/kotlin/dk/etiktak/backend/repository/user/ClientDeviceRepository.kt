@@ -25,18 +25,13 @@
 
 package dk.etiktak.backend.repository.user
 
-import dk.etiktak.backend.model.user.Client
+import dk.etiktak.backend.model.user.ClientDevice
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ClientRepository : PagingAndSortingRepository<Client, Long> {
+interface ClientDeviceRepository : PagingAndSortingRepository<ClientDevice, Long> {
 
-    fun findByUuid(uuid: String): Client?
-    fun findByUsernameAndPasswordHashed(username: String, passwordHashed: String): Client?
-
-    fun findBySmsChallengeHashClientChallengeHashHashed(hashOfHashes: String): Client?
-    fun findByMobileNumberMobileNumberHash(mobileNumberHash: String): Client?
-
-    fun findByDevicesIdHashed(deviceIdHashed: String): Client?
+    fun findByUuid(uuid: String): ClientDevice?
+    fun findByIdHashed(idHashed: String): ClientDevice?
 }
