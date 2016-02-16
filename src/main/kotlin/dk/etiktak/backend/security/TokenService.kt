@@ -31,7 +31,9 @@ import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 open class TokenService @Autowired constructor(
@@ -39,7 +41,11 @@ open class TokenService @Autowired constructor(
 
     private val logger = LoggerFactory.getLogger(TokenService::class.java)
 
-    @Scheduled(fixedRate = 30*60*1000)
+    companion object {
+        val timeout: Long = 2 * 60 * 60 * 1000
+    }
+
+    @Scheduled(fixedRate = 2 * (1 * 60 * 60 * 1000))
     fun generateNewEncryptor() {
         TokenEncryptionCache.sharedInstance.generateNewEncryptor()
     }
@@ -51,7 +57,7 @@ open class TokenService @Autowired constructor(
      * @return         Token
      */
     fun generateNewToken(client: Client): String {
-        return TokenEncryptionCache.sharedInstance.encryptToken(client.uuid)
+        return TokenEncryptionCache.sharedInstance.encryptToken(TokenCacheEntry(client.uuid, Date().time))
     }
 
     /**
@@ -61,10 +67,14 @@ open class TokenService @Autowired constructor(
      * @return         Client
      */
     fun getClientFromToken(token: String): Client? {
-        for (i in 0..(TokenEncryptionCache.encryptorCount - 1)) {
-            val clientUuid = TokenEncryptionCache.sharedInstance.decryptToken(token, i)
-            return clientRepository.findByUuid(clientUuid) ?: continue
+        val now = Date().time
+
+        val tokenCacheEntry = TokenEncryptionCache.sharedInstance.decryptToken(token)
+
+        if (now - tokenCacheEntry.creationTime!! <= timeout) {
+            return clientRepository.findByUuid(tokenCacheEntry.clientUuid!!) ?: throw BadCredentialsException("Invalid token")
+        } else {
+            throw BadCredentialsException("Token has timed out")
         }
-        return null
     }
 }

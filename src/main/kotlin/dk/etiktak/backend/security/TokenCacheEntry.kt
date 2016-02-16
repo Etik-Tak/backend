@@ -27,15 +27,19 @@ package dk.etiktak.backend.security
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-open class TokenResponse {
+open class TokenCacheEntry {
 
     @JsonProperty
-    private var token: String? = null
+    var clientUuid: String? = null
+
+    @JsonProperty
+    var creationTime: Long? = null
 
     constructor() {
     }
 
-    constructor(token: String) {
-        this.token = token
+    constructor(clientUuid: String, creationTime: Long) {
+        this.clientUuid = clientUuid
+        this.creationTime = creationTime
     }
 }

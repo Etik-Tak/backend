@@ -25,8 +25,10 @@
 
 package dk.etiktak.backend.security
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.encrypt.TextEncryptor
 
 open class TokenEncryptionCache {
@@ -34,7 +36,7 @@ open class TokenEncryptionCache {
 
     companion object {
         val sharedInstance = TokenEncryptionCache()
-        val encryptorCount = 4
+        val encryptorCount = 2
     }
 
     private var textEncryptors = arrayListOf<TextEncryptor>()
@@ -46,24 +48,32 @@ open class TokenEncryptionCache {
     }
 
     /**
-     * Encrypts the given token with first text encryptor.
+     * Encrypts the given token cache entry with first text encryptor.
      *
-     * @param token  Token
-     * @return       Encrypted token
+     * @param tokenCacheEntry  Token cache entry
+     * @return                 Encrypted token
      */
-    fun encryptToken(token: String): String {
-        return textEncryptors[0].encrypt(token)
+    fun encryptToken(tokenCacheEntry: TokenCacheEntry): String {
+        val jsonString = ObjectMapper().writeValueAsString(tokenCacheEntry)
+        return textEncryptors[0].encrypt(jsonString)
     }
 
     /**
      * Decrypts the given token with the text encryptor at the given index.
      *
-     * @param token           Token
-     * @param encryptorIndex  Index of encryptor to use
-     * @return                Decrypted token
+     * @param token      Token
+     * @return           Decrypted token cache entry
      */
-    fun decryptToken(token: String, encryptorIndex: Int): String {
-        return textEncryptors[encryptorIndex].decrypt(token)
+    fun decryptToken(token: String): TokenCacheEntry {
+        for (i in 0..(TokenEncryptionCache.encryptorCount - 1)) {
+            try {
+                val jsonString = textEncryptors[i].decrypt(token)
+                return ObjectMapper().readValue(jsonString, TokenCacheEntry::class.java)
+            } catch (e: Exception) {
+                logger.debug("Could not decrypt token", e)
+            }
+        }
+        throw BadCredentialsException("Invalid token")
     }
 
     /**

@@ -70,6 +70,9 @@ open class AuthenticationFilter constructor(
         val resourcePath = UrlPathHelper().getPathWithinApplication(httpRequest)
 
         try {
+            httpResponse.setHeader("Access-Control-Allow-Origin", "*") // TODO! Only in development
+            httpResponse.setHeader("Access-Control-Allow-Headers", "X-Auth-Username,X-Auth-Password") // TODO! Only in development
+
             if (isPostToAuthenticate(httpRequest, resourcePath)) {
                 logger.info("Trying to authenticate user $username by X-Auth-Username method")
                 processUsernamePasswordAuthentication(httpResponse, username, password)
@@ -114,7 +117,7 @@ open class AuthenticationFilter constructor(
         val resultOfAuthentication = tryToAuthenticateWithUsernameAndPassword(username, password)
         SecurityContextHolder.getContext().authentication = resultOfAuthentication
 
-        val tokenResponse = TokenResponse(resultOfAuthentication.details.toString())
+        val tokenResponse = TokenHttpResponse(resultOfAuthentication.details.toString())
         val tokenJsonResponse = ObjectMapper().writeValueAsString(tokenResponse)
         logger.info("Wrote: $tokenJsonResponse")
 
