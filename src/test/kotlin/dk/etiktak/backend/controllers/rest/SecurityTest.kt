@@ -27,6 +27,7 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
+import dk.etiktak.backend.security.TokenEncryptionCache
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,7 +37,6 @@ import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.notNullValue
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @SpringApplicationConfiguration(classes = arrayOf(Application::class))
@@ -94,5 +94,36 @@ open class SecurityTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+    }
+
+    /**
+     * Test that we cannot create a company with expired token.
+     */
+    @Test
+    fun cannotCreateCompanyWithExpiredToken() {
+
+        // Create client with username and password
+        createAndSaveClient(username = "test", password = "Test1234")
+
+        // Authenticate to get token
+        val token = postAndExtract(
+                serviceEndpoint("authenticate"),
+                hashMapOf(
+                        "X-Auth-Username" to "test",
+                        "X-Auth-Password" to "Test1234"),
+                hashMapOf(),
+                "$.token")
+
+        // Expire token by rolling keys
+        for (i in 1..TokenEncryptionCache.encryptorCount) {
+            tokenService!!.generateNewEncryptor()
+        }
+
+        // Create company with provided token
+        mockMvc().perform(
+                post(serviceEndpoint("company/create/"))
+                        .header("X-Auth-Token", token)
+                        .param("name", "Pepsi Cola"))
+                .andExpect(status().isUnauthorized)
     }
 }

@@ -45,6 +45,7 @@ import dk.etiktak.backend.repository.user.ClientDeviceRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.repository.user.MobileNumberRepository
 import dk.etiktak.backend.repository.user.SmsVerificationRepository
+import dk.etiktak.backend.security.TokenService
 import dk.etiktak.backend.util.CryptoUtil
 import org.junit.After
 import org.junit.Assert
@@ -129,6 +130,9 @@ open class BaseRestTest {
 
 
     @Autowired
+    val tokenService: TokenService? = null
+
+    @Autowired
     val productScanRepository: ProductScanRepository? = null
 
     @Autowired
@@ -151,9 +155,6 @@ open class BaseRestTest {
 
     @Autowired
     val textContributionRepository: TextContributionRepository? = null
-
-    @Autowired
-    val referenceContributionRepository: ReferenceContributionRepository? = null
 
     @Autowired
     val clientRepository: ClientRepository? = null
