@@ -30,12 +30,10 @@
 package dk.etiktak.backend.model.company
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.contribution.StoreContribution
 import dk.etiktak.backend.model.location.Location
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 
 @Entity(name = "stores")
 class Store constructor() : BaseModel() {
@@ -57,10 +55,6 @@ class Store constructor() : BaseModel() {
     @ManyToOne(optional = false)
     @JoinColumn(name = "company_id")
     var company = Company()
-
-    @NotNull
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    var contributions: MutableList<StoreContribution> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

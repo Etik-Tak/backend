@@ -23,20 +23,23 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * Represents a company contribution.
- */
+package dk.etiktak.backend.repository.contribution
 
-package dk.etiktak.backend.model.contribution
+import dk.etiktak.backend.model.contribution.Contribution
+import dk.etiktak.backend.model.contribution.TextContribution
+import dk.etiktak.backend.model.contribution.TrustVote
+import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-import dk.etiktak.backend.model.company.Company
-import javax.persistence.*
+@Repository
+interface TextContributionRepository: PagingAndSortingRepository<TextContribution, Long> {
+    fun findByUuid(uuid: String): TextContribution?
 
-@Entity
-@DiscriminatorValue("Company")
-class ProductCompanyContribution : ProductContribution() {
+    fun findByClientUuid(clientUuid: String): List<TextContribution>
+    fun findByTrustVotesClientUuid(clientUuid: String): List<TextContribution>
 
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "company_id")
-    var company: Company? = null
+    fun findBySubjectUuidAndType(subjectUuid: String, contributionType: Contribution.ContributionType, pageable: Pageable): List<TextContribution>
+
+    fun countByUuidAndTrustVotesVote(uuid: String, trustVoteType: TrustVote.TrustVoteType): Long
 }

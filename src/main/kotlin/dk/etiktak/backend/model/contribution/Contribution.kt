@@ -40,6 +40,20 @@ import javax.validation.constraints.NotNull
 @Entity(name = "contributions")
 open class Contribution constructor() : BaseModel() {
 
+    enum class ContributionType {
+        ProductName,
+        ProductCategoryName,
+        ProductLabelName,
+        ProductCategory,
+        ProductLabel,
+        ProductTag,
+        ProductCompany,
+        CompanyName,
+        StoreName,
+        StoreCompany,
+        InfoSourceName,
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "product_contribution_id")
@@ -51,6 +65,12 @@ open class Contribution constructor() : BaseModel() {
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id")
     var client = Client()
+
+    @Column(name = "type")
+    var type = ContributionType.CompanyName
+
+    @Column(name = "subject_uuid", nullable = false)
+    var subjectUuid: String = ""
 
     @Column(name = "enabled", nullable = false)
     var enabled: Boolean = true

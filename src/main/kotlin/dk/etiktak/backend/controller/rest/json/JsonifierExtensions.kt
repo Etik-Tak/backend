@@ -89,7 +89,7 @@ fun HashMap<String, Any>.add(store: Store, client: Client? = null, storeService:
     return add(hashMapOf<String, Any>()
             .add("store", hashMapOf<String, Any>()
                     .add("uuid", store.uuid)
-                    .add("name", storeService.storeName(store))
+                    .add("name", store.name)
                     .add("editableItems", {client != null}, {hashMapOf<String, Any>()
                             .add("name", hashMapOf<String, Any>()
                                     .add("editable", eval = {storeService.canEditStoreName(client!!, store)})

@@ -30,7 +30,6 @@
 package dk.etiktak.backend.model.product
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.contribution.ProductLabelContribution
 import dk.etiktak.backend.model.recommendation.ProductLabelRecommendation
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -52,9 +51,6 @@ class ProductLabel constructor() : BaseModel() {
 
     @ManyToMany(mappedBy = "productLabels", fetch = FetchType.LAZY)
     var products: MutableSet<Product> = HashSet()
-
-    @OneToMany(mappedBy = "productLabel", fetch = FetchType.LAZY)
-    var contributions: MutableList<ProductLabelContribution> = ArrayList()
 
     @OneToMany(mappedBy = "productLabel", fetch = FetchType.LAZY)
     var recommendations: MutableList<ProductLabelRecommendation> = ArrayList()

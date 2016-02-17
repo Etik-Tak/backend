@@ -78,7 +78,8 @@ class ProductCategoryRestController @Autowired constructor(
         var productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: return notFoundMap("Product category")
 
         name?.let {
-            productCategoryService.editProductCategoryName(client, productCategory, name, modifyValues = { modifiedClient, modifiedProductCategory -> client = modifiedClient; productCategory = modifiedProductCategory })
+            productCategoryService.editProductCategoryName(client, productCategory, name,
+                    modifyValues = {modifiedClient, modifiedProductCategory -> client = modifiedClient; productCategory = modifiedProductCategory})
         }
 
         return okMap().add(productCategory, client, productCategoryService)

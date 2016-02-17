@@ -26,14 +26,21 @@
 package dk.etiktak.backend.service.trust
 
 import dk.etiktak.backend.model.contribution.Contribution
+import dk.etiktak.backend.model.contribution.ReferenceContribution
+import dk.etiktak.backend.model.contribution.TextContribution
 import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.contribution.ContributionRepository
+import dk.etiktak.backend.repository.contribution.ReferenceContributionRepository
+import dk.etiktak.backend.repository.contribution.TextContributionRepository
 import dk.etiktak.backend.repository.contribution.TrustVoteRepository
 import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.security.ClientVerified
+import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
@@ -42,6 +49,8 @@ import org.springframework.util.Assert
 @Transactional
 open class ContributionService @Autowired constructor(
         private val contributionRepository: ContributionRepository,
+        private val textContributionRepository: TextContributionRepository,
+        private val referenceContributionRepository: ReferenceContributionRepository,
         private val trustVoteRepository: TrustVoteRepository,
         private val clientRepository: ClientRepository) {
 
@@ -52,6 +61,114 @@ open class ContributionService @Autowired constructor(
         val trustScoreContributionDelta = 0.05
         val votedTrustWeightMax = 0.95
         val votedTrustWeightLinearGrowthUpUntil = 5.0
+    }
+
+    /**
+     * Returns the current text contribution.
+     *
+     * @param contributionType  Contribution type, fx. CompanyName
+     * @param subjectUuid       Subject UUID, fx. company UUID
+     * @return                  Current text contribution
+     */
+    open fun currentTextContribution(contributionType: Contribution.ContributionType, subjectUuid: String): TextContribution? {
+        val currentContributions = textContributionRepository.findBySubjectUuidAndType(subjectUuid, contributionType, PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))
+        return if (currentContributions.size == 1) currentContributions[0] else null
+    }
+
+    /**
+     * Asserts that a contribution with given subject UUID and reference UUID is not already present.
+     *
+     * @param subjectUuid     Subject UUID, fx. product UUID
+     * @param referenceUuid   Reference UUID, fx. product tag UUID
+     */
+    fun assertReferenceContributionNotPresent(subjectUuid: String, referenceUuid: String) {
+        val contributions = referenceContributionRepository.findBySubjectUuidAndReferenceUuidAndEnabled(subjectUuid, referenceUuid)
+        Assert.isTrue(
+                contributions.size == 0,
+                "Contribution with subject UUID $subjectUuid and reference UUID $referenceUuid already present")
+    }
+
+    /**
+     * Creates a new text contribution.
+     *
+     * @param contributionType  Contribution type, fx. CompanyName
+     * @param inClient          Client
+     * @param subjectUuid       Subject UUID, fx. company UUID
+     * @param text              Text
+     * @param modifyValues      Function called with modified client
+     * @return                  Created contribution
+     */
+    open fun createTextContribution(contributionType: Contribution.ContributionType, inClient: Client, subjectUuid: String, text: String, modifyValues: (Client) -> Unit = {}): Contribution {
+
+        var client = inClient
+
+        // Check sufficient trust
+        val currentContribution = currentTextContribution(contributionType, subjectUuid)
+        currentContribution?.let {
+            assertSufficientTrustToEditContribution(client, currentContribution)
+        }
+
+        // Create contribution
+        var contribution = TextContribution()
+        contribution.uuid = CryptoUtil().uuid()
+        contribution.type = contributionType
+        contribution.subjectUuid = subjectUuid
+        contribution.text = text
+
+        // Glue it together
+        contribution.client = client
+        client.contributions.add(contribution)
+
+        // Save it all
+        client = clientRepository.save(client)
+        contribution = contributionRepository.save(contribution)
+
+        // Update trust
+        updateTrust(contribution)
+
+        modifyValues(client)
+
+        return contribution
+    }
+
+    /**
+     * Creates a new reference contribution.
+     *
+     * @param contributionType  Contribution type, fx. CompanyName
+     * @param inClient          Client
+     * @param subjectUuid       Subject UUID, fx. product UUID
+     * @param referenceUuid     Reference UUID, fx. product tag UUID
+     * @param modifyValues      Function called with modified client
+     * @return                  Created contribution
+     */
+    open fun createReferenceContribution(contributionType: Contribution.ContributionType, inClient: Client, subjectUuid: String, referenceUuid: String, modifyValues: (Client) -> Unit = {}): Contribution {
+
+        var client = inClient
+
+        // Make sure it's not already present and enabled
+        assertReferenceContributionNotPresent(subjectUuid, referenceUuid)
+
+        // Create contribution
+        var contribution = ReferenceContribution()
+        contribution.uuid = CryptoUtil().uuid()
+        contribution.type = contributionType
+        contribution.subjectUuid = subjectUuid
+        contribution.referenceUuid = referenceUuid
+
+        // Glue it together
+        contribution.client = client
+        client.contributions.add(contribution)
+
+        // Save it all
+        client = clientRepository.save(client)
+        contribution = contributionRepository.save(contribution)
+
+        // Update trust
+        updateTrust(contribution)
+
+        modifyValues(client)
+
+        return contribution
     }
 
     /**

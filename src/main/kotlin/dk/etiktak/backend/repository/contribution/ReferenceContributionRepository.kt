@@ -25,12 +25,19 @@
 
 package dk.etiktak.backend.repository.contribution
 
-import dk.etiktak.backend.model.contribution.CompanyNameContribution
+import dk.etiktak.backend.model.contribution.ReferenceContribution
+import dk.etiktak.backend.model.contribution.TrustVote
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface CompanyNameContributionRepository : PagingAndSortingRepository<CompanyNameContribution, Long> {
-    fun findByUuid(uuid: String): CompanyNameContribution?
-    fun findByCompanyUuidAndEnabled(companyUuid: String, enabled: Boolean = true): List<CompanyNameContribution>
+interface ReferenceContributionRepository : PagingAndSortingRepository<ReferenceContribution, Long> {
+    fun findByUuid(uuid: String): ReferenceContribution?
+
+    fun findByClientUuid(clientUuid: String): List<ReferenceContribution>
+    fun findByTrustVotesClientUuid(clientUuid: String): List<ReferenceContribution>
+
+    fun findBySubjectUuidAndReferenceUuidAndEnabled(subjectUuid: String, referenceUuid: String, enabled: Boolean = true): List<ReferenceContribution>
+
+    fun countByUuidAndTrustVotesVote(uuid: String, trustVoteType: TrustVote.TrustVoteType): Long
 }

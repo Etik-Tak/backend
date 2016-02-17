@@ -26,12 +26,11 @@
 package dk.etiktak.backend.service.company
 
 import dk.etiktak.backend.model.company.Company
-import dk.etiktak.backend.model.contribution.CompanyNameContribution
+import dk.etiktak.backend.model.contribution.Contribution
+import dk.etiktak.backend.model.contribution.TextContribution
 import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
-import dk.etiktak.backend.repository.contribution.CompanyNameContributionRepository
-import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.service.trust.ContributionService
 import dk.etiktak.backend.util.CryptoUtil
@@ -44,8 +43,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 open class CompanyService @Autowired constructor(
         private val companyRepository: CompanyRepository,
-        private val clientRepository: ClientRepository,
-        private val companyNameContributionRepository: CompanyNameContributionRepository,
         private val contributionService: ContributionService) {
 
     private val logger = LoggerFactory.getLogger(CompanyService::class.java)
@@ -80,8 +77,7 @@ open class CompanyService @Autowired constructor(
         company = companyRepository.save(company)
 
         // Create name contribution
-        editCompanyName(client, company, name,
-                modifyValues = {modifiedClient, modifiedCompany -> client = modifiedClient; company = modifiedCompany})
+        editCompanyName(client, company, name, modifyValues = {modifiedClient, modifiedCompany -> client = modifiedClient; company = modifiedCompany})
 
         modifyValues(client)
 
@@ -95,53 +91,24 @@ open class CompanyService @Autowired constructor(
      * @param inCompany       Company
      * @param name            Name of company
      * @param modifyValues    Function called with modified client and company
-     * @return                Company name contribution
+     * @return                Name contribution
      */
     @ClientVerified
-    open fun editCompanyName(inClient: Client, inCompany: Company, name: String, modifyValues: (Client, Company) -> Unit = {client, company -> Unit}): CompanyNameContribution {
+    open fun editCompanyName(inClient: Client, inCompany: Company, name: String, modifyValues: (Client, Company) -> Unit = {client, company -> Unit}): Contribution {
 
         var client = inClient
         var company = inCompany
 
-        // Get current name contribution
-        val contributions = companyNameContributionRepository.findByCompanyUuidAndEnabled(company.uuid)
-        val currentContribution = contributionService.uniqueContribution(contributions)
-
-        currentContribution?.let {
-
-            // Check sufficient trust
-            contributionService.assertSufficientTrustToEditContribution(client, currentContribution)
-
-            // Disable current contribution
-            currentContribution.enabled = false
-            companyNameContributionRepository.save(currentContribution)
-        }
+        // Create contribution
+        val contribution = contributionService.createTextContribution(Contribution.ContributionType.CompanyName, client, company.uuid, name, modifyValues = {modifiedClient -> client = modifiedClient})
 
         // Edit name
         company.name = name
-
-        // Create name contribution
-        var companyNameContribution = CompanyNameContribution()
-        companyNameContribution.uuid = CryptoUtil().uuid()
-        companyNameContribution.client = client
-        companyNameContribution.company = company
-        companyNameContribution.name = name
-
-        // Glue it together
-        company.contributions.add(companyNameContribution)
-        client.contributions.add(companyNameContribution)
-
-        // Save it all
-        client = clientRepository.save(client)
         company = companyRepository.save(company)
-        companyNameContribution = companyNameContributionRepository.save(companyNameContribution)
-
-        // Update trust
-        contributionService.updateTrust(companyNameContribution)
 
         modifyValues(client, company)
 
-        return companyNameContribution
+        return contribution
     }
 
     /**
@@ -150,9 +117,8 @@ open class CompanyService @Autowired constructor(
      * @param company   Company
      * @return          Company name contribution
      */
-    open fun companyNameContribution(company: Company): CompanyNameContribution? {
-        val contributions = companyNameContributionRepository.findByCompanyUuidAndEnabled(company.uuid)
-        return contributionService.uniqueContribution(contributions)
+    open fun companyNameContribution(company: Company): TextContribution? {
+        return contributionService.currentTextContribution(Contribution.ContributionType.CompanyName, company.uuid)
     }
 
     /**

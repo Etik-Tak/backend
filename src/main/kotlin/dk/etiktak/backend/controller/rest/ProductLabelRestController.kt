@@ -78,7 +78,8 @@ open class ProductLabelRestController @Autowired constructor(
         var productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: return notFoundMap("Product label")
 
         name?.let {
-            productLabelService.editProductLabelName(client, productLabel, name, modifyValues = { modifiedClient, modifiedProductLabel -> client = modifiedClient; productLabel = modifiedProductLabel })
+            productLabelService.editProductLabelName(client, productLabel, name,
+                    modifyValues = {modifiedClient, modifiedProductLabel -> client = modifiedClient; productLabel = modifiedProductLabel})
         }
 
         return okMap().add(productLabel, client, productLabelService)

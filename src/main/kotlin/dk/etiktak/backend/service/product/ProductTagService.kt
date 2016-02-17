@@ -28,7 +28,6 @@ package dk.etiktak.backend.service.product
 import dk.etiktak.backend.model.product.ProductTag
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.product.ProductTagRepository
-import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
@@ -39,8 +38,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional
 open class ProductTagService @Autowired constructor(
-        private val productTagRepository: ProductTagRepository,
-        private val clientRepository: ClientRepository) {
+        private val productTagRepository: ProductTagRepository) {
 
     private val logger = LoggerFactory.getLogger(ProductLabelService::class.java)
 

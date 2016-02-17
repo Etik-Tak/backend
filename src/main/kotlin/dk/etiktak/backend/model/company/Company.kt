@@ -30,15 +30,11 @@
 package dk.etiktak.backend.model.company
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.contribution.CompanyContribution
-import dk.etiktak.backend.model.contribution.ProductCompanyContribution
-import dk.etiktak.backend.model.contribution.StoreCompanyContribution
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.recommendation.CompanyRecommendation
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 
 @Entity(name = "companies")
 class Company constructor() : BaseModel() {
@@ -62,16 +58,6 @@ class Company constructor() : BaseModel() {
 
     @ManyToMany(mappedBy = "companies", fetch = FetchType.LAZY)
     var products: MutableSet<Product> = HashSet()
-
-    @NotNull
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    var contributions: MutableList<CompanyContribution> = ArrayList()
-
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    var productContributions: MutableList<ProductCompanyContribution> = ArrayList()
-
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    var storeContributions: MutableList<StoreCompanyContribution> = ArrayList()
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     var creationTime = Date()

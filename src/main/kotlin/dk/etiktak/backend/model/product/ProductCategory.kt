@@ -30,7 +30,6 @@
 package dk.etiktak.backend.model.product
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.contribution.ProductCategoryContribution
 import dk.etiktak.backend.model.recommendation.ProductCategoryRecommendation
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -52,9 +51,6 @@ class ProductCategory constructor() : BaseModel() {
 
     @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
     var products: MutableSet<Product> = HashSet()
-
-    @OneToMany(mappedBy = "productCategory", fetch = FetchType.LAZY)
-    var contributions: MutableList<ProductCategoryContribution> = ArrayList()
 
     @OneToMany(mappedBy = "productCategory", fetch = FetchType.LAZY)
     var recommendations: MutableList<ProductCategoryRecommendation> = ArrayList()

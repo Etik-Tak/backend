@@ -25,13 +25,12 @@
 
 package dk.etiktak.backend.service.product
 
-import dk.etiktak.backend.model.contribution.ProductLabelNameContribution
+import dk.etiktak.backend.model.contribution.Contribution
+import dk.etiktak.backend.model.contribution.TextContribution
 import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.product.ProductLabel
 import dk.etiktak.backend.model.user.Client
-import dk.etiktak.backend.repository.contribution.ProductLabelNameContributionRepository
 import dk.etiktak.backend.repository.product.ProductLabelRepository
-import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.service.trust.ContributionService
 import dk.etiktak.backend.util.CryptoUtil
@@ -44,8 +43,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 open class ProductLabelService @Autowired constructor(
         private val productLabelRepository: ProductLabelRepository,
-        private val clientRepository: ClientRepository,
-        private val productLabelNameContributionRepository: ProductLabelNameContributionRepository,
         private val contributionService: ContributionService) {
 
     private val logger = LoggerFactory.getLogger(ProductLabelService::class.java)
@@ -80,8 +77,7 @@ open class ProductLabelService @Autowired constructor(
         productLabel = productLabelRepository.save(productLabel)
 
         // Create name contribution
-        editProductLabelName(client, productLabel, name,
-                modifyValues = {modifiedClient, modifiedProductLabel -> client = modifiedClient; productLabel = modifiedProductLabel})
+        editProductLabelName(client, productLabel, name, modifyValues = {modifiedClient, modifiedProductLabel -> client = modifiedClient; productLabel = modifiedProductLabel})
 
         modifyValues(client)
 
@@ -98,50 +94,21 @@ open class ProductLabelService @Autowired constructor(
      * @return                Product label name contribution
      */
     @ClientVerified
-    open fun editProductLabelName(inClient: Client, inProductLabel: ProductLabel, name: String, modifyValues: (Client, ProductLabel) -> Unit = { client, productLabel -> Unit}): ProductLabelNameContribution {
+    open fun editProductLabelName(inClient: Client, inProductLabel: ProductLabel, name: String, modifyValues: (Client, ProductLabel) -> Unit = {client, productLabel -> Unit}): Contribution {
 
         var client = inClient
         var productLabel = inProductLabel
 
-        // Get current name contribution
-        val contributions = productLabelNameContributionRepository.findByProductLabelUuidAndEnabled(productLabel.uuid)
-        val currentContribution = contributionService.uniqueContribution(contributions)
-
-        currentContribution?.let {
-
-            // Check sufficient trust
-            contributionService.assertSufficientTrustToEditContribution(client, currentContribution)
-
-            // Disable current contribution
-            currentContribution.enabled = false
-            productLabelNameContributionRepository.save(currentContribution)
-        }
+        // Create contribution
+        val contribution = contributionService.createTextContribution(Contribution.ContributionType.ProductLabelName, client, productLabel.uuid, name, modifyValues = {modifiedClient -> client = modifiedClient})
 
         // Edit name
         productLabel.name = name
-
-        // Create name contribution
-        var productLabelNameContribution = ProductLabelNameContribution()
-        productLabelNameContribution.uuid = CryptoUtil().uuid()
-        productLabelNameContribution.client = client
-        productLabelNameContribution.productLabel = productLabel
-        productLabelNameContribution.name = name
-
-        // Glue it together
-        productLabel.contributions.add(productLabelNameContribution)
-        client.contributions.add(productLabelNameContribution)
-
-        // Save it all
-        client = clientRepository.save(client)
         productLabel = productLabelRepository.save(productLabel)
-        productLabelNameContribution = productLabelNameContributionRepository.save(productLabelNameContribution)
-
-        // Update trust
-        contributionService.updateTrust(productLabelNameContribution)
 
         modifyValues(client, productLabel)
 
-        return productLabelNameContribution
+        return contribution
     }
 
     /**
@@ -161,9 +128,8 @@ open class ProductLabelService @Autowired constructor(
      * @param productLabel   Product label
      * @return               Product label name contribution
      */
-    open fun productLabelNameContribution(productLabel: ProductLabel): ProductLabelNameContribution? {
-        val contributions = productLabelNameContributionRepository.findByProductLabelUuidAndEnabled(productLabel.uuid)
-        return contributionService.uniqueContribution(contributions)
+    open fun productLabelNameContribution(productLabel: ProductLabel): TextContribution? {
+        return contributionService.currentTextContribution(Contribution.ContributionType.ProductLabelName, productLabel.uuid)
     }
 
     /**

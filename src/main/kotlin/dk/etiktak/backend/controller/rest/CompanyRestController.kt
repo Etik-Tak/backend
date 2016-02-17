@@ -78,8 +78,7 @@ class CompanyRestController @Autowired constructor(
         var company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
 
         name?.let {
-            companyService.editCompanyName(client, company, name,
-                    modifyValues = { modifiedClient, modifiedCompany -> client = modifiedClient; company = modifiedCompany })
+            companyService.editCompanyName(client, company, name, modifyValues = {modifiedClient, modifiedCompany -> client = modifiedClient; company = modifiedCompany})
         }
 
         return okMap().add(company, client, companyService)

@@ -89,7 +89,8 @@ class InfoSourceRestController @Autowired constructor(
         var infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid) ?: return notFoundMap("Info source")
 
         name?.let {
-            infoSourceService.editInfoSourceName(client, infoSource, name, modifyValues = { modifiedClient, modifiedInfoSource -> client = modifiedClient; infoSource = modifiedInfoSource })
+            infoSourceService.editInfoSourceName(client, infoSource, name,
+                    modifyValues = {modifiedClient, modifiedInfoSource -> client = modifiedClient; infoSource = modifiedInfoSource})
         }
 
         return okMap().add(infoSource, client, infoSourceService)

@@ -32,7 +32,6 @@ import dk.etiktak.backend.model.product.*
 import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
-import dk.etiktak.backend.repository.contribution.*
 import dk.etiktak.backend.repository.location.LocationRepository
 import dk.etiktak.backend.repository.product.*
 import dk.etiktak.backend.repository.user.ClientRepository
@@ -58,11 +57,6 @@ open class ProductService @Autowired constructor(
         private val productCategoryRepository: ProductCategoryRepository,
         private val productLabelRepository: ProductLabelRepository,
         private val productTagRepository: ProductTagRepository,
-        private val productNameContributionRepository: ProductNameContributionRepository,
-        private val productCategoryContributionRepository: ProductCategoryContributionRepository,
-        private val productLabelContributionRepository: ProductLabelContributionRepository,
-        private val productTagContributionRepository: ProductTagContributionRepository,
-        private val productCompanyContributionRepository: ProductCompanyContributionRepository,
         private val companyRepository: CompanyRepository,
         private val contributionService: ContributionService) {
 
@@ -190,8 +184,7 @@ open class ProductService @Autowired constructor(
         product = productRepository.save(product)
 
         // Create name contribution
-        editProductName(client, product, "",
-                modifyValues = {modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
+        editProductName(client, product, "", modifyValues = {modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
 
         modifyValues(client)
 
@@ -208,50 +201,21 @@ open class ProductService @Autowired constructor(
      * @return              Product name contribution
      */
     @ClientVerified
-    open fun editProductName(inClient: Client, inProduct: Product, name: String, modifyValues: (Client, Product) -> Unit = { client, product -> Unit}): ProductNameContribution {
+    open fun editProductName(inClient: Client, inProduct: Product, name: String, modifyValues: (Client, Product) -> Unit = {client, product -> Unit }): Contribution {
 
         var client = inClient
         var product = inProduct
 
-        // Get current name contribution
-        val contributions = productNameContributionRepository.findByProductUuidAndEnabled(product.uuid)
-        val currentContribution = contributionService.uniqueContribution(contributions)
-
-        currentContribution?.let {
-
-            // Check sufficient trust
-            contributionService.assertSufficientTrustToEditContribution(client, currentContribution)
-
-            // Disable current contribution
-            currentContribution.enabled = false
-            productNameContributionRepository.save(currentContribution)
-        }
+        // Create contribution
+        val contribution = contributionService.createTextContribution(Contribution.ContributionType.ProductName, client, product.uuid, name, modifyValues = {modifiedClient -> client = modifiedClient})
 
         // Edit name
         product.name = name
-
-        // Create name contribution
-        var productNameContribution = ProductNameContribution()
-        productNameContribution.uuid = CryptoUtil().uuid()
-        productNameContribution.client = client
-        productNameContribution.product = product
-        productNameContribution.name = name
-
-        // Glue it together
-        product.contributions.add(productNameContribution)
-        client.contributions.add(productNameContribution)
-
-        // Save it all
-        client = clientRepository.save(client)
         product = productRepository.save(product)
-        productNameContribution = productNameContributionRepository.save(productNameContribution)
-
-        // Update trust
-        contributionService.updateTrust(productNameContribution)
 
         modifyValues(client, product)
 
-        return productNameContribution
+        return contribution
     }
 
     /**
@@ -264,53 +228,27 @@ open class ProductService @Autowired constructor(
      * @return                    Product category contribution
      */
     @ClientVerified
-    open fun assignCategoryToProduct(inClient: Client, inProduct: Product, inProductCategory: ProductCategory, modifyValues: (Client, Product, ProductCategory) -> Unit = { client, product, productCategory -> Unit}): ProductCategoryContribution {
+    open fun assignCategoryToProduct(inClient: Client, inProduct: Product, inProductCategory: ProductCategory, modifyValues: (Client, Product, ProductCategory) -> Unit = { client, product, productCategory -> Unit}): Contribution {
 
         var client = inClient
         var product = inProduct
         var productCategory = inProductCategory
 
-        // Get current category contribution
-        val contributions = productCategoryContributionRepository.findByProductUuidAndProductCategoryUuidAndEnabled(product.uuid, productCategory.uuid)
-        val currentContribution = contributionService.uniqueContribution(contributions)
-
-        currentContribution?.let {
-
-            // Make sure it's disabled
-            Assert.isTrue(
-                    !currentContribution.enabled,
-                    "Cannot assign product category with UUID ${productCategory.uuid} to product with UUID ${product.uuid}; it's already there and enabled!"
-            )
-        }
+        // Create contribution
+        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.ProductCategory, client, product.uuid, productCategory.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Assign category
         product.productCategories.add(productCategory)
         productCategory.products.add(product)
 
-        // Create category contribution
-        var productCategoryContribution = ProductCategoryContribution()
-        productCategoryContribution.uuid = CryptoUtil().uuid()
-        productCategoryContribution.client = client
-        productCategoryContribution.product = product
-        productCategoryContribution.productCategory = productCategory
-
-        // Glue it together
-        productCategory.contributions.add(productCategoryContribution)
-        product.contributions.add(productCategoryContribution)
-        client.contributions.add(productCategoryContribution)
-
         // Save it all
         productCategory = productCategoryRepository.save(productCategory)
         client = clientRepository.save(client)
         product = productRepository.save(product)
-        productCategoryContribution = productCategoryContributionRepository.save(productCategoryContribution)
-
-        // Update trust
-        contributionService.updateTrust(productCategoryContribution)
 
         modifyValues(client, product, productCategory)
 
-        return productCategoryContribution
+        return contribution
     }
 
     /**
@@ -323,53 +261,27 @@ open class ProductService @Autowired constructor(
      * @return                    Product label contribution
      */
     @ClientVerified
-    open fun assignLabelToProduct(inClient: Client, inProduct: Product, inProductLabel: ProductLabel, modifyValues: (Client, Product, ProductLabel) -> Unit = { client, product, productLabel -> Unit}): ProductLabelContribution {
+    open fun assignLabelToProduct(inClient: Client, inProduct: Product, inProductLabel: ProductLabel, modifyValues: (Client, Product, ProductLabel) -> Unit = { client, product, productLabel -> Unit}): Contribution {
 
         var client = inClient
         var product = inProduct
         var productLabel = inProductLabel
 
-        // Get current label contribution
-        val contributions = productLabelContributionRepository.findByProductUuidAndProductLabelUuidAndEnabled(product.uuid, productLabel.uuid)
-        val currentContribution = contributionService.uniqueContribution(contributions)
-
-        currentContribution?.let {
-
-            // Make sure it's disabled
-            Assert.isTrue(
-                    !currentContribution.enabled,
-                    "Cannot assign product label with UUID ${currentContribution.uuid} to product with UUID ${product.uuid}; it's already there and enabled!"
-            )
-        }
+        // Create contribution
+        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.ProductLabel, client, product.uuid, productLabel.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Assign label
         product.productLabels.add(productLabel)
         productLabel.products.add(product)
 
-        // Create label contribution
-        var productLabelContribution = ProductLabelContribution()
-        productLabelContribution.uuid = CryptoUtil().uuid()
-        productLabelContribution.client = client
-        productLabelContribution.product = product
-        productLabelContribution.productLabel = productLabel
-
-        // Glue it together
-        productLabel.contributions.add(productLabelContribution)
-        product.contributions.add(productLabelContribution)
-        client.contributions.add(productLabelContribution)
-
         // Save it all
         productLabel = productLabelRepository.save(productLabel)
         client = clientRepository.save(client)
         product = productRepository.save(product)
-        productLabelContribution = productLabelContributionRepository.save(productLabelContribution)
-
-        // Update trust
-        contributionService.updateTrust(productLabelContribution)
 
         modifyValues(client, product, productLabel)
 
-        return productLabelContribution
+        return contribution
     }
 
     /**
@@ -382,53 +294,27 @@ open class ProductService @Autowired constructor(
      * @return                    Product tag contribution
      */
     @ClientVerified
-    open fun assignTagToProduct(inClient: Client, inProduct: Product, inProductTag: ProductTag, modifyValues: (Client, Product, ProductTag) -> Unit = { client, product, productTag -> Unit}): ProductTagContribution {
+    open fun assignTagToProduct(inClient: Client, inProduct: Product, inProductTag: ProductTag, modifyValues: (Client, Product, ProductTag) -> Unit = { client, product, productTag -> Unit}): Contribution {
 
         var client = inClient
         var product = inProduct
         var productTag = inProductTag
 
-        // Get current tag contribution
-        val contributions = productTagContributionRepository.findByProductUuidAndProductTagUuidAndEnabled(product.uuid, productTag.uuid)
-        val currentContribution = contributionService.uniqueContribution(contributions)
-
-        currentContribution?.let {
-
-            // Make sure it's disabled
-            Assert.isTrue(
-                    !currentContribution.enabled,
-                    "Cannot assign product tag with UUID ${currentContribution.uuid} to product with UUID ${product.uuid}; it's already there and enabled!"
-            )
-        }
+        // Create contribution
+        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.ProductTag, client, product.uuid, productTag.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Assign tag
         product.productTags.add(productTag)
         productTag.products.add(product)
 
-        // Create tag contribution
-        var productTagContribution = ProductTagContribution()
-        productTagContribution.uuid = CryptoUtil().uuid()
-        productTagContribution.client = client
-        productTagContribution.product = product
-        productTagContribution.productTag = productTag
-
-        // Glue it together
-        productTag.contributions.add(productTagContribution)
-        product.contributions.add(productTagContribution)
-        client.contributions.add(productTagContribution)
-
         // Save it all
         productTag = productTagRepository.save(productTag)
         client = clientRepository.save(client)
         product = productRepository.save(product)
-        productTagContribution = productTagContributionRepository.save(productTagContribution)
-
-        // Update trust
-        contributionService.updateTrust(productTagContribution)
 
         modifyValues(client, product, productTag)
 
-        return productTagContribution
+        return contribution
     }
 
     /**
@@ -441,54 +327,27 @@ open class ProductService @Autowired constructor(
      * @return                    Product company contribution
      */
     @ClientVerified
-    open fun assignCompanyToProduct(inClient: Client, inProduct: Product, inCompany: Company, modifyValues: (Client, Product, Company) -> Unit = { client, product, company -> Unit}): ProductCompanyContribution {
+    open fun assignCompanyToProduct(inClient: Client, inProduct: Product, inCompany: Company, modifyValues: (Client, Product, Company) -> Unit = { client, product, company -> Unit}): Contribution {
 
         var client = inClient
         var product = inProduct
         var company = inCompany
 
-        // Get current company contribution
-        val contributions = productCompanyContributionRepository.findByProductUuidAndEnabled(product.uuid)
-        val currentContribution = contributionService.uniqueContribution(contributions)
-
-        currentContribution?.let {
-
-            // Check sufficient trust
-            contributionService.assertSufficientTrustToEditContribution(client, currentContribution)
-
-            // Disable current contribution
-            currentContribution.enabled = false
-            productCompanyContributionRepository.save(currentContribution)
-        }
+        // Create contribution
+        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.ProductCompany, client, product.uuid, company.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Assign company
         product.companies.add(company)
         company.products.add(product)
 
-        // Create company contribution
-        var productCompanyContribution = ProductCompanyContribution()
-        productCompanyContribution.uuid = CryptoUtil().uuid()
-        productCompanyContribution.client = client
-        productCompanyContribution.product = product
-        productCompanyContribution.company = company
-
-        // Glue it together
-        company.productContributions.add(productCompanyContribution)
-        product.contributions.add(productCompanyContribution)
-        client.contributions.add(productCompanyContribution)
-
         // Save it all
         company = companyRepository.save(company)
         client = clientRepository.save(client)
         product = productRepository.save(product)
-        productCompanyContribution = productCompanyContributionRepository.save(productCompanyContribution)
-
-        // Update trust
-        contributionService.updateTrust(productCompanyContribution)
 
         modifyValues(client, product, company)
 
-        return productCompanyContribution
+        return contribution
     }
 
     /**
@@ -601,9 +460,8 @@ open class ProductService @Autowired constructor(
      * @param product   Product
      * @return          Product name contribution
      */
-    open fun productNameContribution(product: Product): ProductNameContribution? {
-        val contributions = productNameContributionRepository.findByProductUuidAndEnabled(product.uuid)
-        return contributionService.uniqueContribution(contributions)
+    open fun productNameContribution(product: Product): TextContribution? {
+        return contributionService.currentTextContribution(Contribution.ContributionType.ProductName, product.uuid)
     }
 
     /**

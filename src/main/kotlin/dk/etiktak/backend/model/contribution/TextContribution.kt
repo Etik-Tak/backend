@@ -23,15 +23,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.repository.contribution
+/**
+ * Represents a text contribution, fx. name.
+ */
 
-import dk.etiktak.backend.model.contribution.ProductCompanyContribution
-import org.springframework.data.repository.PagingAndSortingRepository
-import org.springframework.stereotype.Repository
+package dk.etiktak.backend.model.contribution
 
-@Repository
-interface ProductCompanyContributionRepository : PagingAndSortingRepository<ProductCompanyContribution, Long> {
-    fun findByUuid(uuid: String): ProductCompanyContribution?
-    fun findByProductUuidAndEnabled(productUuid: String, enabled: Boolean = true): List<ProductCompanyContribution>
-    fun findByProductUuidAndCompanyUuidAndEnabled(productUuid: String, companyUuid: String, enabled: Boolean = true): List<ProductCompanyContribution>
+import javax.persistence.*
+
+@Entity
+@DiscriminatorValue("TextContribution")
+class TextContribution : Contribution() {
+
+    @Column(name = "text", nullable = true)
+    var text: String = ""
 }

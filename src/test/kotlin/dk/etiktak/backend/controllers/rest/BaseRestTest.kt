@@ -26,6 +26,7 @@
 package dk.etiktak.backend.controllers.rest
 
 import com.jayway.jsonpath.JsonPath
+import dk.etiktak.backend.model.contribution.Contribution
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.recommendation.RecommendationScore
 import dk.etiktak.backend.repository.changelog.ChangeLogRepository
@@ -50,6 +51,8 @@ import org.junit.Assert
 import org.junit.Rule
 import org.junit.rules.ExpectedException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
@@ -62,8 +65,6 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import java.nio.charset.Charset
-
-import org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup
 
 data class TestLocation(val latitude: Double, val longitude: Double)
 
@@ -149,16 +150,10 @@ open class BaseRestTest {
     val contributionRepository: ContributionRepository? = null
 
     @Autowired
-    val productNameContributionRepository: ProductNameContributionRepository? = null
+    val textContributionRepository: TextContributionRepository? = null
 
     @Autowired
-    val productLabelNameContributionRepository: ProductLabelNameContributionRepository? = null
-
-    @Autowired
-    val productCategoryNameContributionRepository: ProductCategoryNameContributionRepository? = null
-
-    @Autowired
-    val infoSourceNameContributionRepository: InfoSourceNameContributionRepository? = null
+    val referenceContributionRepository: ReferenceContributionRepository? = null
 
     @Autowired
     val clientRepository: ClientRepository? = null
@@ -494,36 +489,41 @@ open class BaseRestTest {
 
     fun setProductNameTrustScore(productUuid: String, trustScore: Double) {
         val product = productRepository!!.findByUuid(productUuid)!!
-        val contribution = productNameContributionRepository!!.findByProductUuidAndEnabled(product.uuid)[0]
+        val contribution = textContributionRepository!!.findBySubjectUuidAndType(product.uuid, Contribution.ContributionType.ProductName,
+                PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
         contribution.trustScore = trustScore
-        productNameContributionRepository.save(contribution)
+        textContributionRepository.save(contribution)
     }
 
     fun productNameTrustLevel(productUuid: String): Double {
         val product = productRepository!!.findByUuid(productUuid)!!
-        val contribution = productNameContributionRepository!!.findByProductUuidAndEnabled(product.uuid)[0]
+        val contribution = textContributionRepository!!.findBySubjectUuidAndType(product.uuid, Contribution.ContributionType.ProductName,
+                PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
         return contribution.trustScore
     }
 
     fun setProductLabelNameTrustScore(productLabelUuid: String, trustScore: Double) {
         val productLabel = productLabelRepository!!.findByUuid(productLabelUuid)!!
-        val contribution = productLabelNameContributionRepository!!.findByProductLabelUuidAndEnabled(productLabel.uuid)[0]
+        val contribution = textContributionRepository!!.findBySubjectUuidAndType(productLabel.uuid, Contribution.ContributionType.ProductLabelName,
+                PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
         contribution.trustScore = trustScore
-        productLabelNameContributionRepository.save(contribution)
+        textContributionRepository.save(contribution)
     }
 
     fun setProductCategoryNameTrustScore(productCategoryUuid: String, trustScore: Double) {
         val productCategory = productCategoryRepository!!.findByUuid(productCategoryUuid)!!
-        val contribution = productCategoryNameContributionRepository!!.findByProductCategoryUuidAndEnabled(productCategory.uuid)[0]
+        val contribution = textContributionRepository!!.findBySubjectUuidAndType(productCategory.uuid, Contribution.ContributionType.ProductCategoryName,
+                PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
         contribution.trustScore = trustScore
-        productCategoryNameContributionRepository.save(contribution)
+        textContributionRepository.save(contribution)
     }
 
     fun setInfoSourceNameTrustScore(infoSourceUuid: String, trustScore: Double) {
         val infoSource = infoSourceRepository!!.findByUuid(infoSourceUuid)!!
-        val contribution = infoSourceNameContributionRepository!!.findByInfoSourceUuidAndEnabled(infoSource.uuid)[0]
+        val contribution = textContributionRepository!!.findBySubjectUuidAndType(infoSource.uuid, Contribution.ContributionType.InfoSourceName,
+                PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
         contribution.trustScore = trustScore
-        infoSourceNameContributionRepository.save(contribution)
+        textContributionRepository.save(contribution)
     }
 
 
