@@ -29,15 +29,7 @@ Install postgresql. Then run the following psql:
 
 Build and start the bundled container:
 
-`$ ./gradlew build && java -jar build/libs/etik-tak-0.1.0.jar`
-
-or:
-
 `./gradlew bootRun`
-
-To skip tests:
-
-`$ ./gradlew build -x test && java -jar build/libs/etik-tak-0.1.0.jar`
 
 Tests
 -----
