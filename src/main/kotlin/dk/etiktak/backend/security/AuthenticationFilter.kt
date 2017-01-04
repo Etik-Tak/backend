@@ -59,7 +59,7 @@ open class AuthenticationFilter constructor(
     @Throws(IOException::class, ServletException::class)
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
 
-        var httpRequest = request as HttpServletRequest
+        val httpRequest = request as HttpServletRequest
         val httpResponse = response as HttpServletResponse
 
         val username = httpRequest.getHeader("X-Auth-Username")
@@ -71,7 +71,7 @@ open class AuthenticationFilter constructor(
 
         try {
             httpResponse.setHeader("Access-Control-Allow-Origin", "*") // TODO! Only in development
-            httpResponse.setHeader("Access-Control-Allow-Headers", "X-Auth-Username,X-Auth-Password") // TODO! Only in development
+            httpResponse.setHeader("Access-Control-Allow-Headers", "X-Auth-Username,X-Auth-Password,origin,Content-Type,Accept") // TODO! Only in development
 
             if (isPostToAuthenticate(httpRequest, resourcePath)) {
                 logger.info("Trying to authenticate user $username by X-Auth-Username method")

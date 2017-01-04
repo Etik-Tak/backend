@@ -35,12 +35,10 @@ import dk.etiktak.backend.model.user.ClientDevice
 import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
+@CrossOrigin(origins = arrayOf("http://localhost:9000"), allowedHeaders = arrayOf("Origin", "X-Requested-With", "Content-Type", "Accept"))
 @RestController
 @RequestMapping("/service/client")
 class ClientRestController @Autowired constructor(
