@@ -356,19 +356,20 @@ open class ProductService @Autowired constructor(
      *
      * @param client      Client
      * @param barcode     Barcode
+     * @param barcodeType   Barcode type
      * @param latitude    Optional latitude
      * @param longitude   Optional longitude
      * @return            Created product scan entry (which contains the actual product)
      */
     @ClientValid
-    open fun scanProduct(client: Client, barcode: String, latitude: Double?, longitude: Double?): ProductScanResult {
+    open fun scanProduct(client: Client, barcode: String, barcodeType: Product.BarcodeType?, latitude: Double?, longitude: Double?): ProductScanResult {
 
         // Find product
         var modifiedClient = client
 
         var product = getProductByBarcode(barcode)
         if (product == null) {
-            product = createEmptyProduct(client, barcode, Product.BarcodeType.UNKNOWN, modifyValues = {client -> modifiedClient = client})
+            product = createEmptyProduct(client, barcode, barcodeType ?: Product.BarcodeType.UNKNOWN, modifyValues = {client -> modifiedClient = client})
         }
 
         // Create product scan

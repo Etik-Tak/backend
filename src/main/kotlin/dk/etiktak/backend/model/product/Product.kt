@@ -41,7 +41,7 @@ import javax.validation.constraints.NotNull
 class Product constructor() : BaseModel() {
 
     enum class BarcodeType {
-        EAN13,
+        EAN_13,
         UPC,
         UNKNOWN
     }

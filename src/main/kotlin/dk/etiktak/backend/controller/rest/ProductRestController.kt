@@ -65,12 +65,12 @@ class ProductRestController @Autowired constructor(
 
         uuid?.let {
             val product = productService.getProductByUuid(uuid) ?: return notFoundMap("Product")
-            return okMap().add(product, client = null, productService = productService)
+            return okMap().add(product, client = null, productService = productService, companyService = companyService)
         }
 
         barcode?.let {
             val product = productService.getProductByBarcode(barcode) ?: return notFoundMap("Product")
-            return okMap().add(product, client = null, productService = productService)
+            return okMap().add(product, client = null, productService = productService, companyService = companyService)
         }
 
         return notFoundMap("Product")
@@ -136,7 +136,7 @@ class ProductRestController @Autowired constructor(
                 productTags,
                 companies)
 
-        return okMap().add(product, client, productService)
+        return okMap().add(product, client, productService, companyService)
     }
 
     @RequestMapping(value = "/edit/", method = arrayOf(RequestMethod.POST))
@@ -152,7 +152,7 @@ class ProductRestController @Autowired constructor(
             productService.editProductName(client, product, name, modifyValues = { modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct })
         }
 
-        return okMap().add(product, client, productService)
+        return okMap().add(product, client, productService, companyService)
     }
 
     @RequestMapping(value = "/assign/category/", method = arrayOf(RequestMethod.POST))
@@ -168,7 +168,7 @@ class ProductRestController @Autowired constructor(
         productService.assignCategoryToProduct(client, product, productCategory,
                 modifyValues = {modifiedClient, modifiedProduct, modifiedProductCategory -> client = modifiedClient; product = modifiedProduct; productCategory = modifiedProductCategory})
 
-        return okMap().add(product, client, productService)
+        return okMap().add(product, client, productService, companyService)
     }
 
     @RequestMapping(value = "/assign/label/", method = arrayOf(RequestMethod.POST))
@@ -184,7 +184,7 @@ class ProductRestController @Autowired constructor(
         productService.assignLabelToProduct(client, product, productLabel,
                 modifyValues = { modifiedClient, modifiedProduct, modifiedProductLabel -> client = modifiedClient; product = modifiedProduct; productLabel = modifiedProductLabel})
 
-        return okMap().add(product, client, productService)
+        return okMap().add(product, client, productService, companyService)
     }
 
     @RequestMapping(value = "/assign/tag/", method = arrayOf(RequestMethod.POST))
@@ -200,7 +200,7 @@ class ProductRestController @Autowired constructor(
         productService.assignTagToProduct(client, product, productTag,
                 modifyValues = { modifiedClient, modifiedProduct, modifiedProductTag -> client = modifiedClient; product = modifiedProduct; productTag = modifiedProductTag})
 
-        return okMap().add(product, client, productService)
+        return okMap().add(product, client, productService, companyService)
     }
 
     @RequestMapping(value = "/assign/company/", method = arrayOf(RequestMethod.POST))
@@ -216,7 +216,7 @@ class ProductRestController @Autowired constructor(
         productService.assignCompanyToProduct(client, product, company,
                 modifyValues = {modifiedClient, modifiedProduct, modifiedCompany -> client = modifiedClient; product = modifiedProduct; company = modifiedCompany})
 
-        return okMap().add(product, client, productService)
+        return okMap().add(product, client, productService, companyService)
     }
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
@@ -230,6 +230,6 @@ class ProductRestController @Autowired constructor(
 
         productService.trustVoteProductName(client, product, vote)
 
-        return okMap().add(product, client, productService)
+        return okMap().add(product, client, productService, companyService)
     }
 }

@@ -56,7 +56,7 @@ class ProductTest : BaseRestTest() {
         client1DeviceId = createAndSaveClient()
         client2DeviceId = createAndSaveClient()
 
-        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN13, "Test product 1")
+        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN_13, "Test product 1")
         product2Uuid = createAndSaveProduct(client2DeviceId, "12345678b", Product.BarcodeType.UPC, "Test product 2")
 
         productCategory1Uuid = createAndSaveProductCategory(client1DeviceId, "Product category 1", product1Uuid)
@@ -84,7 +84,7 @@ class ProductTest : BaseRestTest() {
     }
 
     /**
-     * Test that we can retrieve product by EAN13 barcode.
+     * Test that we can retrieve product by EAN_13 barcode.
      */
     @Test
     fun retrieveProductByEan13Barcode() {
@@ -127,7 +127,7 @@ class ProductTest : BaseRestTest() {
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
-                        .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
+                        .param("barcodeType", Product.BarcodeType.EAN_13.name)
                         .param("categoryUuidList", "${productCategory1Uuid}, ${productCategory2Uuid}")
                         .param("labelUuidList", "${productLabel1Uuid}, ${productLabel2Uuid}"))
                 .andExpect(status().isOk)
@@ -162,7 +162,7 @@ class ProductTest : BaseRestTest() {
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
-                        .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
+                        .param("barcodeType", Product.BarcodeType.EAN_13.name)
                         .param("labelUuidList", "${productLabel1Uuid}, ${productLabel2Uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
@@ -182,7 +182,7 @@ class ProductTest : BaseRestTest() {
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("name", "Coca Cola")
                         .param("barcode", "12345678")
-                        .param("barcodeType", "${Product.BarcodeType.EAN13.name}")
+                        .param("barcodeType", Product.BarcodeType.EAN_13.name)
                         .param("categoryUuidList", "${productCategory1Uuid}, ${productCategory2Uuid}"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))

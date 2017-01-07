@@ -60,7 +60,7 @@ open class ProductScanTest : BaseRestTest() {
         client1DeviceId = createAndSaveClient()
         client2DeviceId = createAndSaveClient()
 
-        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN13)
+        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN_13)
         product2Uuid = createAndSaveProduct(client2DeviceId, "12345678b", Product.BarcodeType.UPC)
 
         productCategory1Uuid = createAndSaveProductCategory(client1DeviceId, "Test category 1", product1Uuid)
@@ -105,6 +105,7 @@ open class ProductScanTest : BaseRestTest() {
         mockMvc().perform(
                 post(serviceEndpoint(""))
                         .param("barcode", "12345678a")
+                        .param("barcodeType", Product.BarcodeType.EAN_13.name)
                         .header("X-Auth-DeviceId", client1DeviceId)
                         .param("latitude", "" + location1.latitude)
                         .param("longitude", "" + location1.longitude))
@@ -154,7 +155,7 @@ open class ProductScanTest : BaseRestTest() {
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.scan.product.uuid", notNullValue()))
                 .andExpect(jsonPath("$.scan.product.name", `is`("")))
-                .andExpect(jsonPath("$.scan.product.editableItems.name.trustScore", `is`(0.5)))
+                .andExpect(jsonPath("$.scan.product.editableItems[0].trustScore", `is`(0.5)))
                 .andReturn().response.contentAsString
         val productUuid = JsonPath.read<String>(json, "$.scan.product.uuid")
 
@@ -168,7 +169,7 @@ open class ProductScanTest : BaseRestTest() {
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.scan.product.uuid", `is`(productUuid)))
                 .andExpect(jsonPath("$.scan.product.name", `is`("")))
-                .andExpect(jsonPath("$.scan.product.editableItems.name.trustScore", `is`(0.5)))
+                .andExpect(jsonPath("$.scan.product.editableItems[0].trustScore", `is`(0.5)))
     }
 
     /**
@@ -247,7 +248,8 @@ open class ProductScanTest : BaseRestTest() {
                 hashMapOf(
                         "X-Auth-DeviceId" to client1DeviceId),
                 hashMapOf(
-                        "barcode" to "12345678a"),
+                        "barcode" to "12345678a",
+                        "barcodeType" to "EAN_13"),
                 "$.scan.uuid")
     }
 

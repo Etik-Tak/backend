@@ -30,10 +30,12 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
+import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.product.ProductService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
@@ -43,23 +45,25 @@ import java.util.*
 @RequestMapping("/service/product/scan")
 class ProductScanRestController @Autowired constructor(
         private val productService: ProductService,
+        private val companyService: CompanyService,
         private val clientService: ClientService) : BaseRestController() {
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.POST))
     fun scanProduct(
             @RequestParam barcode: String,
+            @RequestParam(required = false) barcodeType: Product.BarcodeType? = null,
             @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam(required = false) latitude: Double? = null,
             @RequestParam(required = false) longitude: Double? = null): HashMap<String, Any> {
 
         val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 
-        val productScanResult = productService.scanProduct(client, barcode, latitude, longitude)
+        val productScanResult = productService.scanProduct(client, barcode, barcodeType, latitude, longitude)
 
         return okMap()
                 .add("scan", hashMapOf<String, Any>()
                         .add("uuid", productScanResult.productScan.uuid)
-                        .add(productScanResult.product, client, productService)
+                        .add(productScanResult.product, client, productService, companyService)
                         .add("recommendations", productScanResult.recommendations, { recommendation -> hashMapOf<String, Any>()
                                 .add("uuid", recommendation.uuid)
                                 .add("summary", recommendation.summary)

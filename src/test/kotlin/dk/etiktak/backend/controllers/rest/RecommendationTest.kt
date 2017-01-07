@@ -61,8 +61,8 @@ class RecommendationTest : BaseRestTest() {
         infoChannel1Uuid = createAndSaveInfoChannel(client1DeviceId)
         infoChannel2Uuid = createAndSaveInfoChannel(client2DeviceId)
 
-        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN13)
-        product2Uuid = createAndSaveProduct(client2DeviceId, "12345678b", Product.BarcodeType.EAN13)
+        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN_13)
+        product2Uuid = createAndSaveProduct(client2DeviceId, "12345678b", Product.BarcodeType.EAN_13)
 
         productCategory1Uuid = createAndSaveProductCategory(client1DeviceId, product1Uuid)
         productCategory2Uuid = createAndSaveProductCategory(client2DeviceId, product2Uuid)

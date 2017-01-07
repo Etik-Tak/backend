@@ -57,7 +57,7 @@ class TrustTest : BaseRestTest() {
         client1DeviceId = createAndSaveClient()
         client2DeviceId = createAndSaveClient()
 
-        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN13, "Test product 1")
+        product1Uuid = createAndSaveProduct(client1DeviceId, "12345678a", Product.BarcodeType.EAN_13, "Test product 1")
         product2Uuid = createAndSaveProduct(client2DeviceId, "12345678b", Product.BarcodeType.UPC, "Test product 2")
     }
 
@@ -164,7 +164,7 @@ class TrustTest : BaseRestTest() {
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.product.editableItems.name.trustScore", `is`(0.7)))
+                .andExpect(jsonPath("$.product.editableItems[0].trustScore", `is`(0.7)))
     }
 
     /**
