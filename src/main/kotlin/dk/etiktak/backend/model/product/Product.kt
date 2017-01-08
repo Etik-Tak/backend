@@ -38,7 +38,7 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "products")
-class Product constructor() : BaseModel() {
+class Product : BaseModel() {
 
     enum class BarcodeType {
         EAN_13,

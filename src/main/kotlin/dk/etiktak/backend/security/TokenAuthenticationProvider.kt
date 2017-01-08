@@ -49,6 +49,6 @@ open class TokenAuthenticationProvider @Autowired constructor(
     }
 
     override fun supports(authentication: Class<*>?): Boolean {
-        return authentication!!.equals(PreAuthenticatedAuthenticationToken::class.java)
+        return authentication!! == PreAuthenticatedAuthenticationToken::class.java
     }
 }

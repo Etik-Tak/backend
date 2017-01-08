@@ -84,7 +84,7 @@ open class ContributionService @Autowired constructor(
     fun assertReferenceContributionNotPresent(subjectUuid: String, referenceUuid: String) {
         val contributions = referenceContributionRepository.findBySubjectUuidAndReferenceUuidAndEnabled(subjectUuid, referenceUuid)
         Assert.isTrue(
-                contributions.size == 0,
+                contributions.isEmpty(),
                 "Contribution with subject UUID $subjectUuid and reference UUID $referenceUuid already present")
     }
 
@@ -218,7 +218,7 @@ open class ContributionService @Autowired constructor(
 
         // Clients cannot vote on their own contribution
         Assert.isTrue(
-                !contribution.client.uuid.equals(client.uuid),
+                contribution.client.uuid != client.uuid,
                 "Client with uuid ${client.uuid} cannot vote on his own contribution with uuid ${contribution.uuid}"
         )
 
@@ -398,6 +398,6 @@ open class ContributionService @Autowired constructor(
                 contributions.size <= 1,
                 "Expected only one active contribution, but found ${contributions.size}"
         )
-        return if (contributions.size > 0) contributions[0] else null
+        return if (contributions.isNotEmpty()) contributions[0] else null
     }
 }

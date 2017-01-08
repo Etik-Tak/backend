@@ -103,7 +103,7 @@ open class ClientService @Autowired constructor(
         val deviceId = CryptoUtil().uuid()
 
         // Create device
-        var device = ClientDevice()
+        val device = ClientDevice()
         device.uuid = CryptoUtil().uuid()
         device.idHashed = CryptoUtil().hash(deviceId)
 

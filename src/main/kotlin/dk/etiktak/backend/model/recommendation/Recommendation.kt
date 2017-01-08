@@ -44,7 +44,7 @@ import javax.validation.constraints.NotNull
         UniqueConstraint(columnNames = arrayOf("product_category_id", "info_channel_id")),
         UniqueConstraint(columnNames = arrayOf("product_label_id", "info_channel_id")),
         UniqueConstraint(columnNames = arrayOf("product_tag_id", "info_channel_id"))))
-open class Recommendation constructor() : BaseModel() {
+open class Recommendation : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

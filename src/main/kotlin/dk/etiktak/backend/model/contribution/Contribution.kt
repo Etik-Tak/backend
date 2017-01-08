@@ -30,7 +30,6 @@
 package dk.etiktak.backend.model.contribution
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
@@ -38,7 +37,7 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "contributions")
-open class Contribution constructor() : BaseModel() {
+open class Contribution : BaseModel() {
 
     enum class ContributionType {
         ProductName,

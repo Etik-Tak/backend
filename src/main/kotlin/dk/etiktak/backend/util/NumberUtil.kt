@@ -31,7 +31,6 @@ import java.math.RoundingMode
 /**
  * Returns a double with the given decimal precision.
  *
- * @param value     Value
  * @param places    Decimal places
  * @return          Value with given precision
  */

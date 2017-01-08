@@ -45,7 +45,6 @@ open class UsernamePasswordAuthenticationProvider @Autowired constructor(
         val username: String? = authentication.principal as String
         val password: String? = authentication.credentials as String
 
-        System.out.println("a");
         if (username == null || password == null) {
             throw BadCredentialsException("Both username and password must be provided")
         }

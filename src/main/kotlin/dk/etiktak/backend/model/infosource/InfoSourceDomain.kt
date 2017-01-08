@@ -35,7 +35,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "info_source_domains")
-class InfoSourceDomain constructor() : BaseModel() {
+class InfoSourceDomain : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

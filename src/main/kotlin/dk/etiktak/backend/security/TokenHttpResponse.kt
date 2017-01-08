@@ -32,9 +32,6 @@ open class TokenHttpResponse {
     @JsonProperty
     private var token: String? = null
 
-    constructor() {
-    }
-
     constructor(token: String) {
         this.token = token
     }

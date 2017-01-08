@@ -91,8 +91,8 @@ class ProductCategoryRestController @Autowired constructor(
             @RequestParam productCategoryUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
 
-        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
-        var productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: return notFoundMap("Product category")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
+        val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: return notFoundMap("Product category")
 
         productCategoryService.trustVoteProductCategoryName(client, productCategory, vote)
 

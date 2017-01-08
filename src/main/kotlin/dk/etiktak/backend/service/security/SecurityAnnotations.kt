@@ -36,11 +36,11 @@ import org.springframework.stereotype.Component
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-public annotation class ClientVerified ()
+annotation class ClientVerified
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-public annotation class ClientValid ()
+annotation class ClientValid
 
 
 

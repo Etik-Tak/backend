@@ -62,8 +62,8 @@ open class BaseRestController {
     /**
      * Return a hashmap where illegal invocation message has been set.
      *
-     * @param entity   Optional message
-     * @return         Hash map
+     * @param message Optional message
+     * @return        Hash map
      */
     fun illegalInvocationMap(message: String = WebserviceResult.IllegalInvocation.message) : HashMap<String, Any> {
         return hashMapOf<String, Any>()

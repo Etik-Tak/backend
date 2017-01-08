@@ -35,7 +35,6 @@ import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.util.*

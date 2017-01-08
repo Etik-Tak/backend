@@ -35,7 +35,7 @@ open class TokenCacheEntry {
     @JsonProperty
     var creationTime: Long? = null
 
-    constructor() {
+    constructor() { // Used for json deserilization
     }
 
     constructor(clientUuid: String, creationTime: Long) {

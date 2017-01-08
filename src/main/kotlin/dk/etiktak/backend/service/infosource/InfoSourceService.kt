@@ -33,7 +33,6 @@ import dk.etiktak.backend.model.infosource.InfoSourceDomain
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.infosource.InfoSourceRepository
 import dk.etiktak.backend.repository.infosource.InfoSourceDomainRepository
-import dk.etiktak.backend.repository.user.ClientRepository
 import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.service.trust.ContributionService
 import dk.etiktak.backend.util.CryptoUtil

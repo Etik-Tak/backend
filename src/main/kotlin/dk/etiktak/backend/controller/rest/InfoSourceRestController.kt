@@ -102,8 +102,8 @@ class InfoSourceRestController @Autowired constructor(
             @RequestParam infoSourceUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
 
-        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
-        var infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid) ?: return notFoundMap("Info source")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
+        val infoSource = infoSourceService.getInfoSourceByUuid(infoSourceUuid) ?: return notFoundMap("Info source")
 
         infoSourceService.trustVoteInfoSourceName(client, infoSource, vote)
 

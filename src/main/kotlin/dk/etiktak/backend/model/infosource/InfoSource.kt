@@ -36,7 +36,7 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "info_sources")
-class InfoSource constructor() : BaseModel() {
+class InfoSource : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

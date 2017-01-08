@@ -37,7 +37,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "info_channel_clients")
-class InfoChannelClient constructor() : BaseModel() {
+class InfoChannelClient : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

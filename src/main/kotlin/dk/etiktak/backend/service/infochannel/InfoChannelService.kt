@@ -142,11 +142,6 @@ open class InfoChannelService @Autowired constructor(
      * @return              True, if client is member of info channel, else false
      */
     open fun isClientMemberOfInfoChannel(client: Client, infoChannel: InfoChannel): Boolean {
-        for (infoChannelClient in infoChannel.infoChannelClients) {
-            if (infoChannelClient.client.uuid.equals(client.uuid)) {
-                return true
-            }
-        }
-        return false
+        return infoChannel.infoChannelClients.any { it.client.uuid == client.uuid }
     }
 }

@@ -28,7 +28,6 @@ package dk.etiktak.backend.security
 import com.fasterxml.jackson.databind.ObjectMapper
 import dk.etiktak.backend.config.WebSecurityConfig
 import dk.etiktak.backend.model.user.Client
-import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.MDC
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.authentication.AuthenticationManager
@@ -42,13 +41,11 @@ import org.springframework.util.StringUtils
 import org.springframework.web.filter.GenericFilterBean
 import org.springframework.web.util.UrlPathHelper
 import java.io.IOException
-import java.util.*
 import javax.servlet.FilterChain
 import javax.servlet.ServletException
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletRequestWrapper
 import javax.servlet.http.HttpServletResponse
 
 open class AuthenticationFilter constructor(
@@ -176,6 +173,6 @@ open class AuthenticationFilter constructor(
     }
 
     private fun isPostToAuthenticate(httpRequest: HttpServletRequest, resourcePath: String): Boolean {
-        return WebSecurityConfig.authenticationEndpoint.equals(resourcePath) && httpRequest.method == "POST"
+        return WebSecurityConfig.authenticationEndpoint == resourcePath && httpRequest.method == "POST"
     }
 }

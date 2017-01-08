@@ -92,37 +92,25 @@ class ProductRestController @Autowired constructor(
         // List of product categories
         val productCategories = ArrayList<ProductCategory>()
         categoryUuidList?.let {
-            for (productCategoryUuid in categoryUuidList) {
-                val productCategory = productCategoryService.getProductCategoryByUuid(productCategoryUuid) ?: continue
-                productCategories.add(productCategory)
-            }
+            categoryUuidList.mapNotNullTo(productCategories) { productCategoryService.getProductCategoryByUuid(it) }
         }
 
         // List of product labels
         val productLabels = ArrayList<ProductLabel>()
         labelUuidList?.let {
-            for (productLabelUuid in labelUuidList) {
-                val productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: continue
-                productLabels.add(productLabel)
-            }
+            labelUuidList.mapNotNullTo(productLabels) { productLabelService.getProductLabelByUuid(it) }
         }
 
         // List of product tags
         val productTags = ArrayList<ProductTag>()
         tagUuidList?.let {
-            for (productTagUuid in tagUuidList) {
-                val productTag = productTagService.getProductTagByUuid(productTagUuid) ?: continue
-                productTags.add(productTag)
-            }
+            tagUuidList.mapNotNullTo(productTags) { productTagService.getProductTagByUuid(it) }
         }
 
         // List of companies
         val companies = ArrayList<Company>()
         companyUuidList?.let {
-            for (companyUuid in companyUuidList) {
-                val company = companyService.getCompanyByUuid(companyUuid) ?: continue
-                companies.add(company)
-            }
+            companyUuidList.mapNotNullTo(companies) { companyService.getCompanyByUuid(it) }
         }
 
         // Create product
@@ -225,8 +213,8 @@ class ProductRestController @Autowired constructor(
             @RequestParam productUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
 
-        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
-        var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
+        val product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
 
         productService.trustVoteProductName(client, product, vote)
 

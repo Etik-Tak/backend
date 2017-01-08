@@ -50,7 +50,7 @@ import javax.validation.constraints.NotNull
 @Entity(name = "clients")
 @Table(uniqueConstraints = arrayOf(
         UniqueConstraint(columnNames = arrayOf("username", "passwordHashed"))))
-class Client constructor() {
+class Client {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

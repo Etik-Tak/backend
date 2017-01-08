@@ -34,7 +34,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "client_devices")
-class ClientDevice constructor() {
+class ClientDevice {
 
     enum class DeviceType {
         Android,

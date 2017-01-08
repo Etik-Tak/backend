@@ -36,7 +36,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "product_categories")
-class ProductCategory constructor() : BaseModel() {
+class ProductCategory : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

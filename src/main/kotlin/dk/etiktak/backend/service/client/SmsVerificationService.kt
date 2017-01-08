@@ -71,7 +71,7 @@ open class SmsVerificationService @Autowired constructor(
         logger.info("Requesting new SMS challenge for user with mobile number: $mobileNumber")
 
         // Fetch existing SMS verification, if any
-        var smsVerification: SmsVerification?
+        val smsVerification: SmsVerification?
 
         // Fetch existing mobile number, if any
         val mobile = mobileNumberRepository.findByMobileNumberHash(CryptoUtil().hash(mobileNumber))
@@ -178,7 +178,7 @@ open class SmsVerificationService @Autowired constructor(
                 "SMS verification has wrong status. Expected SENT but was '" + smsVerification.status.name + "'")
 
         Assert.isTrue(
-                smsVerification.mobileNumberHash.equals(CryptoUtil().hash(mobileNumber)),
+                smsVerification.mobileNumberHash == CryptoUtil().hash(mobileNumber),
                 "SMS verification does not belong to given mobile number: $mobileNumber")
 
         // Verify client
@@ -192,7 +192,7 @@ open class SmsVerificationService @Autowired constructor(
         challengedClient!!
 
         Assert.isTrue(
-                client.uuid.equals(challengedClient.uuid),
+                client.uuid == challengedClient.uuid,
                 "Given client with UUID: ${client.uuid} not the one challenged!")
 
         // Change status of SMS verification

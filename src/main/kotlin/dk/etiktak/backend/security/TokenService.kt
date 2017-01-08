@@ -27,7 +27,6 @@ package dk.etiktak.backend.security
 
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.user.ClientRepository
-import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled

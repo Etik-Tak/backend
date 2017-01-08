@@ -37,7 +37,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "product_scans")
-class ProductScan constructor() : BaseModel() {
+class ProductScan : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

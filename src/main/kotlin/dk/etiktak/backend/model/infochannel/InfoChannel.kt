@@ -37,7 +37,7 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 
 @Entity(name = "info_channels")
-class InfoChannel constructor() : BaseModel() {
+class InfoChannel : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -280,9 +280,7 @@ fun <T> HashMap<String, T>.add(jsonKey: String, condition: () -> Boolean, entity
 fun <T> HashMap<String, Any>.add(jsonKey: String, entities: Collection<T>?, transformer: (T) -> Any) : HashMap<String, Any> {
     entities?.let {
         val list: MutableList<Any> = arrayListOf()
-        for (entity in entities) {
-            list.add(transformer(entity))
-        }
+        entities.mapTo(list) { transformer(it) }
         this[jsonKey] = list
     }
     return this

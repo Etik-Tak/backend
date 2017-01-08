@@ -60,7 +60,7 @@ class ClientRestController @Autowired constructor(
             @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam(required = false) deviceType: ClientDevice.DeviceType? = ClientDevice.DeviceType.Unknown): HashMap<String, Any> {
 
-        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 
         val deviceId = clientService.createDevice(client, deviceType)
 

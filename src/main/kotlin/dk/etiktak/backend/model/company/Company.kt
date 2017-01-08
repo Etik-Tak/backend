@@ -37,7 +37,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "companies")
-class Company constructor() : BaseModel() {
+class Company : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

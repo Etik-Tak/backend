@@ -26,12 +26,12 @@
 package dk.etiktak.backend.bootstrap
 
 import org.slf4j.LoggerFactory
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.stereotype.Component;
+import org.springframework.context.ApplicationListener
+import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.stereotype.Component
 
 @Component
-class ApplicationStartup : ApplicationListener<ContextRefreshedEvent> {
+open class ApplicationStartup : ApplicationListener<ContextRefreshedEvent> {
 
     private val logger = LoggerFactory.getLogger(ApplicationStartup::class.java)
 

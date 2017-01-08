@@ -91,8 +91,8 @@ open class ProductLabelRestController @Autowired constructor(
             @RequestParam productLabelUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {
 
-        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
-        var productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: return notFoundMap("Product label")
+        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
+        val productLabel = productLabelService.getProductLabelByUuid(productLabelUuid) ?: return notFoundMap("Product label")
 
         productLabelService.trustVoteProductLabelName(client, productLabel, vote)
 

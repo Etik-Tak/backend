@@ -37,7 +37,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "info_source_reference")
-class InfoSourceReference constructor() : BaseModel() {
+class InfoSourceReference : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

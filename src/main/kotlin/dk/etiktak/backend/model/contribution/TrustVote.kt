@@ -38,7 +38,7 @@ import javax.persistence.*
 @Entity(name = "trust_votes")
 @Table(uniqueConstraints = arrayOf(
         UniqueConstraint(columnNames = arrayOf("client_id", "contribution_id"))))
-open class TrustVote constructor() : BaseModel() {
+open class TrustVote : BaseModel() {
 
     enum class TrustVoteType {
         Trusted,

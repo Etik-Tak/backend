@@ -30,14 +30,13 @@
 package dk.etiktak.backend.model.infochannel
 
 import dk.etiktak.backend.model.BaseModel
-import dk.etiktak.backend.model.acl.AclRole
 import dk.etiktak.backend.model.user.Client
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
 @Entity(name = "info_channel_followers")
-class InfoChannelFollower constructor() : BaseModel() {
+class InfoChannelFollower : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

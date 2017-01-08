@@ -78,7 +78,7 @@ open class InfoChannelTest : BaseRestTest() {
      */
     @Test
     @Transactional
-    fun followInfoChannel() {
+    open fun followInfoChannel() {
         // TODO! Fix test! Make not transactional!
 
         // Create info channels

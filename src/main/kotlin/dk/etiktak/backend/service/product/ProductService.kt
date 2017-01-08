@@ -129,28 +129,28 @@ open class ProductService @Autowired constructor(
                 modifyValues = {modifiedClient, modifiedProduct -> client = modifiedClient; product = modifiedProduct})
 
         // Assign categories
-        var modifiedCategories: MutableList<ProductCategory> = arrayListOf()
+        val modifiedCategories: MutableList<ProductCategory> = arrayListOf()
         for (productCategory in categories) {
             assignCategoryToProduct(client, product, productCategory,
                     modifyValues = {modifiedClient, modifiedProduct, modifiedCategory -> client = modifiedClient; product = modifiedProduct; modifiedCategories.add(modifiedCategory) })
         }
 
         // Assign labels
-        var modifiedLabels: MutableList<ProductLabel> = arrayListOf()
+        val modifiedLabels: MutableList<ProductLabel> = arrayListOf()
         for (productLabel in labels) {
             assignLabelToProduct(client, product, productLabel,
                     modifyValues = { modifiedClient, modifiedProduct, modifiedLabel -> client = modifiedClient; product = modifiedProduct; modifiedLabels.add(modifiedLabel)})
         }
 
         // Assign tags
-        var modifiedTags: MutableList<ProductTag> = arrayListOf()
+        val modifiedTags: MutableList<ProductTag> = arrayListOf()
         for (productTag in tags) {
             assignTagToProduct(client, product, productTag,
                     modifyValues = { modifiedClient, modifiedProduct, modifiedTag -> client = modifiedClient; product = modifiedProduct; modifiedTags.add(modifiedTag)})
         }
 
         // Assign companies
-        var modifiedCompanies: MutableList<Company> = arrayListOf()
+        val modifiedCompanies: MutableList<Company> = arrayListOf()
         for (company in companies) {
             assignCompanyToProduct(client, product, company,
                     modifyValues = {modifiedClient, modifiedProduct, modifiedCompany -> client = modifiedClient; product = modifiedProduct; modifiedCompanies.add(modifiedCompany)})
@@ -396,7 +396,7 @@ open class ProductService @Autowired constructor(
     @ClientValid
     open fun assignLocationToProductScan(client: Client, productScan: ProductScan, latitude: Double, longitude: Double, modifyValues: (ProductScan) -> Unit = {}) {
         Assert.isTrue(
-                client.uuid.equals(productScan.client.uuid),
+                client.uuid == productScan.client.uuid,
                 "Client with UUID ${client.uuid} not owner of object. Owner has UUID ${productScan.client.uuid}"
         )
 

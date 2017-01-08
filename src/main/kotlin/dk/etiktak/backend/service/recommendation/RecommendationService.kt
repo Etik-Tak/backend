@@ -27,7 +27,6 @@ package dk.etiktak.backend.service.recommendation
 
 import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.infochannel.InfoChannel
-import dk.etiktak.backend.model.infosource.InfoSourceReference
 import dk.etiktak.backend.model.product.Product
 import dk.etiktak.backend.model.product.ProductCategory
 import dk.etiktak.backend.model.product.ProductLabel
@@ -36,7 +35,6 @@ import dk.etiktak.backend.model.recommendation.*
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
 import dk.etiktak.backend.repository.infochannel.InfoChannelRepository
-import dk.etiktak.backend.repository.infosource.InfoSourceReferenceRepository
 import dk.etiktak.backend.repository.product.ProductCategoryRepository
 import dk.etiktak.backend.repository.product.ProductLabelRepository
 import dk.etiktak.backend.repository.product.ProductRepository
@@ -52,7 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
-import org.springframework.util.StringUtils
 import java.util.*
 
 @Service
@@ -329,7 +326,7 @@ open class RecommendationService @Autowired constructor(
                 "Info channel with UUID ${infoChannel.uuid} already has a recommandation for company with uuid: ${company.uuid}")
 
         // Create recommendation
-        var recommendation = CompanyRecommendation()
+        val recommendation = CompanyRecommendation()
         recommendation.company = company
 
         setupRecommendation(client, infoChannel, recommendation, summary, score)
@@ -378,7 +375,7 @@ open class RecommendationService @Autowired constructor(
 
         // Check that at least one info source reference is given
         Assert.isTrue(
-                infoSourceReferenceUrls.size > 0,
+                infoSourceReferenceUrls.isNotEmpty(),
                 "At least one info source reference URL must be provided in order to create recommendation")
 
         for (infoSourceReferenceUrl in infoSourceReferenceUrls) {
@@ -387,42 +384,22 @@ open class RecommendationService @Autowired constructor(
     }
 
     open fun followedInfoChannelsFromClient(client: Client): List<InfoChannel> {
-        val infoChannels: MutableList<InfoChannel> = ArrayList()
-        for (infoChannelFollower in client.followingInfoChannels) {
-            infoChannels.add(infoChannelFollower.infoChannel)
-        }
-        return infoChannels
+        return client.followingInfoChannels.mapTo(ArrayList()) { it.infoChannel }
     }
 
     open fun infoChannelListToUuidList(infoChannels: List<InfoChannel>): List<String> {
-        val infoChannelUuids: MutableList<String> = ArrayList()
-        for (infoChannel in infoChannels) {
-            infoChannelUuids.add(infoChannel.uuid)
-        }
-        return infoChannelUuids
+        return infoChannels.mapTo(ArrayList()) { it.uuid }
     }
 
     open fun productCategoryListToUuidList(productCategories: Set<ProductCategory>): List<String> {
-        val productCategoryUuids: MutableList<String> = ArrayList()
-        for (productCategory in productCategories) {
-            productCategoryUuids.add(productCategory.uuid)
-        }
-        return productCategoryUuids
+        return productCategories.mapTo(ArrayList()) { it.uuid }
     }
 
     open fun productLabelListToUuidList(productLabels: Set<ProductLabel>): List<String> {
-        val productLabelUuids: MutableList<String> = ArrayList()
-        for (productLabel in productLabels) {
-            productLabelUuids.add(productLabel.uuid)
-        }
-        return productLabelUuids
+        return productLabels.mapTo(ArrayList()) { it.uuid }
     }
 
     open fun productTagListToUuidList(productTags: Set<ProductTag>): List<String> {
-        val productTagUuids: MutableList<String> = ArrayList()
-        for (productTag in productTags) {
-            productTagUuids.add(productTag.uuid)
-        }
-        return productTagUuids
+        return productTags.mapTo(ArrayList()) { it.uuid }
     }
 }

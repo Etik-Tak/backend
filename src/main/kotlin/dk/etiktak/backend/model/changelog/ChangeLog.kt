@@ -36,7 +36,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "change_logs")
-open class ChangeLog constructor() : BaseModel() {
+open class ChangeLog : BaseModel() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

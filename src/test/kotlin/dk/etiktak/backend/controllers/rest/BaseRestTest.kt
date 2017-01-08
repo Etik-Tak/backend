@@ -196,7 +196,7 @@ open class BaseRestTest {
     val changeLogRepository: ChangeLogRepository? = null
 
     @get:Rule
-    val exception = ExpectedException.none()
+    val exception: ExpectedException = ExpectedException.none()
 
 
 

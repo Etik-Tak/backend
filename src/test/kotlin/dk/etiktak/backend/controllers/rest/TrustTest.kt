@@ -191,7 +191,7 @@ class TrustTest : BaseRestTest() {
         })
 
         // Make another client edit on product name
-        var initialClientTrust = clientTrustLevel(client1DeviceId)
+        val initialClientTrust = clientTrustLevel(client1DeviceId)
 
         mockMvc().perform(
                 post(serviceEndpoint("edit/"))
@@ -203,7 +203,7 @@ class TrustTest : BaseRestTest() {
         // Check trust unaffected
         Assert.isTrue(
                 clientTrustLevel(client1DeviceId) == initialClientTrust,
-                "Client trust level expected to be the same as before edit: ${initialClientTrust}, but was ${clientTrustLevel(client1DeviceId)}"
+                "Client trust level expected to be the same as before edit: $initialClientTrust, but was ${clientTrustLevel(client1DeviceId)}"
         )
 
         // Perform 5 trusted votes on product name and see that trust stays the same
@@ -237,7 +237,7 @@ class TrustTest : BaseRestTest() {
                     .andExpect(status().isOk)
 
             // Assert
-            assertion(productNameTrustLevel(productUuid) - currentProductTrust, clientTrustLevel(deviceId) - currentClientTrust);
+            assertion(productNameTrustLevel(productUuid) - currentProductTrust, clientTrustLevel(deviceId) - currentClientTrust)
 
             // Update trust
             currentClientTrust = clientTrustLevel(deviceId)

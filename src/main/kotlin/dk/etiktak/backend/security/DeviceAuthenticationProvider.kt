@@ -45,7 +45,7 @@ open class DeviceAuthenticationProvider @Autowired constructor(
     override fun authenticate(authentication: Authentication): Authentication {
         val deviceId : String = authentication.principal as String? ?: throw BadCredentialsException("Invalid device ID")
 
-        logger.info("Authenticating with device ID: ${deviceId}")
+        logger.info("Authenticating with device ID: $deviceId")
 
         val client = clientService.getByDeviceId(deviceId) ?: throw BadCredentialsException("Invalid device ID")
 
@@ -55,6 +55,6 @@ open class DeviceAuthenticationProvider @Autowired constructor(
     }
 
     override fun supports(authentication: Class<*>?): Boolean {
-        return authentication!!.equals(DeviceAuthenticationToken::class.java)
+        return authentication!! == DeviceAuthenticationToken::class.java
     }
 }
