@@ -199,7 +199,7 @@ open class InfoSourceService @Autowired constructor(
      * @return            Yes, if the given client can edit the name of the info source, or else false
      */
     open fun canEditInfoSourceName(client: Client, infoSource: InfoSource): Boolean {
-        return contributionService.hasSufficientTrustToEditContribution(client, infoSourceNameContribution(infoSource))
+        return client.verified && contributionService.hasSufficientTrustToEditContribution(client, infoSourceNameContribution(infoSource))
     }
 
     /**

@@ -129,7 +129,7 @@ open class CompanyService @Autowired constructor(
      * @return          Yes,if the given client can edit the name of the company, or else false
      */
     open fun canEditCompanyName(client: Client, company: Company): Boolean {
-        return contributionService.hasSufficientTrustToEditContribution(client, companyNameContribution(company))
+        return client.verified && contributionService.hasSufficientTrustToEditContribution(client, companyNameContribution(company))
     }
 
     /**

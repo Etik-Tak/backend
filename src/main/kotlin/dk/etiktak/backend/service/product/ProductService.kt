@@ -473,7 +473,7 @@ open class ProductService @Autowired constructor(
      * @return          Yes,if the given client can edit the name of the product, or else false
      */
     open fun canEditProductName(client: Client, product: Product): Boolean {
-        return contributionService.hasSufficientTrustToEditContribution(client, productNameContribution(product))
+        return client.verified && contributionService.hasSufficientTrustToEditContribution(client, productNameContribution(product))
     }
 
     /**

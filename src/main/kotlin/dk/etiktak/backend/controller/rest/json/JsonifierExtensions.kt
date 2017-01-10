@@ -172,7 +172,9 @@ fun HashMap<String, Any>.add(infoChannel: InfoChannel): HashMap<String, Any> {
 fun HashMap<String, Any>.add(client: Client): HashMap<String, Any> {
     return add(hashMapOf<String, Any>()
             .add("client", hashMapOf<String, Any>()
-                    .add("uuid", client.uuid)))
+                    .add("uuid", client.uuid)
+                    .add("verified", client.verified)
+                    .add("trustLevel", client.trustLevel)))
 }
 
 fun HashMap<String, Any>.add(smsVerification: SmsVerification): HashMap<String, Any> {

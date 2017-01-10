@@ -138,13 +138,14 @@ open class SmsVerificationService @Autowired constructor(
     /**
      * Verifies a sent SMS challenge. Fails if client cannot be verified or SMS verification cannot be verified.
      *
-     * @param client             Client
+     * @param inClient           Client
      * @param mobileNumber       Mobile number
      * @param smsChallenge       Received SMS challenge
      * @param clientChallenge    Received client challenge
+     * @param modifyValues       Function called with modified client
      * @return                   Verified client
      */
-    open fun verifySmsChallenge(client: Client, mobileNumber: String, smsChallenge: String, clientChallenge: String): Client {
+    open fun verifySmsChallenge(inClient: Client, mobileNumber: String, smsChallenge: String, clientChallenge: String, modifyValues: (Client) -> Unit = { client -> Unit}): Client {
 
         // Check for empty fields
         Assert.isTrue(
@@ -192,17 +193,19 @@ open class SmsVerificationService @Autowired constructor(
         challengedClient!!
 
         Assert.isTrue(
-                client.uuid == challengedClient.uuid,
-                "Given client with UUID: ${client.uuid} not the one challenged!")
+                inClient.uuid == challengedClient.uuid,
+                "Given client with UUID: ${inClient.uuid} not the one challenged!")
 
         // Change status of SMS verification
         smsVerification.status = SmsVerification.SmsVerificationStatus.VERIFIED
         smsVerificationRepository.save(smsVerification)
 
         // Mark client as verified
-        client.verified = true
-        client.smsChallengeHashClientChallengeHashHashed = null
-        clientRepository.save(client)
+        inClient.verified = true
+        inClient.smsChallengeHashClientChallengeHashHashed = null
+        val client = clientRepository.save(inClient)
+
+        modifyValues(client)
 
         logger.info("SMS challenge verified successfully for mobile number: $mobileNumber")
 

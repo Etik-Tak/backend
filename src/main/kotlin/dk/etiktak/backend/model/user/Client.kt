@@ -78,7 +78,7 @@ class Client {
     @Column(name = "role", nullable = false)
     var role: AclRole = AclRole.USER
 
-    @Column(name = "trustScore", nullable = false)
+    @Column(name = "trustLevel", nullable = false)
     var trustLevel: Double = 0.0
 
     @Column(name = "smsChallengeHash_clientChallengeHash_hashed", nullable = true, unique = true)

@@ -119,7 +119,7 @@ open class ProductLabelService @Autowired constructor(
      * @return              Yes, if the given client can edit the name of the product label, or else false
      */
     open fun canEditProductLabelName(client: Client, productLabel: ProductLabel): Boolean {
-        return contributionService.hasSufficientTrustToEditContribution(client, productLabelNameContribution(productLabel))
+        return client.verified && contributionService.hasSufficientTrustToEditContribution(client, productLabelNameContribution(productLabel))
     }
 
     /**

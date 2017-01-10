@@ -119,7 +119,7 @@ open class ProductCategoryService @Autowired constructor(
      * @return                 Yes, if the given client can edit the name of the product category, or else false
      */
     open fun canEditProductCategoryName(client: Client, productCategory: ProductCategory): Boolean {
-        return contributionService.hasSufficientTrustToEditContribution(client, productCategoryNameContribution(productCategory))
+        return client.verified && contributionService.hasSufficientTrustToEditContribution(client, productCategoryNameContribution(productCategory))
     }
 
     /**

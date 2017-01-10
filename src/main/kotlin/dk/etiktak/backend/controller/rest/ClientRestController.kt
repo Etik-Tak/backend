@@ -51,8 +51,11 @@ class ClientRestController @Autowired constructor(
             @RequestParam(required = false) password: String?): HashMap<String, Any> {
 
         val deviceId = clientService.createClient(deviceType ?: ClientDevice.DeviceType.Unknown, username, password)
+        val client = clientService.getByDeviceId(deviceId)
 
-        return okMap().add("device", hashMapOf("id" to deviceId))
+        return okMap()
+                .add("device", hashMapOf("id" to deviceId))
+                .add(client!!)
     }
 
     @RequestMapping(value = "/device/create/", method = arrayOf(RequestMethod.POST))
@@ -64,6 +67,8 @@ class ClientRestController @Autowired constructor(
 
         val deviceId = clientService.createDevice(client, deviceType)
 
-        return okMap().add("device", hashMapOf("id" to deviceId))
+        return okMap()
+                .add("device", hashMapOf("id" to deviceId))
+                .add(client)
     }
 }

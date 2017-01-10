@@ -76,10 +76,11 @@ class SmsVerificationRestController @Autowired constructor(
             @RequestParam smsChallenge: String,
             @RequestParam clientChallenge: String): HashMap<String, Any> {
 
-        val client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
+        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
 
-        smsVerificationService.verifySmsChallenge(client, mobileNumber, smsChallenge, clientChallenge)
+        smsVerificationService.verifySmsChallenge(client, mobileNumber, smsChallenge, clientChallenge,
+                modifyValues = {modifiedClient -> client = modifiedClient})
 
-        return okMap()
+        return okMap().add(client)
     }
 }

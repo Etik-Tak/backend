@@ -142,7 +142,7 @@ open class StoreService @Autowired constructor(
      * @return          Yes,if the given client can edit the name of the store, or else false
      */
     open fun canEditStoreName(client: Client, store: Store): Boolean {
-        return contributionService.hasSufficientTrustToEditContribution(client, storeNameContribution(store))
+        return client.verified && contributionService.hasSufficientTrustToEditContribution(client, storeNameContribution(store))
     }
 
     /**
