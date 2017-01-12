@@ -23,15 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.security
+package dk.etiktak.backend.repository.company
 
-import dk.etiktak.backend.model.acl.AclRole
-import org.springframework.security.core.GrantedAuthority
+import dk.etiktak.backend.model.company.CompanySearchEntry
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.stereotype.Repository
 
-open class AuthenticationAuthority constructor(
-        private val role: AclRole): GrantedAuthority {
-
-    override fun getAuthority(): String? {
-        return role.name
-    }
+@Repository
+interface CompanySearchEntryRepository : PagingAndSortingRepository<CompanySearchEntry, Long> {
+    fun findByName(name: String): CompanySearchEntry?
+    fun findByNameIgnoreCaseContaining(name: String): List<CompanySearchEntry>
 }

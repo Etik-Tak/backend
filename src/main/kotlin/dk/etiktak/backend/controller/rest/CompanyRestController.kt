@@ -55,6 +55,15 @@ class CompanyRestController @Autowired constructor(
         return okMap().add(company, loggedClient, companyService = companyService)
     }
 
+    @RequestMapping(value = "/search/", method = arrayOf(RequestMethod.GET))
+    fun findCompanies(
+            @RequestParam searchString: String): HashMap<String, Any> {
+
+        val companySearchList = companyService.getCompanySearchList(searchString)
+
+        return okMap().add(companySearchList, companyService)
+    }
+
     @RequestMapping(value = "/create/", method = arrayOf(RequestMethod.POST))
     fun createCompany(
             @CurrentlyLoggedClient loggedClient: Client,
@@ -83,8 +92,8 @@ class CompanyRestController @Autowired constructor(
         return okMap().add(company, client, companyService)
     }
 
-    @RequestMapping(value = "/trust/", method = arrayOf(RequestMethod.POST))
-    fun trustVoteCompany(
+    @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
+    fun trustVoteCompanyName(
             @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam companyUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {

@@ -23,15 +23,48 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package dk.etiktak.backend.security
+/**
+ * Represents a list of companies used for searching.
+ */
 
-import dk.etiktak.backend.model.acl.AclRole
-import org.springframework.security.core.GrantedAuthority
+package dk.etiktak.backend.model.company
 
-open class AuthenticationAuthority constructor(
-        private val role: AclRole): GrantedAuthority {
+import dk.etiktak.backend.model.BaseModel
+import org.springframework.format.annotation.DateTimeFormat
+import java.util.*
+import javax.persistence.*
 
-    override fun getAuthority(): String? {
-        return role.name
+@Entity(name = "company_search_entry")
+class CompanySearchEntry : BaseModel() {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "company_id")
+    var id: Long = 0
+
+    @Column(name = "uuid", nullable = false, unique = true)
+    var uuid: String = ""
+
+    @Column(name = "name")
+    var name: String = ""
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var creationTime = Date()
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    var modificationTime = Date()
+
+
+
+    @PreUpdate
+    fun preUpdate() {
+        modificationTime = Date()
+    }
+
+    @PrePersist
+    fun prePersist() {
+        val now = Date()
+        creationTime = now
+        modificationTime = now
     }
 }

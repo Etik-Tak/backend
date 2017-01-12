@@ -47,7 +47,7 @@ class Company : BaseModel() {
     @Column(name = "uuid", nullable = false, unique = true)
     var uuid: String = ""
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false, unique = true)
     var name: String = ""
 
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)

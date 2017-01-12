@@ -27,6 +27,7 @@ package dk.etiktak.backend.controllers.rest
 
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
+import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -87,5 +88,25 @@ class CompanyTest : BaseRestTest() {
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.company.uuid", `is`(company1Uuid)))
                 .andExpect(jsonPath("$.company.name", `is`("Pepsi Cola")))
+    }
+
+    /**
+     * Test that we can search companies by name.
+     */
+    @Test
+    fun searchCompanies() {
+        company1Uuid = createAndSaveCompany(client1DeviceId, "BKI Kaffe")
+        company2Uuid = createAndSaveCompany(client1DeviceId, "Merrild Kaffe")
+
+        mockMvc().perform(
+                get(serviceEndpoint("search/"))
+                        .param("searchString", "kaffe"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.companies", Matchers.hasSize<Any>(3)))
+                .andExpect(jsonPath("$.companies[0].name", `is`("BKI Kaffe")))
+                .andExpect(jsonPath("$.companies[1].name", `is`("Merrild Kaffe")))
+                .andExpect(jsonPath("$.companies[2].name", `is`("Peter Larsens Kaffe")))
     }
 }

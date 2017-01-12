@@ -97,7 +97,7 @@ class InfoSourceRestController @Autowired constructor(
     }
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
-    fun trustVoteProduct(
+    fun trustVoteInfoSourceName(
             @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam infoSourceUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {

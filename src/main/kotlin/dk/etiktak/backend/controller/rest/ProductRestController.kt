@@ -208,7 +208,7 @@ class ProductRestController @Autowired constructor(
     }
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
-    fun trustVoteProduct(
+    fun trustVoteProductName(
             @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam productUuid: String,
             @RequestParam vote: TrustVote.TrustVoteType): HashMap<String, Any> {

@@ -26,24 +26,33 @@
 package dk.etiktak.backend.service.company
 
 import dk.etiktak.backend.model.company.Company
+import dk.etiktak.backend.model.company.CompanySearchEntry
 import dk.etiktak.backend.model.contribution.Contribution
 import dk.etiktak.backend.model.contribution.TextContribution
 import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.repository.company.CompanyRepository
+import dk.etiktak.backend.repository.company.CompanySearchEntryRepository
 import dk.etiktak.backend.service.security.ClientVerified
 import dk.etiktak.backend.service.trust.ContributionService
 import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.util.*
+
 
 @Service
 @Transactional
 open class CompanyService @Autowired constructor(
         private val companyRepository: CompanyRepository,
-        private val contributionService: ContributionService) {
+        private val contributionService: ContributionService,
+        private val companySearchEntryRepository: CompanySearchEntryRepository,
+        private val resourceLoader: ResourceLoader) {
 
     private val logger = LoggerFactory.getLogger(CompanyService::class.java)
 
@@ -55,6 +64,29 @@ open class CompanyService @Autowired constructor(
      */
     open fun getCompanyByUuid(uuid: String): Company? {
         return companyRepository.findByUuid(uuid)
+    }
+
+    /**
+     * Finds a company from the given name.
+     *
+     * @param name  Name
+     * @return      Company with given name
+     */
+    open fun getCompanyByName(name: String): Company? {
+        return companyRepository.findByName(name)
+    }
+
+    /**
+     * Returns company search result matching the given search string.
+     *
+     * @param searchString  Search string
+     * @return              Company search result
+     */
+    open fun getCompanySearchList(searchString: String): List<CompanySearchResult> {
+        val companyEntries = companyRepository.findByNameIgnoreCaseContaining(searchString).map { it -> CompanySearchResult(it.name, company = it) }
+        val companySearchEntries = companySearchEntryRepository.findByNameIgnoreCaseContaining(searchString).map { it -> CompanySearchResult(it.name, company = null) }
+
+        return (companyEntries + companySearchEntries).distinctBy { it -> it.name }
     }
 
     /**
@@ -145,4 +177,31 @@ open class CompanyService @Autowired constructor(
         val contribution = companyNameContribution(company)!!
         return contributionService.trustVoteItem(client, contribution, vote, modifyValues = {client, contribution -> modifyValues(client)})
     }
+
+    /**
+     * Populates search entry table with company names.
+     */
+    open fun populateSearchEntries() {
+        val inputStream = resourceLoader.getResource("classpath:companies.txt").file.inputStream()
+        val bufferedReader = BufferedReader(InputStreamReader(inputStream))
+        val companyNames = bufferedReader.readLines()
+
+        for (name in companyNames) {
+            if (companySearchEntryRepository.findByName(name) != null) {
+                continue
+            }
+
+            // Create company search entry
+            logger.info("Creating company search list entry: " + name)
+
+            val companySearchList = CompanySearchEntry()
+            companySearchList.uuid = CryptoUtil().uuid()
+            companySearchList.name = name
+            companySearchEntryRepository.save(companySearchList)
+        }
+    }
 }
+
+data class CompanySearchResult(
+        val name: String,
+        val company: Company?)

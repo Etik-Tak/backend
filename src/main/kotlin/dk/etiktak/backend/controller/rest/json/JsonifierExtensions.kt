@@ -41,6 +41,7 @@ import dk.etiktak.backend.model.product.ProductTag
 import dk.etiktak.backend.model.recommendation.Recommendation
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.model.user.SmsVerification
+import dk.etiktak.backend.service.company.CompanySearchResult
 import dk.etiktak.backend.service.company.CompanyService
 import dk.etiktak.backend.service.company.StoreService
 import dk.etiktak.backend.service.infosource.InfoSourceService
@@ -95,6 +96,13 @@ fun HashMap<String, Any>.add(store: Store, client: Client? = null, storeService:
                             .add("name", store.name)
                             .add("editable", eval = {storeService.canEditStoreName(client!!, store)})
                             .add("trustScore", eval = {storeService.storeNameContribution(store)?.trustScore}))})))
+}
+
+fun HashMap<String, Any>.add(companySearchList: List<CompanySearchResult>, companyService: CompanyService): HashMap<String, Any> {
+    return add(hashMapOf<String, Any>()
+            .add("companies", companySearchList, { companySearchResult -> hashMapOf<String, Any>()
+                    .add("name", companySearchResult.name)
+                    .add("uuid", companySearchResult.company?.uuid)}))
 }
 
 fun HashMap<String, Any>.add(productCategory: ProductCategory, client: Client? = null, productCategoryService: ProductCategoryService): HashMap<String, Any> {

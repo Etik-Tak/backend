@@ -73,8 +73,8 @@ class RecommendationTest : BaseRestTest() {
         productTag1Uuid = createAndSaveProductTag(client1DeviceId, product1Uuid)
         productTag2Uuid = createAndSaveProductTag(client2DeviceId, product2Uuid)
 
-        company1Uuid = createAndSaveCompany(client1DeviceId)
-        company2Uuid = createAndSaveCompany(client2DeviceId)
+        company1Uuid = createAndSaveCompany(client1DeviceId, name = "Test company 1")
+        company2Uuid = createAndSaveCompany(client2DeviceId, name = "Test company 2")
     }
 
     /**
