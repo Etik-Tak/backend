@@ -71,7 +71,7 @@ open class CompanyService @Autowired constructor(
      * @return      Company with given name
      */
     open fun getCompanyByName(name: String): Company? {
-        return companyRepository.findByName(name)
+        return companyRepository.findByNameIgnoreCase(name)
     }
 
     /**
@@ -185,7 +185,7 @@ open class CompanyService @Autowired constructor(
         val companyNames = bufferedReader.readLines()
 
         for (name in companyNames) {
-            if (companySearchEntryRepository.findByName(name) != null) {
+            if (companySearchEntryRepository.findByNameIgnoreCase(name) != null) {
                 continue
             }
 

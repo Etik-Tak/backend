@@ -28,6 +28,7 @@ package dk.etiktak.backend.controllers.rest
 import dk.etiktak.backend.Application
 import dk.etiktak.backend.controller.rest.WebserviceResult
 import dk.etiktak.backend.model.product.Product
+import org.hamcrest.Matchers
 import org.hamcrest.Matchers.*
 import org.junit.Before
 import org.junit.Test
@@ -190,5 +191,94 @@ class ProductTest : BaseRestTest() {
                 .andExpect(jsonPath("$.product.name", `is`("Coca Cola")))
                 .andExpect(jsonPath("$.product.categories", hasSize<Any>(2)))
                 .andExpect(jsonPath("$.product.labels", hasSize<Any>(0)))
+    }
+
+    /**
+     * Test that we can assign an existing company by UUID.
+     */
+    @Test
+    fun assignExistingCompanyByUuid() {
+        val companyUuid = createAndSaveCompany(client1DeviceId, "Existing company")
+
+        mockMvc().perform(
+                post(serviceEndpoint("assign/company/"))
+                        .header("X-Auth-DeviceId", client1DeviceId)
+                        .param("productUuid", product1Uuid)
+                        .param("companyUuid", companyUuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.product.name", `is`("Test product 1")))
+                .andExpect(jsonPath("$.company.name", `is`("Existing company")))
+
+        assertOnlyOneCompanyFound("Existing company")
+    }
+
+    /**
+     * Test that we can assign an existing company by name (ignoring case).
+     */
+    @Test
+    fun assignExistingCompanyByName() {
+        createAndSaveCompany(client1DeviceId, "Existing company")
+
+        mockMvc().perform(
+                post(serviceEndpoint("assign/company/"))
+                        .header("X-Auth-DeviceId", client1DeviceId)
+                        .param("productUuid", product1Uuid)
+                        .param("companyName", "existing COMPANY"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.product.name", `is`("Test product 1")))
+                .andExpect(jsonPath("$.company.name", `is`("Existing company")))
+
+        assertOnlyOneCompanyFound("Existing company")
+    }
+
+    /**
+     * Test that we can create a new company while assigning company by name, if none with that name exists.
+     */
+    @Test
+    fun assignNewCompanyByName() {
+        mockMvc().perform(
+                post(serviceEndpoint("assign/company/"))
+                        .header("X-Auth-DeviceId", client1DeviceId)
+                        .param("productUuid", product1Uuid)
+                        .param("companyName", "Some New Company"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.product.name", `is`("Test product 1")))
+                .andExpect(jsonPath("$.company.name", `is`("Some New Company")))
+
+        assertOnlyOneCompanyFound("Some New Company")
+    }
+
+    /**
+     * Test that we cannot assign company to product without verified client.
+     */
+    @Test
+    fun cannotAssignCompanyWithNonVerifiedClient() {
+        val clientDeviceId = createAndSaveClient(verified = false)
+
+        exception.expect(NestedServletException::class.java)
+        mockMvc().perform(
+                post(serviceEndpoint("assign/company/"))
+                        .header("X-Auth-DeviceId", clientDeviceId)
+                        .param("productUuid", product1Uuid)
+                        .param("companyName", "Some New Company"))
+    }
+
+
+
+    fun assertOnlyOneCompanyFound(name: String) {
+        mockMvc().perform(
+                get(CompanyTest().serviceEndpoint("search/"))
+                        .param("searchString", name))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.companies", Matchers.hasSize<Any>(1)))
+                .andExpect(jsonPath("$.companies[0].name", `is`(name)))
     }
 }

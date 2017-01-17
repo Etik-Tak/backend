@@ -30,12 +30,14 @@
 package dk.etiktak.backend.controller.rest
 
 import dk.etiktak.backend.controller.rest.json.add
+import dk.etiktak.backend.model.company.Company
 import dk.etiktak.backend.model.contribution.TrustVote
 import dk.etiktak.backend.model.user.Client
 import dk.etiktak.backend.security.CurrentlyLoggedClient
 import dk.etiktak.backend.service.client.ClientService
 import dk.etiktak.backend.service.company.CompanyService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -48,11 +50,29 @@ class CompanyRestController @Autowired constructor(
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getCompany(
             @CurrentlyLoggedClient loggedClient: Client?,
-            @RequestParam uuid: String): HashMap<String, Any> {
+            @RequestParam(required = false) uuid: String?,
+            @RequestParam(required = false) name: String?): HashMap<String, Any> {
 
-        val company = companyService.getCompanyByUuid(uuid) ?: return notFoundMap("Company")
+        // Check parameters
+        if (StringUtils.isEmpty(uuid) && StringUtils.isEmpty(name)) {
+            return illegalInvocationMap("Either 'companyUuid' or 'companyName' must be provided")
+        }
 
-        return okMap().add(company, loggedClient, companyService = companyService)
+        var company: Company? = null
+
+        // Find company by UUID
+        uuid?.let {
+            company = companyService.getCompanyByUuid(uuid) ?: return notFoundMap("Company")
+        }
+
+        // Find company by name
+        name?.let {
+            company = companyService.getCompanyByName(name) ?: return notFoundMap("Company")
+        }
+
+        company?.let {
+            return okMap().add(company!!, loggedClient, companyService = companyService)
+        } ?: return notFoundMap("Company")
     }
 
     @RequestMapping(value = "/search/", method = arrayOf(RequestMethod.GET))

@@ -74,15 +74,32 @@ class CompanyTest : BaseRestTest() {
     }
 
     /**
-     * Test that we can retrieve a company.
+     * Test that we can retrieve a company by UUID.
      */
     @Test
-    fun retrieveCompany() {
+    fun retrieveCompanyByUuid() {
         company1Uuid = createAndSaveCompany(client1DeviceId, "Pepsi Cola")
 
         mockMvc().perform(
                 get(serviceEndpoint(""))
                         .param("uuid", company1Uuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.company.uuid", `is`(company1Uuid)))
+                .andExpect(jsonPath("$.company.name", `is`("Pepsi Cola")))
+    }
+
+    /**
+     * Test that we can retrieve a company by name.
+     */
+    @Test
+    fun retrieveCompanyByName() {
+        company1Uuid = createAndSaveCompany(client1DeviceId, "Pepsi Cola")
+
+        mockMvc().perform(
+                get(serviceEndpoint(""))
+                        .param("name", "pepsi cola"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))

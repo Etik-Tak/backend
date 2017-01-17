@@ -44,7 +44,9 @@ import dk.etiktak.backend.service.product.ProductCategoryService
 import dk.etiktak.backend.service.product.ProductLabelService
 import dk.etiktak.backend.service.product.ProductService
 import dk.etiktak.backend.service.product.ProductTagService
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -57,6 +59,8 @@ class ProductRestController @Autowired constructor(
         private val productTagService: ProductTagService,
         private val companyService: CompanyService,
         private val clientService: ClientService) : BaseRestController() {
+
+    private val logger = LoggerFactory.getLogger(ProductRestController::class.java)
 
     @RequestMapping(value = "/", method = arrayOf(RequestMethod.GET))
     fun getProduct(
@@ -195,16 +199,46 @@ class ProductRestController @Autowired constructor(
     fun assignCompanyToProduct(
             @CurrentlyLoggedClient loggedClient: Client,
             @RequestParam productUuid: String,
-            @RequestParam companyUuid: String): HashMap<String, Any> {
+            @RequestParam(required = false) companyUuid: String?,
+            @RequestParam(required = false) companyName: String?): HashMap<String, Any> {
+
+        // Check parameters
+        if (StringUtils.isEmpty(companyUuid) && StringUtils.isEmpty(companyName)) {
+            return illegalInvocationMap("Either 'companyUuid' or 'companyName' must be provided")
+        }
 
         var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
         var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
-        var company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
+        var company: Company? = null
 
-        productService.assignCompanyToProduct(client, product, company,
-                modifyValues = {modifiedClient, modifiedProduct, modifiedCompany -> client = modifiedClient; product = modifiedProduct; company = modifiedCompany})
+        // Find company by UUID
+        companyUuid?.let {
+            company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
+        }
 
-        return okMap().add(product, client, productService, companyService)
+        // Find company by name
+        companyName?.let {
+            company = companyService.getCompanyByName(companyName)
+
+            // Create new company
+            if (company == null) {
+                logger.info("Creating new company with name $companyName")
+                company = companyService.createCompany(client, companyName, modifyValues = { modifiedClient -> client = modifiedClient })
+            }
+        }
+
+        // Check that we indeed have a company
+        if (company == null) {
+            return notFoundMap("Company")
+        }
+
+        // Assign company
+        productService.assignCompanyToProduct(client, product, company!!,
+                modifyValues = { modifiedClient, modifiedProduct, modifiedCompany -> client = modifiedClient; product = modifiedProduct; company = modifiedCompany })
+
+        return okMap()
+                .add(product, client, productService, companyService)
+                .add(company!!, client, companyService)
     }
 
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))

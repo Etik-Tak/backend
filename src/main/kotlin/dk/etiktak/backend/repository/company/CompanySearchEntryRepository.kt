@@ -31,6 +31,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface CompanySearchEntryRepository : PagingAndSortingRepository<CompanySearchEntry, Long> {
-    fun findByName(name: String): CompanySearchEntry?
+    fun findByNameIgnoreCase(name: String): CompanySearchEntry?
     fun findByNameIgnoreCaseContaining(name: String): List<CompanySearchEntry>
 }
