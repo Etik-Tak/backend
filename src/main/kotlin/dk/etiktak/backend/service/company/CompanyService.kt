@@ -130,7 +130,7 @@ open class CompanyService @Autowired constructor(
         var company = inCompany
 
         // Create contribution
-        val contribution = contributionService.createTextContribution(Contribution.ContributionType.CompanyName, client, company.uuid, name, modifyValues = {modifiedClient -> client = modifiedClient})
+        val contribution = contributionService.createTextContribution(Contribution.ContributionType.EditCompanyName, client, company.uuid, name, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Edit name
         company.name = name
@@ -148,7 +148,7 @@ open class CompanyService @Autowired constructor(
      * @return          Company name contribution
      */
     open fun companyNameContribution(company: Company): TextContribution? {
-        return contributionService.currentTextContribution(Contribution.ContributionType.CompanyName, company.uuid)
+        return contributionService.currentTextContribution(Contribution.ContributionType.EditCompanyName, company.uuid)
     }
 
     /**

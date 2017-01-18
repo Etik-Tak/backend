@@ -99,7 +99,7 @@ open class StoreService @Autowired constructor(
         var store = inStore
 
         // Create contribution
-        val contribution = contributionService.createTextContribution(Contribution.ContributionType.StoreName, client, store.uuid, name, modifyValues = {modifiedClient -> client = modifiedClient})
+        val contribution = contributionService.createTextContribution(Contribution.ContributionType.EditStoreName, client, store.uuid, name, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Edit name
         store.name = name
@@ -121,7 +121,7 @@ open class StoreService @Autowired constructor(
      */
     @ClientVerified
     open fun assignCompanyToStore(client: Client, store: Store, company: Company, modifyValues: (Client) -> Unit = {}): Contribution {
-        return contributionService.createReferenceContribution(Contribution.ContributionType.StoreCompany, client, store.uuid, company.uuid, modifyValues = modifyValues)
+        return contributionService.createReferenceContribution(Contribution.ContributionType.AssignCompanyToStore, client, store.uuid, company.uuid, modifyValues = modifyValues)
     }
 
     /**
@@ -131,7 +131,7 @@ open class StoreService @Autowired constructor(
      * @return          Store name contribution
      */
     open fun storeNameContribution(store: Store): TextContribution? {
-        return contributionService.currentTextContribution(Contribution.ContributionType.StoreName, store.uuid)
+        return contributionService.currentTextContribution(Contribution.ContributionType.EditStoreName, store.uuid)
     }
 
     /**

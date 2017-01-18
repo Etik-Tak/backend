@@ -100,7 +100,7 @@ open class ProductCategoryService @Autowired constructor(
         var productCategory = inProductCategory
 
         // Create contribution
-        val contribution = contributionService.createTextContribution(Contribution.ContributionType.ProductCategoryName, client, productCategory.uuid, name, modifyValues = {modifiedClient -> client = modifiedClient})
+        val contribution = contributionService.createTextContribution(Contribution.ContributionType.EditProductCategoryName, client, productCategory.uuid, name, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Edit name
         productCategory.name = name
@@ -129,7 +129,7 @@ open class ProductCategoryService @Autowired constructor(
      * @return                  Product category name contribution
      */
     open fun productCategoryNameContribution(productCategory: ProductCategory): TextContribution? {
-        return contributionService.currentTextContribution(Contribution.ContributionType.ProductCategoryName, productCategory.uuid)
+        return contributionService.currentTextContribution(Contribution.ContributionType.EditProductCategoryName, productCategory.uuid)
     }
 
     /**

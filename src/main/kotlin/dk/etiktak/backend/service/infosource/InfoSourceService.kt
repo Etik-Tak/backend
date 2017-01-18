@@ -180,7 +180,7 @@ open class InfoSourceService @Autowired constructor(
         var infoSource = inInfoSource
 
         // Create contribution
-        val contribution = contributionService.createTextContribution(Contribution.ContributionType.InfoSourceName, client, infoSource.uuid, name, modifyValues = {modifiedClient -> client = modifiedClient})
+        val contribution = contributionService.createTextContribution(Contribution.ContributionType.EditInfoSourceName, client, infoSource.uuid, name, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Edit name
         infoSource.name = name
@@ -209,7 +209,7 @@ open class InfoSourceService @Autowired constructor(
      * @return            info source name contribution
      */
     open fun infoSourceNameContribution(infoSource: InfoSource): TextContribution? {
-        return contributionService.currentTextContribution(Contribution.ContributionType.InfoSourceName, infoSource.uuid)
+        return contributionService.currentTextContribution(Contribution.ContributionType.EditInfoSourceName, infoSource.uuid)
     }
 
     /**

@@ -211,7 +211,7 @@ class ProductTest : BaseRestTest() {
                 .andExpect(jsonPath("$.product.name", `is`("Test product 1")))
                 .andExpect(jsonPath("$.company.name", `is`("Existing company")))
 
-        assertOnlyOneCompanyFound("Existing company")
+        assertProductHasCompanyAssigned(product1Uuid, "Existing company")
     }
 
     /**
@@ -232,7 +232,7 @@ class ProductTest : BaseRestTest() {
                 .andExpect(jsonPath("$.product.name", `is`("Test product 1")))
                 .andExpect(jsonPath("$.company.name", `is`("Existing company")))
 
-        assertOnlyOneCompanyFound("Existing company")
+        assertProductHasCompanyAssigned(product1Uuid, "Existing company")
     }
 
     /**
@@ -251,7 +251,7 @@ class ProductTest : BaseRestTest() {
                 .andExpect(jsonPath("$.product.name", `is`("Test product 1")))
                 .andExpect(jsonPath("$.company.name", `is`("Some New Company")))
 
-        assertOnlyOneCompanyFound("Some New Company")
+        assertProductHasCompanyAssigned(product1Uuid, "Some New Company")
     }
 
     /**
@@ -269,16 +269,45 @@ class ProductTest : BaseRestTest() {
                         .param("companyName", "Some New Company"))
     }
 
+    /**
+     * Test that we can remove a company from a product.
+     */
+    @Test
+    fun removeCompanyFromProduct() {
+        val companyUuid = createAndSaveCompany(client1DeviceId, "Some Company", product1Uuid)
+        assertProductHasCompanyAssigned(product1Uuid, "Some Company")
 
-
-    fun assertOnlyOneCompanyFound(name: String) {
         mockMvc().perform(
-                get(CompanyTest().serviceEndpoint("search/"))
-                        .param("searchString", name))
+                post(serviceEndpoint("remove/company/"))
+                        .header("X-Auth-DeviceId", client1DeviceId)
+                        .param("productUuid", product1Uuid)
+                        .param("companyUuid", companyUuid))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
-                .andExpect(jsonPath("$.companies", Matchers.hasSize<Any>(1)))
-                .andExpect(jsonPath("$.companies[0].name", `is`(name)))
+                .andExpect(jsonPath("$.product.companies", hasSize<Any>(0)))
+    }
+
+
+
+    fun assertProductHasNoCompanies(productUuid: String) {
+        mockMvc().perform(
+                get(serviceEndpoint(""))
+                        .param("uuid", productUuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.product.companies", hasSize<Any>(0)))
+    }
+
+    fun assertProductHasCompanyAssigned(productUuid: String, companyName: String) {
+        mockMvc().perform(
+                get(serviceEndpoint(""))
+                        .param("uuid", productUuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.product.companies", hasSize<Any>(1)))
+                .andExpect(jsonPath("$.product.companies[0].name", `is`(companyName)))
     }
 }

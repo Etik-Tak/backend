@@ -66,7 +66,7 @@ open class ContributionService @Autowired constructor(
     /**
      * Returns the current text contribution.
      *
-     * @param contributionType  Contribution type, fx. CompanyName
+     * @param contributionType  Contribution type, fx. EditCompanyName
      * @param subjectUuid       Subject UUID, fx. company UUID
      * @return                  Current text contribution
      */
@@ -78,11 +78,12 @@ open class ContributionService @Autowired constructor(
     /**
      * Asserts that a contribution with given subject UUID and reference UUID is not already present.
      *
-     * @param subjectUuid     Subject UUID, fx. product UUID
-     * @param referenceUuid   Reference UUID, fx. product tag UUID
+     * @param subjectUuid       Subject UUID, fx. product UUID
+     * @param referenceUuid     Reference UUID, fx. product tag UUID
+     * @param contributionType  Contribution type
      */
-    fun assertReferenceContributionNotPresent(subjectUuid: String, referenceUuid: String) {
-        val contributions = referenceContributionRepository.findBySubjectUuidAndReferenceUuidAndEnabled(subjectUuid, referenceUuid)
+    fun assertReferenceContributionNotPresent(subjectUuid: String, referenceUuid: String, contributionType: Contribution.ContributionType) {
+        val contributions = referenceContributionRepository.findBySubjectUuidAndReferenceUuidAndTypeAndEnabled(subjectUuid, referenceUuid, contributionType)
         Assert.isTrue(
                 contributions.isEmpty(),
                 "Contribution with subject UUID $subjectUuid and reference UUID $referenceUuid already present")
@@ -91,7 +92,7 @@ open class ContributionService @Autowired constructor(
     /**
      * Creates a new text contribution.
      *
-     * @param contributionType  Contribution type, fx. CompanyName
+     * @param contributionType  Contribution type, fx. EditCompanyName
      * @param inClient          Client
      * @param subjectUuid       Subject UUID, fx. company UUID
      * @param text              Text
@@ -134,7 +135,7 @@ open class ContributionService @Autowired constructor(
     /**
      * Creates a new reference contribution.
      *
-     * @param contributionType  Contribution type, fx. CompanyName
+     * @param contributionType  Contribution type, fx. EditCompanyName
      * @param inClient          Client
      * @param subjectUuid       Subject UUID, fx. product UUID
      * @param referenceUuid     Reference UUID, fx. product tag UUID
@@ -146,7 +147,7 @@ open class ContributionService @Autowired constructor(
         var client = inClient
 
         // Make sure it's not already present and enabled
-        assertReferenceContributionNotPresent(subjectUuid, referenceUuid)
+        assertReferenceContributionNotPresent(subjectUuid, referenceUuid, contributionType)
 
         // Create contribution
         var contribution = ReferenceContribution()

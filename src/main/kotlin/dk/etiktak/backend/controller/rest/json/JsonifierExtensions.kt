@@ -60,7 +60,7 @@ fun HashMap<String, Any>.add(product: Product, client: Client? = null, productSe
             .add("product", hashMapOf<String, Any>()
                     .add("uuid", product.uuid)
                     .add("name", product.name)
-                    .add("companies", product.companies, { company -> hashMapOf<String, Any>().add(company, client, companyService) })
+                    .add("companies", product.companies, { company -> hashMapOf<String, Any>().add(company, client, companyService)["company"]!! })
                     .add("categories", product.productCategories, { category -> hashMapOf<String, Any>()
                             .add("uuid", category.uuid)
                             .add("name", category.name) })

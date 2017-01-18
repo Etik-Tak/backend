@@ -207,7 +207,7 @@ open class ProductService @Autowired constructor(
         var product = inProduct
 
         // Create contribution
-        val contribution = contributionService.createTextContribution(Contribution.ContributionType.ProductName, client, product.uuid, name, modifyValues = {modifiedClient -> client = modifiedClient})
+        val contribution = contributionService.createTextContribution(Contribution.ContributionType.EditProductName, client, product.uuid, name, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Edit name
         product.name = name
@@ -235,7 +235,7 @@ open class ProductService @Autowired constructor(
         var productCategory = inProductCategory
 
         // Create contribution
-        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.ProductCategory, client, product.uuid, productCategory.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
+        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.AssignCategoryToProduct, client, product.uuid, productCategory.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Assign category
         product.productCategories.add(productCategory)
@@ -268,7 +268,7 @@ open class ProductService @Autowired constructor(
         var productLabel = inProductLabel
 
         // Create contribution
-        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.ProductLabel, client, product.uuid, productLabel.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
+        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.AssignLabelToProduct, client, product.uuid, productLabel.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Assign label
         product.productLabels.add(productLabel)
@@ -301,7 +301,7 @@ open class ProductService @Autowired constructor(
         var productTag = inProductTag
 
         // Create contribution
-        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.ProductTag, client, product.uuid, productTag.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
+        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.AssignTagToProduct, client, product.uuid, productTag.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Assign tag
         product.productTags.add(productTag)
@@ -334,11 +334,44 @@ open class ProductService @Autowired constructor(
         var company = inCompany
 
         // Create contribution
-        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.ProductCompany, client, product.uuid, company.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
+        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.AssignCompanyToProduct, client, product.uuid, company.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Assign company
         product.companies.add(company)
         company.products.add(product)
+
+        // Save it all
+        company = companyRepository.save(company)
+        client = clientRepository.save(client)
+        product = productRepository.save(product)
+
+        modifyValues(client, product, company)
+
+        return contribution
+    }
+
+    /**
+     * Removes a company from a product.
+     *
+     * @param inClient            Client
+     * @param inProduct           Product
+     * @param inCompany           Company
+     * @param modifyValues        Function called with modified client, product and company
+     * @return                    Product company contribution
+     */
+    @ClientVerified
+    open fun removeCompanyFromProduct(inClient: Client, inProduct: Product, inCompany: Company, modifyValues: (Client, Product, Company) -> Unit = { client, product, company -> Unit}): Contribution {
+
+        var client = inClient
+        var product = inProduct
+        var company = inCompany
+
+        // Create contribution
+        val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.RemoveCompanyFromProduct, client, product.uuid, company.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
+
+        // Assign company
+        product.companies.remove(company)
+        company.products.remove(product)
 
         // Save it all
         company = companyRepository.save(company)
@@ -462,7 +495,7 @@ open class ProductService @Autowired constructor(
      * @return          Product name contribution
      */
     open fun productNameContribution(product: Product): TextContribution? {
-        return contributionService.currentTextContribution(Contribution.ContributionType.ProductName, product.uuid)
+        return contributionService.currentTextContribution(Contribution.ContributionType.EditProductName, product.uuid)
     }
 
     /**

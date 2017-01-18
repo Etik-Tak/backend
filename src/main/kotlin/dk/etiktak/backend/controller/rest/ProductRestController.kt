@@ -241,6 +241,24 @@ class ProductRestController @Autowired constructor(
                 .add(company!!, client, companyService)
     }
 
+    @RequestMapping(value = "/remove/company/", method = arrayOf(RequestMethod.POST))
+    fun removeCompanyToProduct(
+            @CurrentlyLoggedClient loggedClient: Client,
+            @RequestParam productUuid: String,
+            @RequestParam companyUuid: String): HashMap<String, Any> {
+
+        var client = clientService.getByUuid(loggedClient.uuid) ?: return notFoundMap("Client")
+        var product = productService.getProductByUuid(productUuid) ?: return notFoundMap("Product")
+        var company = companyService.getCompanyByUuid(companyUuid) ?: return notFoundMap("Company")
+
+        productService.removeCompanyFromProduct(client, product, company,
+                modifyValues = { modifiedClient, modifiedProduct, modifiedCompany -> client = modifiedClient; product = modifiedProduct; company = modifiedCompany })
+
+        return okMap()
+                .add(product, client, productService, companyService)
+                .add(company, client, companyService)
+    }
+
     @RequestMapping(value = "/trust/name/", method = arrayOf(RequestMethod.POST))
     fun trustVoteProductName(
             @CurrentlyLoggedClient loggedClient: Client,

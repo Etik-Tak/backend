@@ -40,17 +40,18 @@ import javax.validation.constraints.NotNull
 open class Contribution : BaseModel() {
 
     enum class ContributionType {
-        ProductName,
-        ProductCategoryName,
-        ProductLabelName,
-        ProductCategory,
-        ProductLabel,
-        ProductTag,
-        ProductCompany,
-        CompanyName,
-        StoreName,
-        StoreCompany,
-        InfoSourceName,
+        EditProductName,
+        EditProductCategoryName,
+        EditProductLabelName,
+        AssignCategoryToProduct,
+        AssignLabelToProduct,
+        AssignTagToProduct,
+        AssignCompanyToProduct,
+        RemoveCompanyFromProduct,
+        EditCompanyName,
+        EditStoreName,
+        AssignCompanyToStore,
+        EditInfoSourceName,
     }
 
     @Id
@@ -66,7 +67,7 @@ open class Contribution : BaseModel() {
     var client = Client()
 
     @Column(name = "type")
-    var type = ContributionType.CompanyName
+    var type = ContributionType.EditCompanyName
 
     @Column(name = "subject_uuid", nullable = false)
     var subjectUuid: String = ""

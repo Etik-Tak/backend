@@ -100,7 +100,7 @@ open class ProductLabelService @Autowired constructor(
         var productLabel = inProductLabel
 
         // Create contribution
-        val contribution = contributionService.createTextContribution(Contribution.ContributionType.ProductLabelName, client, productLabel.uuid, name, modifyValues = {modifiedClient -> client = modifiedClient})
+        val contribution = contributionService.createTextContribution(Contribution.ContributionType.EditProductLabelName, client, productLabel.uuid, name, modifyValues = { modifiedClient -> client = modifiedClient})
 
         // Edit name
         productLabel.name = name
@@ -129,7 +129,7 @@ open class ProductLabelService @Autowired constructor(
      * @return               Product label name contribution
      */
     open fun productLabelNameContribution(productLabel: ProductLabel): TextContribution? {
-        return contributionService.currentTextContribution(Contribution.ContributionType.ProductLabelName, productLabel.uuid)
+        return contributionService.currentTextContribution(Contribution.ContributionType.EditProductLabelName, productLabel.uuid)
     }
 
     /**
