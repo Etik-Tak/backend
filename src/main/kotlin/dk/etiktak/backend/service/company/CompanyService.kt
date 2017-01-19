@@ -39,6 +39,7 @@ import dk.etiktak.backend.util.CryptoUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ResourceLoader
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.BufferedReader
@@ -80,11 +81,11 @@ open class CompanyService @Autowired constructor(
      * @param searchString  Search string
      * @return              Company search result
      */
-    open fun getCompanySearchList(searchString: String): List<CompanySearchResult> {
-        val companyEntries = companyRepository.findByNameIgnoreCaseContaining(searchString).map { it -> CompanySearchResult(it.name, company = it) }
-        val companySearchEntries = companySearchEntryRepository.findByNameIgnoreCaseContaining(searchString).map { it -> CompanySearchResult(it.name, company = null) }
+    open fun getCompanySearchList(searchString: String, pageIndex: Int, pageSize: Int): List<CompanySearchResult> {
+        val companyEntries = companyRepository.findByNameIgnoreCaseContaining(searchString, PageRequest(pageIndex, pageSize)).map { it -> CompanySearchResult(it.name, company = it) }
+        val companySearchEntries = companySearchEntryRepository.findByNameIgnoreCaseContaining(searchString, PageRequest(pageIndex, pageSize)).map { it -> CompanySearchResult(it.name, company = null) }
 
-        return (companyEntries + companySearchEntries).distinctBy { it -> it.name }
+        return (companyEntries + companySearchEntries).distinctBy { it -> it.name }.take(pageSize)
     }
 
     /**

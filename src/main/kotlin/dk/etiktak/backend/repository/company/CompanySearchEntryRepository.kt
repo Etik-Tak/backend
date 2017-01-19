@@ -26,11 +26,12 @@
 package dk.etiktak.backend.repository.company
 
 import dk.etiktak.backend.model.company.CompanySearchEntry
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
 interface CompanySearchEntryRepository : PagingAndSortingRepository<CompanySearchEntry, Long> {
     fun findByNameIgnoreCase(name: String): CompanySearchEntry?
-    fun findByNameIgnoreCaseContaining(name: String): List<CompanySearchEntry>
+    fun findByNameIgnoreCaseContaining(name: String, pageable: Pageable): List<CompanySearchEntry>
 }

@@ -366,6 +366,12 @@ open class ProductService @Autowired constructor(
         var product = inProduct
         var company = inCompany
 
+        // Disable current contribution
+        val currentContribution = contributionService.currentReferenceContribution(Contribution.ContributionType.AssignCompanyToProduct, product.uuid, company.uuid)
+        currentContribution?.let {
+            contributionService.disableContribution(currentContribution, inClient)
+        }
+
         // Create contribution
         val contribution = contributionService.createReferenceContribution(Contribution.ContributionType.RemoveCompanyFromProduct, client, product.uuid, company.uuid, modifyValues = { modifiedClient -> client = modifiedClient})
 

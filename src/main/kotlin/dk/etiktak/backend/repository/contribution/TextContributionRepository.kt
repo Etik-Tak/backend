@@ -39,7 +39,7 @@ interface TextContributionRepository: PagingAndSortingRepository<TextContributio
     fun findByClientUuid(clientUuid: String): List<TextContribution>
     fun findByTrustVotesClientUuid(clientUuid: String): List<TextContribution>
 
-    fun findBySubjectUuidAndType(subjectUuid: String, contributionType: Contribution.ContributionType, pageable: Pageable): List<TextContribution>
+    fun findBySubjectUuidAndTypeAndEnabled(subjectUuid: String, contributionType: Contribution.ContributionType, enabled: Boolean = true, pageable: Pageable): List<TextContribution>
 
     fun countByUuidAndTrustVotesVote(uuid: String, trustVoteType: TrustVote.TrustVoteType): Long
 }

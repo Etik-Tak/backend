@@ -64,6 +64,19 @@ open class ContributionService @Autowired constructor(
     }
 
     /**
+     * Returns the current reference contribution.
+     *
+     * @param contributionType  Contribution type, fx. AssignCompanyToProduct
+     * @param subjectUuid       Subject UUID, fx. product UUID
+     * @param referenceUuid     Reference UUID, fx. company UUID
+     * @return                  Current reference contribution
+     */
+    open fun currentReferenceContribution(contributionType: Contribution.ContributionType, subjectUuid: String, referenceUuid: String): ReferenceContribution? {
+        val currentContributions = referenceContributionRepository.findBySubjectUuidAndReferenceUuidAndTypeAndEnabled(subjectUuid, referenceUuid, contributionType, pageable = PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))
+        return if (currentContributions.size == 1) currentContributions[0] else null
+    }
+
+    /**
      * Returns the current text contribution.
      *
      * @param contributionType  Contribution type, fx. EditCompanyName
@@ -71,7 +84,7 @@ open class ContributionService @Autowired constructor(
      * @return                  Current text contribution
      */
     open fun currentTextContribution(contributionType: Contribution.ContributionType, subjectUuid: String): TextContribution? {
-        val currentContributions = textContributionRepository.findBySubjectUuidAndType(subjectUuid, contributionType, PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))
+        val currentContributions = textContributionRepository.findBySubjectUuidAndTypeAndEnabled(subjectUuid, contributionType, pageable = PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))
         return if (currentContributions.size == 1) currentContributions[0] else null
     }
 
@@ -83,7 +96,7 @@ open class ContributionService @Autowired constructor(
      * @param contributionType  Contribution type
      */
     fun assertReferenceContributionNotPresent(subjectUuid: String, referenceUuid: String, contributionType: Contribution.ContributionType) {
-        val contributions = referenceContributionRepository.findBySubjectUuidAndReferenceUuidAndTypeAndEnabled(subjectUuid, referenceUuid, contributionType)
+        val contributions = referenceContributionRepository.findBySubjectUuidAndReferenceUuidAndTypeAndEnabled(subjectUuid, referenceUuid, contributionType, pageable = PageRequest(0, 1))
         Assert.isTrue(
                 contributions.isEmpty(),
                 "Contribution with subject UUID $subjectUuid and reference UUID $referenceUuid already present")
@@ -107,6 +120,14 @@ open class ContributionService @Autowired constructor(
         val currentContribution = currentTextContribution(contributionType, subjectUuid)
         currentContribution?.let {
             assertSufficientTrustToEditContribution(client, currentContribution)
+        }
+
+        // Disable current text contribution
+        currentContribution?.let {
+            client.contributions.remove(currentContribution)
+
+            currentContribution.enabled = false
+            contributionRepository.save(currentContribution)
         }
 
         // Create contribution
@@ -173,6 +194,33 @@ open class ContributionService @Autowired constructor(
     }
 
     /**
+     * Disables a contribution.
+     *
+     * @param inContribution   Contribution
+     * @param inClient         Client
+     * @param modifyValues     Function called with modified client and contribution
+     * @return                 Created contribution
+     */
+    open fun disableContribution(inContribution: Contribution, inClient: Client, modifyValues: (Contribution) -> Unit = {}): Contribution {
+
+        // Check sufficient trust
+        assertSufficientTrustToEditContribution(inClient, inContribution)
+
+        // Disable contribution
+        inContribution.enabled = false
+
+        // Save it all
+        val contribution = contributionRepository.save(inContribution)
+
+        // Update trust
+        updateTrust(contribution)
+
+        modifyValues(contribution)
+
+        return contribution
+    }
+
+    /**
      * Returns whether the given client has succicient trust to edit given contribution.
      *
      * @param client        Client
@@ -212,7 +260,7 @@ open class ContributionService @Autowired constructor(
      * @return                Trust vote
      */
     @ClientVerified
-    open fun trustVoteItem(inClient: Client, inContribution: Contribution, vote: TrustVote.TrustVoteType, modifyValues: (Client, Contribution) -> Unit = { client, contribution -> Unit}): TrustVote {
+    open fun trustVoteItem(inClient: Client, inContribution: Contribution, vote: TrustVote.TrustVoteType, modifyValues: (Client, Contribution) -> Unit = {client, contribution -> Unit}): TrustVote {
 
         var client = inClient
         var contribution = inContribution

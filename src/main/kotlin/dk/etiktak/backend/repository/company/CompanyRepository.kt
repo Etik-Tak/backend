@@ -26,6 +26,7 @@
 package dk.etiktak.backend.repository.company
 
 import dk.etiktak.backend.model.company.Company
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
@@ -33,5 +34,5 @@ import org.springframework.stereotype.Repository
 interface CompanyRepository : PagingAndSortingRepository<Company, Long> {
     fun findByUuid(uuid: String): Company?
     fun findByNameIgnoreCase(name: String): Company?
-    fun findByNameIgnoreCaseContaining(name: String): List<Company>
+    fun findByNameIgnoreCaseContaining(name: String, pageable: Pageable): List<Company>
 }

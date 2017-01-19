@@ -270,6 +270,24 @@ class ProductTest : BaseRestTest() {
     }
 
     /**
+     * Test that we cannot assign same company twice.
+     */
+    @Test
+    fun cannotAssignCompanyTwice() {
+
+        // Assign once
+        val companyUuid = createAndSaveCompany(client1DeviceId, "Some Company", product1Uuid)
+
+        // Assign twice
+        exception.expect(NestedServletException::class.java)
+        mockMvc().perform(
+                post(serviceEndpoint("assign/company/"))
+                        .header("X-Auth-DeviceId", client1DeviceId)
+                        .param("productUuid", product1Uuid)
+                        .param("companyName", "Some Company"))
+    }
+
+    /**
      * Test that we can remove a company from a product.
      */
     @Test
@@ -286,6 +304,39 @@ class ProductTest : BaseRestTest() {
                 .andExpect(content().contentType(jsonContentType))
                 .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
                 .andExpect(jsonPath("$.product.companies", hasSize<Any>(0)))
+    }
+
+    /**
+     * Test that we can add and remove and again add a company from a product.
+     */
+    @Test
+    fun addAndRemoveAndAddCompanyFromProduct() {
+
+        // Add company
+        val companyUuid = createAndSaveCompany(client1DeviceId, "Some Company", product1Uuid)
+        assertProductHasCompanyAssigned(product1Uuid, "Some Company")
+
+        // Remove company
+        mockMvc().perform(
+                post(serviceEndpoint("remove/company/"))
+                        .header("X-Auth-DeviceId", client1DeviceId)
+                        .param("productUuid", product1Uuid)
+                        .param("companyUuid", companyUuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.product.companies", hasSize<Any>(0)))
+
+        // Add company
+        mockMvc().perform(
+                post(serviceEndpoint("assign/company/"))
+                        .header("X-Auth-DeviceId", client1DeviceId)
+                        .param("productUuid", product1Uuid)
+                        .param("companyUuid", companyUuid))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(jsonContentType))
+                .andExpect(jsonPath("$.result", `is`(WebserviceResult.OK.value)))
+                .andExpect(jsonPath("$.company.name", `is`("Some Company")))
     }
 
 

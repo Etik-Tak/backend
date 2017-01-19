@@ -490,39 +490,34 @@ open class BaseRestTest {
 
     fun setProductNameTrustScore(productUuid: String, trustScore: Double) {
         val product = productRepository!!.findByUuid(productUuid)!!
-        val contribution = textContributionRepository!!.findBySubjectUuidAndType(product.uuid, Contribution.ContributionType.EditProductName,
-                PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
+        val contribution = textContributionRepository!!.findBySubjectUuidAndTypeAndEnabled(product.uuid, Contribution.ContributionType.EditProductName, pageable = PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
         contribution.trustScore = trustScore
         textContributionRepository.save(contribution)
     }
 
     fun productNameTrustLevel(productUuid: String): Double {
         val product = productRepository!!.findByUuid(productUuid)!!
-        val contribution = textContributionRepository!!.findBySubjectUuidAndType(product.uuid, Contribution.ContributionType.EditProductName,
-                PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
+        val contribution = textContributionRepository!!.findBySubjectUuidAndTypeAndEnabled(product.uuid, Contribution.ContributionType.EditProductName,  pageable = PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
         return contribution.trustScore
     }
 
     fun setProductLabelNameTrustScore(productLabelUuid: String, trustScore: Double) {
         val productLabel = productLabelRepository!!.findByUuid(productLabelUuid)!!
-        val contribution = textContributionRepository!!.findBySubjectUuidAndType(productLabel.uuid, Contribution.ContributionType.EditProductLabelName,
-                PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
+        val contribution = textContributionRepository!!.findBySubjectUuidAndTypeAndEnabled(productLabel.uuid, Contribution.ContributionType.EditProductLabelName, pageable = PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
         contribution.trustScore = trustScore
         textContributionRepository.save(contribution)
     }
 
     fun setProductCategoryNameTrustScore(productCategoryUuid: String, trustScore: Double) {
         val productCategory = productCategoryRepository!!.findByUuid(productCategoryUuid)!!
-        val contribution = textContributionRepository!!.findBySubjectUuidAndType(productCategory.uuid, Contribution.ContributionType.EditProductCategoryName,
-                PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
+        val contribution = textContributionRepository!!.findBySubjectUuidAndTypeAndEnabled(productCategory.uuid, Contribution.ContributionType.EditProductCategoryName, pageable = PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
         contribution.trustScore = trustScore
         textContributionRepository.save(contribution)
     }
 
     fun setInfoSourceNameTrustScore(infoSourceUuid: String, trustScore: Double) {
         val infoSource = infoSourceRepository!!.findByUuid(infoSourceUuid)!!
-        val contribution = textContributionRepository!!.findBySubjectUuidAndType(infoSource.uuid, Contribution.ContributionType.EditInfoSourceName,
-                PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
+        val contribution = textContributionRepository!!.findBySubjectUuidAndTypeAndEnabled(infoSource.uuid, Contribution.ContributionType.EditInfoSourceName, pageable = PageRequest(0, 1, Sort(Sort.Direction.DESC, "creationTime")))[0]
         contribution.trustScore = trustScore
         textContributionRepository.save(contribution)
     }

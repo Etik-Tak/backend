@@ -28,6 +28,7 @@ package dk.etiktak.backend.repository.contribution
 import dk.etiktak.backend.model.contribution.Contribution
 import dk.etiktak.backend.model.contribution.ReferenceContribution
 import dk.etiktak.backend.model.contribution.TrustVote
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
@@ -38,8 +39,8 @@ interface ReferenceContributionRepository : PagingAndSortingRepository<Reference
     fun findByClientUuid(clientUuid: String): List<ReferenceContribution>
     fun findByTrustVotesClientUuid(clientUuid: String): List<ReferenceContribution>
 
-    fun findBySubjectUuidAndReferenceUuidAndEnabled(subjectUuid: String, referenceUuid: String, enabled: Boolean = true): List<ReferenceContribution>
-    fun findBySubjectUuidAndReferenceUuidAndTypeAndEnabled(subjectUuid: String, referenceUuid: String, contributionType: Contribution.ContributionType, enabled: Boolean = true): List<ReferenceContribution>
+    fun findBySubjectUuidAndReferenceUuidAndEnabled(subjectUuid: String, referenceUuid: String, enabled: Boolean = true, pageable: Pageable): List<ReferenceContribution>
+    fun findBySubjectUuidAndReferenceUuidAndTypeAndEnabled(subjectUuid: String, referenceUuid: String, contributionType: Contribution.ContributionType, enabled: Boolean = true, pageable: Pageable): List<ReferenceContribution>
 
     fun countByUuidAndTrustVotesVote(uuid: String, trustVoteType: TrustVote.TrustVoteType): Long
 }

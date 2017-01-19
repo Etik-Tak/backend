@@ -77,9 +77,11 @@ class CompanyRestController @Autowired constructor(
 
     @RequestMapping(value = "/search/", method = arrayOf(RequestMethod.GET))
     fun findCompanies(
-            @RequestParam searchString: String): HashMap<String, Any> {
+            @RequestParam searchString: String,
+            @RequestParam(required = false) pageIndex: Int?,
+            @RequestParam(required = false) pageSize: Int?): HashMap<String, Any> {
 
-        val companySearchList = companyService.getCompanySearchList(searchString)
+        val companySearchList = companyService.getCompanySearchList(searchString, pageIndex ?: 0, pageSize ?: 10)
 
         return okMap().add(companySearchList, companyService)
     }
